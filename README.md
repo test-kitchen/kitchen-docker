@@ -4,17 +4,13 @@ A Test Kitchen Driver for Docker.
 
 ## <a name="requirements"></a> Requirements
 
-**TODO:** document any software or library prerequisites that are required to
-use this driver. Implement the `#verify_dependencies` method in your Driver
-class to enforce these requirements in code, if possible.
+* [Docker][docker_getting_started]
 
 ## <a name="installation"></a> Installation and Setup
 
 Please read the [Driver usage][driver_usage] page for more details.
 
 ## <a name="config"></a> Configuration
-
-**TODO:** Write descriptions of all configuration options
 
 ### <a name="config-require-chef-omnibus"></a> require\_chef\_omnibus
 
@@ -30,7 +26,7 @@ installed. There are several different behaviors available:
   the installed version and the desired version match.
 * `false` or `nil` - no chef is installed.
 
-The default value is unset, or `nil`.
+The default value is `latest`.
 
 ## <a name="development"></a> Development
 
@@ -60,5 +56,6 @@ Apache 2.0 (see [LICENSE][license])
 [issues]:                 https://github.com/portertech/kitchen-docker/issues
 [license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/portertech/kitchen-docker
-[driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [docker_getting_started]: http://www.docker.io/gettingstarted/
+[driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
+[chef_omnibus_dl]:        http://www.opscode.com/chef/install/
