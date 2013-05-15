@@ -50,8 +50,18 @@ module Kitchen
       protected
 
       def dockerfile
-        path = File.join(File.dirname(__FILE__), 'docker', 'Dockerfile')
-        File.expand_path(path)
+        contents = <<-eos
+          FROM #{config[:image]}
+          ENV DEBIAN_FRONTEND noninteractive
+          RUN apt-get update
+          RUN apt-get install -y sudo openssh-server
+          RUN mkdir /var/run/sshd
+          RUN useradd -d /home/kitchen -m -s /bin/bash kitchen
+          RUN echo kitchen:kitchen | chpasswd
+          RUN echo 'kitchen ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
+        eos
+        contents.gsub(/^\s+/, '')
       end
 
       def parse_image_id(output)
@@ -62,7 +72,7 @@ module Kitchen
       end
 
       def build_image(state)
-        output = run_command("cat #{dockerfile} | docker build -")
+        output = run_command("docker build -", :input => dockerfile)
         parse_image_id(output)
       end
 
