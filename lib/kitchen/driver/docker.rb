@@ -35,6 +35,13 @@ module Kitchen
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, 'latest'
 
+      def verify_dependencies
+        run_command('docker > /dev/null', :quiet => true)
+        rescue
+          raise UserError,
+          'You must first install Docker http://www.docker.io/gettingstarted/'
+      end
+
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
@@ -121,7 +128,7 @@ module Kitchen
 
       def container_address(state)
         container_id = state[:container_id]
-        output = run_command("docker inspect #{container_id}", :quiet => true)
+        output = run_command("docker inspect #{container_id}")
         parse_container_ip(output)
       end
 
