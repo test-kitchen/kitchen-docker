@@ -27,10 +27,66 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
+      default_config :image,    "ubuntu"
+      default_config :username, "kitchen"
+      default_config :password, "kitchen"
+
       def create(state)
+        state[:image_id]     = create_image(state)
+        state[:container_id] = run_container(state)
+        state[:hostname]     = container_address(state)
+        wait_for_sshd(state[:hostname])
       end
 
       def destroy(state)
+      end
+
+      protected
+
+      def dockerfile
+        path = File.join(File.dirname(__FILE__), "docker", "Dockerfile")
+        File.expand_path(path)
+      end
+
+      def parse_image_id(output)
+        output.each_line do |line|
+          if line =~ /image id/i
+            return line.split(/\s+/).last
+          end
+        end
+        raise ActionFailed, "Could not parse Docker build output for image ID"
+      end
+
+      def create_image(state)
+        output = run_command("cat #{dockerfile} | docker build -")
+        parse_image_id(output)
+      end
+
+      def parse_container_id(output)
+        container_id = output.chomp
+        unless container_id.size == 12
+          raise ActionFailed, "Could not parse Docker run output for container ID"
+        end
+        container_id
+      end
+
+      def run_container(state)
+        output = run_command("docker run -d #{state[:image_id]} /usr/sbin/sshd -D")
+        parse_container_id(output)
+      end
+
+      def parse_container_ip(output)
+        begin
+          info = JSON.parse(output)
+          info["NetworkSettings"]["IpAddress"]
+        rescue
+          raise ActionFailed, "Could not parse Docker inspect output for container IP address"
+        end
+      end
+
+      def container_address(state)
+        output = run_command("docker inspect #{state[:container_id]}")
+        parse_container_ip(output)
       end
     end
   end
