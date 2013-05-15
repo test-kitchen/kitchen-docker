@@ -64,12 +64,14 @@ module Kitchen
           <<-eos
             ENV DEBIAN_FRONTEND noninteractive
             RUN apt-get update
-            RUN apt-get install -y sudo openssh-server
+            RUN apt-get install -y sudo openssh-server curl
+            RUN dpkg-divert --local --rename --add /sbin/initctl
+            RUN ln -s /bin/true /sbin/initctl
           eos
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
-            RUN yum install -y sudo openssh-server openssh-clients
+            RUN yum install -y sudo openssh-server openssh-clients curl
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
@@ -80,7 +82,7 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         base = <<-eos
-          RUN mkdir /var/run/sshd
+          RUN mkdir -p /var/run/sshd
           RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
