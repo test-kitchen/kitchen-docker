@@ -28,18 +28,22 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :image,    'ubuntu'
-      default_config :username, 'kitchen'
-      default_config :password, 'kitchen'
+      default_config :image,                'ubuntu'
+      default_config :port,                 '22'
+      default_config :username,             'kitchen'
+      default_config :password,             'kitchen'
+      default_config :require_chef_omnibus, 'latest'
 
       def create(state)
-        state[:image_id]     = create_image(state)
-        state[:container_id] = run_container(state)
-        state[:hostname]     = container_address(state)
+        state[:image_id] = build_image(state) unless state[:image_id]
+        state[:container_id] = run_container(state) unless state[:container_id]
+        state[:hostname] = container_address(state) unless state[:hostname]
         wait_for_sshd(state[:hostname])
       end
 
       def destroy(state)
+        kill_container(state) if state[:container_id]
+        rm_image(state) if state[:image_id]
       end
 
       protected
@@ -56,7 +60,7 @@ module Kitchen
         raise ActionFailed, 'Could not parse Docker build output for image ID'
       end
 
-      def create_image(state)
+      def build_image(state)
         output = run_command("cat #{dockerfile} | docker build -")
         parse_image_id(output)
       end
@@ -72,14 +76,14 @@ module Kitchen
 
       def run_container(state)
         image_id = state[:image_id]
-        output = run_command("docker run -d #{image_id} /usr/sbin/sshd -D")
+        output = run_command("docker run -d #{image_id} /usr/sbin/sshd -D -u0")
         parse_container_id(output)
       end
 
       def parse_container_ip(output)
         begin
           info = JSON.parse(output)
-          info["NetworkSettings"]["IpAddress"]
+          info['NetworkSettings']['IpAddress']
         rescue
           raise ActionFailed,
           'Could not parse Docker inspect output for container IP address'
@@ -88,8 +92,18 @@ module Kitchen
 
       def container_address(state)
         container_id = state[:container_id]
-        output = run_command("docker inspect #{container_id}")
+        output = run_command("docker inspect #{container_id}", :quiet => true)
         parse_container_ip(output)
+      end
+
+      def kill_container(state)
+        container_id = state[:container_id]
+        run_command("docker kill #{container_id}")
+      end
+
+      def rm_image(state)
+        image_id = state[:image_id]
+        run_command("docker rmi #{image_id}")
       end
     end
   end
