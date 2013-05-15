@@ -26,7 +26,7 @@ installed. There are several different behaviors available:
   the installed version and the desired version match.
 * `false` or `nil` - no chef is installed.
 
-The default value is `latest`.
+The default value is `true`.
 
 ## <a name="development"></a> Development
 

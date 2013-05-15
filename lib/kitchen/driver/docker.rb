@@ -33,7 +33,7 @@ module Kitchen
       default_config :port,                 '22'
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
-      default_config :require_chef_omnibus, 'latest'
+      default_config :require_chef_omnibus, true
 
       def verify_dependencies
         run_command('docker > /dev/null', :quiet => true)
