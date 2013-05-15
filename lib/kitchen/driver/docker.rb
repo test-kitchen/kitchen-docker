@@ -29,6 +29,7 @@ module Kitchen
     class Docker < Kitchen::Driver::SSHBase
 
       default_config :image,                'ubuntu'
+      default_config :platform,             'debian'
       default_config :port,                 '22'
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
@@ -50,18 +51,30 @@ module Kitchen
       protected
 
       def dockerfile
-        contents = <<-eos
-          FROM #{config[:image]}
-          ENV DEBIAN_FRONTEND noninteractive
-          RUN apt-get update
-          RUN apt-get install -y sudo openssh-server
+        from = "FROM #{config[:image]}"
+        platform = case config[:platform]
+        when 'debian'
+          <<-eos
+            ENV DEBIAN_FRONTEND noninteractive
+            RUN apt-get update
+            RUN apt-get install -y sudo openssh-server
+          eos
+        when 'rhel'
+          <<-eos
+            RUN yum update
+            RUN yum install -y sudo openssh-server
+          eos
+        else
+          raise ActionFailed, "Unknown platform '#{config[:platform]}'"
+        end
+        base = <<-eos
           RUN mkdir /var/run/sshd
           RUN useradd -d /home/kitchen -m -s /bin/bash kitchen
           RUN echo kitchen:kitchen | chpasswd
           RUN echo 'kitchen ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
         eos
-        contents.gsub(/^\s+/, '')
+        [from, platform, base].join("\n")
       end
 
       def parse_image_id(output)
