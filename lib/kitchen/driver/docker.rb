@@ -29,7 +29,7 @@ module Kitchen
     class Docker < Kitchen::Driver::SSHBase
 
       default_config :image,                'ubuntu'
-      default_config :platform,             'debian'
+      default_config :platform,             'ubuntu'
       default_config :port,                 '22'
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
@@ -53,26 +53,29 @@ module Kitchen
       def dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
-        when 'debian'
+        when 'debian', 'ubuntu'
           <<-eos
             ENV DEBIAN_FRONTEND noninteractive
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server
           eos
-        when 'rhel'
+        when 'rhel', 'centos'
           <<-eos
-            RUN yum update
+            RUN yum clean all
             RUN yum install -y sudo openssh-server
+            RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+            RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
         else
-          raise ActionFailed, "Unknown platform '#{config[:platform]}'"
+          raise ActionFailed,
+          "Unknown platform '#{config[:platform]}'"
         end
         base = <<-eos
           RUN mkdir /var/run/sshd
+          RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
           RUN useradd -d /home/kitchen -m -s /bin/bash kitchen
           RUN echo kitchen:kitchen | chpasswd
           RUN echo 'kitchen ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
         eos
         [from, platform, base].join("\n")
       end
@@ -81,7 +84,8 @@ module Kitchen
         output.each_line do |line|
           return line.split(/\s+/).last if line =~ /image id/i
         end
-        raise ActionFailed, 'Could not parse Docker build output for image ID'
+        raise ActionFailed,
+        'Could not parse Docker build output for image ID'
       end
 
       def build_image(state)
@@ -100,7 +104,7 @@ module Kitchen
 
       def run_container(state)
         image_id = state[:image_id]
-        output = run_command("docker run -d #{image_id} /usr/sbin/sshd -D -u0")
+        output = run_command("docker run -d #{image_id} /usr/sbin/sshd -D -o UseDNS=no")
         parse_container_id(output)
       end
 
