@@ -56,9 +56,9 @@ Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
 Apache 2.0 (see [LICENSE][license])
 
 
-[author]:           https://github.com/enter-github-user
-[issues]:           https://github.com/enter-github-user/kitchen-docker/issues
-[license]:          https://github.com/enter-github-user/kitchen-docker/blob/master/LICENSE
-[repo]:             https://github.com/enter-github-user/kitchen-docker
-[driver_usage]:     http://docs.kitchen-ci.org/drivers/usage
-[chef_omnibus_dl]:  http://www.opscode.com/chef/install/
+[author]:                 https://github.com/portertech
+[issues]:                 https://github.com/portertech/kitchen-docker/issues
+[license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
+[repo]:                   https://github.com/portertech/kitchen-docker
+[driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
+[docker_getting_started]: http://www.docker.io/gettingstarted/
