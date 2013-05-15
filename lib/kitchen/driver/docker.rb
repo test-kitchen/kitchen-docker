@@ -62,7 +62,7 @@ module Kitchen
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
-            RUN yum install -y sudo openssh-server
+            RUN yum install -y sudo openssh-server openssh-clients
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
@@ -104,7 +104,8 @@ module Kitchen
 
       def run_container(state)
         image_id = state[:image_id]
-        output = run_command("docker run -d #{image_id} /usr/sbin/sshd -D -o UseDNS=no")
+        cmd = "docker run -d #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+        output = run_command(cmd)
         parse_container_id(output)
       end
 
