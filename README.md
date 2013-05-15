@@ -12,6 +12,23 @@ Please read the [Driver usage][driver_usage] page for more details.
 
 ## <a name="config"></a> Configuration
 
+### <a name="config-image"></a> image
+
+The Docker image to use as the base for the suite containers. You can find
+images using the [Docker Index][docker_index].
+
+The default value is `ubuntu` ([image][docker_default_image]).
+
+### <a name="config-platform"></a> platform
+
+The platform of the chosen image. This is used to properly bootstrap the
+suite container for Test Kitchen. Kitchen Docker currently supports:
+
+* `debian` or `ubuntu`
+* `rhel` or `centos`
+
+The default value is `ubuntu`.
+
 ### <a name="config-require-chef-omnibus"></a> require\_chef\_omnibus
 
 Determines whether or not a Chef [Omnibus package][chef_omnibus_dl] will be
@@ -57,5 +74,7 @@ Apache 2.0 (see [LICENSE][license])
 [license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/portertech/kitchen-docker
 [docker_getting_started]: http://www.docker.io/gettingstarted/
+[docker_index]:           https://index.docker.io/
+[docker_default_image]:   https://index.docker.io/_/ubuntu/
 [driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
