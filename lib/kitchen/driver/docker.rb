@@ -39,6 +39,7 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = container_address(state) unless state[:hostname]
         wait_for_sshd(state[:hostname])
+        ensure_fqdn(state)
       end
 
       def destroy(state)
@@ -94,6 +95,11 @@ module Kitchen
         container_id = state[:container_id]
         output = run_command("docker inspect #{container_id}", :quiet => true)
         parse_container_ip(output)
+      end
+
+      def ensure_fqdn(state)
+        ssh_args = build_ssh_args(state)
+        ssh(ssh_args, 'echo "127.0.0.1 `hostname`" | sudo tee -a /etc/hosts')
       end
 
       def kill_container(state)
