@@ -77,12 +77,14 @@ module Kitchen
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
         end
+        username = config[:username]
+        password = config[:password]
         base = <<-eos
           RUN mkdir /var/run/sshd
           RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
-          RUN useradd -d /home/kitchen -m -s /bin/bash kitchen
-          RUN echo kitchen:kitchen | chpasswd
-          RUN echo 'kitchen ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
+          RUN echo #{username}:#{password} | chpasswd
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
         eos
         [from, platform, base].join("\n")
       end
