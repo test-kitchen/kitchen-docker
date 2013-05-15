@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['portertech@gmail.com']
   spec.description   = %q{A Test Kitchen Driver for Docker}
   spec.summary       = spec.description
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/portertech/kitchen-docker'
   spec.license       = 'Apache 2.0'
 
   spec.files         = `git ls-files`.split($/)
