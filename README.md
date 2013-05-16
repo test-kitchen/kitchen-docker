@@ -6,6 +6,10 @@ A Test Kitchen Driver for Docker.
 
 * [Docker][docker_getting_started]
 
+## <a name="issues"></a> Known Issues
+
+* Upstart is neutered due to [this issue][docker_upstart_issue].
+
 ## <a name="installation"></a> Installation and Setup
 
 Please read the [Driver usage][driver_usage] page for more details.
@@ -74,6 +78,7 @@ Apache 2.0 (see [LICENSE][license])
 [license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/portertech/kitchen-docker
 [docker_getting_started]: http://www.docker.io/gettingstarted/
+[docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
 [driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
