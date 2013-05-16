@@ -51,7 +51,7 @@ module Kitchen
       end
 
       def destroy(state)
-        kill_container(state) if state[:container_id]
+        rm_container(state) if state[:container_id]
         rm_image(state) if state[:image_id]
       end
 
@@ -141,9 +141,9 @@ module Kitchen
         ssh(ssh_args, 'echo "127.0.0.1 `hostname`" | sudo tee -a /etc/hosts')
       end
 
-      def kill_container(state)
+      def rm_container(state)
         container_id = state[:container_id]
-        run_command("docker kill #{container_id}")
+        run_command("docker rm #{container_id}")
       end
 
       def rm_image(state)
