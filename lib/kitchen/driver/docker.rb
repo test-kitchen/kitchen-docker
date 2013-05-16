@@ -115,7 +115,11 @@ module Kitchen
 
       def run_container(state)
         image_id = state[:image_id]
-        cmd = "docker run -d #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+        cmd = "docker run -d"
+        Array(config[:forward]).each do |port|
+          cmd << " -p #{port}"
+        end
+        cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
         output = run_command(cmd)
         parse_container_id(output)
       end
