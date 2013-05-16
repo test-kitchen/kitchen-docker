@@ -17,7 +17,7 @@ Please read the [Driver usage][driver_usage] page for more details.
 The Docker image to use as the base for the suite containers. You can find
 images using the [Docker Index][docker_index].
 
-The default value is `ubuntu` ([image][docker_default_image]).
+The default value is `base`, an official Ubuntu [image][docker_default_image].
 
 ### <a name="config-platform"></a> platform
 
@@ -75,6 +75,6 @@ Apache 2.0 (see [LICENSE][license])
 [repo]:                   https://github.com/portertech/kitchen-docker
 [docker_getting_started]: http://www.docker.io/gettingstarted/
 [docker_index]:           https://index.docker.io/
-[docker_default_image]:   https://index.docker.io/_/ubuntu/
+[docker_default_image]:   https://index.docker.io/_/base/
 [driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/

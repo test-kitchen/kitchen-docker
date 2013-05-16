@@ -28,7 +28,7 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :image,                'ubuntu'
+      default_config :image,                'base'
       default_config :platform,             'ubuntu'
       default_config :port,                 '22'
       default_config :username,             'kitchen'
