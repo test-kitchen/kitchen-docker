@@ -14,6 +14,24 @@ A Test Kitchen Driver for Docker.
 
 Please read the [Driver usage][driver_usage] page for more details.
 
+Example `.kitchen.local.yml`:
+
+```
+---
+driver_plugin: docker
+
+platforms:
+- name: ubuntu
+  run_list:
+  - recipe[apt]
+- name: centos
+  driver_config:
+    image: "centos"
+    platform: "rhel"
+  run_list:
+  - recipe[yum]
+```
+
 ## <a name="config"></a> Configuration
 
 ### <a name="config-image"></a> image
