@@ -2,6 +2,7 @@
 #
 # Author:: Sean Porter (<portertech@gmail.com>)
 # Author:: AJ Christensen (<aj@junglist.gen.nz>)
+# Author:: Tim Dysinger (<tim@dysinger.net>)
 #
 # Copyright (C) 2013, Sean Porter
 #
