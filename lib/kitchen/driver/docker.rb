@@ -92,9 +92,8 @@ module Kitchen
       end
 
       def parse_image_id(output)
-        output.each_line do |line|
-          return line.split(/\s+/).last if line =~ /image id/i
-        end
+        last_line = output.each_line.to_a.last
+        return last_line.split(/\s+/).last if last_line =~ /^\=\=\=\>/
         raise ActionFailed,
         'Could not parse Docker build output for image ID'
       end
