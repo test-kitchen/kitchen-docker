@@ -128,7 +128,7 @@ module Kitchen
 
       def parse_container_ip(output)
         begin
-          info = JSON.parse(output)
+          info = Array(JSON.parse(output)).first
           info['NetworkSettings']['IpAddress']
         rescue
           raise ActionFailed,
