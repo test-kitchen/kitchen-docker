@@ -129,7 +129,8 @@ module Kitchen
       def parse_container_ip(output)
         begin
           info = Array(JSON.parse(output)).first
-          info['NetworkSettings']['IpAddress']
+          settings = info['NetworkSettings']
+          settings['IpAddress'] || settings['IPAddress']
         rescue
           raise ActionFailed,
           'Could not parse Docker inspect output for container IP address'
