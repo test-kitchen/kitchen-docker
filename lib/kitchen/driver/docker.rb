@@ -150,6 +150,7 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
+        run_command("docker stop #{container_id}")
         run_command("docker rm #{container_id}")
       end
 
