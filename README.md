@@ -69,19 +69,19 @@ The default value is `true`.
 
 ### <a name="config-forward"></a> forward
 
-Suite container port(s) to forward to the host machine. You cannot
-specify the host port in the mappings, Docker does this for you.
+Suite container port(s) to forward to the host machine. You may specify
+the host (public) port in the mappings, if not, Docker chooses for you.
 
 Examples:
 
 ```
-forward: 8080
+forward: 80
 ```
 
 ```
 forward:
-- 22
-- 80
+- 22:2222
+- 80:8080
 ```
 
 ## <a name="development"></a> Development
