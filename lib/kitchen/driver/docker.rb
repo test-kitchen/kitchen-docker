@@ -34,6 +34,7 @@ module Kitchen
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
+      default_config :remove_images,        false
 
       def verify_dependencies
         run_command('docker > /dev/null', :quiet => true)
@@ -52,7 +53,9 @@ module Kitchen
 
       def destroy(state)
         rm_container(state) if state[:container_id]
-        rm_image(state) if state[:image_id]
+        if config[:remove_images] && state[:image_id]
+          rm_image(state)
+        end
       end
 
       protected
