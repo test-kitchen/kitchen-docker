@@ -35,10 +35,10 @@ module Kitchen
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
-      default_config :docker_path,          'docker'
+      default_config :docker_bin,          'docker'
 
       def verify_dependencies
-        run_command("#{config['docker_path']} > /dev/null", :quiet => true)
+        run_command("#{config['docker_bin']} > /dev/null", :quiet => true)
         rescue
           raise UserError,
           'You must first install Docker http://www.docker.io/gettingstarted/'
@@ -106,7 +106,7 @@ module Kitchen
       end
 
       def build_image(state)
-        output = run_command("#{config[:docker_path]} build -", :input => dockerfile)
+        output = run_command("#{config[:docker_bin]} build -", :input => dockerfile)
         parse_image_id(output)
       end
 
@@ -121,7 +121,7 @@ module Kitchen
 
       def run_container(state)
         image_id = state[:image_id]
-        cmd = "#{config[:docker_path]} run -d"
+        cmd = "#{config[:docker_bin]} run -d"
         Array(config[:forward]).each do |port|
           cmd << " -p #{port}"
         end
@@ -143,7 +143,7 @@ module Kitchen
 
       def container_address(state)
         container_id = state[:container_id]
-        output = run_command("#{config[:docker_path]} inspect #{container_id}")
+        output = run_command("#{config[:docker_bin]} inspect #{container_id}")
         parse_container_ip(output)
       end
 
@@ -154,13 +154,13 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        run_command("#{config[:docker_path]} stop #{container_id}")
-        run_command("#{config[:docker_path]} rm #{container_id}")
+        run_command("#{config[:docker_bin]} stop #{container_id}")
+        run_command("#{config[:docker_bin]} rm #{container_id}")
       end
 
       def rm_image(state)
         image_id = state[:image_id]
-        run_command("#{config[:docker_path]} rmi #{image_id}")
+        run_command("#{config[:docker_bin]} rmi #{image_id}")
       end
     end
   end

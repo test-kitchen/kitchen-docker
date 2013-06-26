@@ -65,7 +65,7 @@ installed. There are several different behaviors available:
 
 The default value is `true`.
 
-### docker_path
+### docker_bin
 
 Used to set the path to the docker binary on your system. Defaults to `docker`
 
