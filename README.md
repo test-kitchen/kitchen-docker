@@ -1,18 +1,16 @@
-# <a name="title"></a> Kitchen::Docker
+# Kitchen::Docker
 
 A Test Kitchen Driver for Docker.
 
-## <a name="requirements"></a> Requirements
+## Requirements
 
 * [Docker][docker_getting_started]
 
-## <a name="issues"></a> Known Issues
+## Known Issues
 
 * Upstart is neutered due to [this issue][docker_upstart_issue].
 
-## <a name="installation"></a> Installation and Setup
-
-Please read the [Driver usage][driver_usage] page for more details.
+## Installation and Setup
 
 Example `.kitchen.local.yml`:
 
@@ -32,16 +30,16 @@ platforms:
   - recipe[yum]
 ```
 
-## <a name="config"></a> Configuration
+## Configuration
 
-### <a name="config-image"></a> image
+### image
 
 The Docker image to use as the base for the suite containers. You can find
 images using the [Docker Index][docker_index].
 
 The default value is `base`, an official Ubuntu [image][docker_default_image].
 
-### <a name="config-platform"></a> platform
+### platform
 
 The platform of the chosen image. This is used to properly bootstrap the
 suite container for Test Kitchen. Kitchen Docker currently supports:
@@ -51,7 +49,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 
 The default value is `ubuntu`.
 
-### <a name="config-require-chef-omnibus"></a> require\_chef\_omnibus
+### require\_chef\_omnibus
 
 Determines whether or not a Chef [Omnibus package][chef_omnibus_dl] will be
 installed. There are several different behaviors available:
@@ -67,7 +65,11 @@ installed. There are several different behaviors available:
 
 The default value is `true`.
 
-### <a name="config-forward"></a> forward
+### docker_bin
+
+Used to set the path to the docker binary on your system. Defaults to `docker`
+
+### forward
 
 Suite container port(s) to forward to the host machine. You may specify
 the host (public) port in the mappings, if not, Docker chooses for you.
@@ -84,7 +86,7 @@ forward:
 - 80:8080
 ```
 
-## <a name="development"></a> Development
+## Development
 
 * Source hosted at [GitHub][repo]
 * Report issues/questions/feature requests on [GitHub Issues][issues]
@@ -99,11 +101,11 @@ example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-## <a name="authors"></a> Authors
+## Authors
 
 Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
 
-## <a name="license"></a> License
+## License
 
 Apache 2.0 (see [LICENSE][license])
 
@@ -116,5 +118,4 @@ Apache 2.0 (see [LICENSE][license])
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
-[driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
