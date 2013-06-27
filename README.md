@@ -1,16 +1,16 @@
-# <a name="title"></a> Kitchen::Docker
+# Kitchen::Docker
 
 A Test Kitchen Driver for Docker.
 
-## <a name="requirements"></a> Requirements
+## Requirements
 
 * [Docker][docker_getting_started]
 
-## <a name="issues"></a> Known Issues
+## Known Issues
 
 * Upstart is neutered due to [this issue][docker_upstart_issue].
 
-## <a name="installation"></a> Installation and Setup
+## Installation and Setup
 
 Please read the [Driver usage][driver_usage] page for more details.
 
@@ -32,16 +32,16 @@ platforms:
   - recipe[yum]
 ```
 
-## <a name="config"></a> Configuration
+## Configuration
 
-### <a name="config-image"></a> image
+### image
 
 The Docker image to use as the base for the suite containers. You can find
 images using the [Docker Index][docker_index].
 
 The default value is `base`, an official Ubuntu [image][docker_default_image].
 
-### <a name="config-platform"></a> platform
+### platform
 
 The platform of the chosen image. This is used to properly bootstrap the
 suite container for Test Kitchen. Kitchen Docker currently supports:
@@ -51,7 +51,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 
 The default value is `ubuntu`.
 
-### <a name="config-require-chef-omnibus"></a> require\_chef\_omnibus
+### require\_chef\_omnibus
 
 Determines whether or not a Chef [Omnibus package][chef_omnibus_dl] will be
 installed. There are several different behaviors available:
@@ -67,7 +67,14 @@ installed. There are several different behaviors available:
 
 The default value is `true`.
 
-### <a name="config-forward"></a> forward
+### memory
+
+Sets the memory limit for the container. The value must be set in bytes.
+If not set it defaults to dockers default settings.
+
+default value is `nil`.
+
+### forward
 
 Suite container port(s) to forward to the host machine. You may specify
 the host (public) port in the mappings, if not, Docker chooses for you.
@@ -84,7 +91,7 @@ forward:
 - 80:8080
 ```
 
-## <a name="development"></a> Development
+## Development
 
 * Source hosted at [GitHub][repo]
 * Report issues/questions/feature requests on [GitHub Issues][issues]
@@ -99,11 +106,11 @@ example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-## <a name="authors"></a> Authors
+## Authors
 
 Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
 
-## <a name="license"></a> License
+## License
 
 Apache 2.0 (see [LICENSE][license])
 
