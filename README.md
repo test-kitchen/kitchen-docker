@@ -67,6 +67,12 @@ installed. There are several different behaviors available:
 
 The default value is `true`.
 
+### remove_images
+
+This determines if images are automatically removed after a run.
+
+The default value is `false`.
+
 ### memory
 
 Sets the memory limit for the container. The value must be set in bytes.
