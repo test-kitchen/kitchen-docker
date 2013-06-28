@@ -70,9 +70,46 @@ The default value is `true`.
 ### memory
 
 Sets the memory limit for the container. The value must be set in bytes.
-If not set it defaults to dockers default settings.
+If not, set it defaults to dockers default settings. You can read more about 
+`memory.limit_in_bytes` [here][memory_limit_in_bytes].
 
-default value is `nil`.
+### cpu
+
+Sets the cpu shares (relative weight). If not set, it defaults to dockers
+default settings. You can read more about cpu.shares [here][cpu_shares].
+
+### volume
+
+Adds a data volume to your container.
+
+Examples:
+
+```
+volume: /ftp
+```
+
+```
+volume:
+- /ftp
+- /srv
+```
+
+## dns
+
+Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
+dockers defaults.
+
+Examples:
+
+```
+dns: 8.8.8.8
+```
+
+```
+dns:
+- 8.8.8.8
+- 8.8.4.4
+```
 
 ### forward
 
@@ -125,3 +162,5 @@ Apache 2.0 (see [LICENSE][license])
 [docker_default_image]:   https://index.docker.io/_/base/
 [driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
+[cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
+[memory_limit_in_bytes]:  https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
