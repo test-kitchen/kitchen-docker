@@ -32,6 +32,9 @@ module Kitchen
       default_config :platform,             'ubuntu'
       default_config :port,                 '22'
       default_config :memory,               nil
+      default_config :cpu,                  nil
+      default_config :dns,                  []
+      default_config :volume,               []
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
@@ -119,14 +122,19 @@ module Kitchen
         container_id
       end
 
-      def run_container(state)
-        image_id = state[:image_id]
-        cmd = "docker run -d"
-        Array(config[:forward]).each do |port|
-          cmd << " -p #{port}"
-        end
+      def build_run_command(image_id)
+        cmd = 'docker run -d'
+        Array(config[:foward]).each {|port| cmd << " -p #{port}"}
+        Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
+        Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         cmd << " -m #{config[:memory]}" if config[:memory]
+        cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+        cmd
+      end
+
+      def run_container(state)
+        cmd = build_run_command(state[:image_id])
         output = run_command(cmd)
         parse_container_id(output)
       end
