@@ -118,6 +118,24 @@ dns:
 - 8.8.4.4
 ```
 
+### bind
+
+Binds a local directory to the container. Should look like 
+`/local/path:/container/path`.
+
+Examples:
+
+```
+bind: /home/user:/home/user
+```
+
+```
+bind:
+- /home/user/code/example.com:/srv/www/example.com
+- /home/user/code/foobar.com:/srv/www/foobar.com
+```
+
+
 ### forward
 
 Suite container port(s) to forward to the host machine. You may specify
