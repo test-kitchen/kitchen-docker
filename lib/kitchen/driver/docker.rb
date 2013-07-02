@@ -35,6 +35,7 @@ module Kitchen
       default_config :cpu,                  nil
       default_config :dns,                  []
       default_config :volume,               []
+      default_config :bind,                 []
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
@@ -127,6 +128,7 @@ module Kitchen
         Array(config[:foward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
+        Array(config[:bind]).each {|bind| cmd << " -b #{bind}"}
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
