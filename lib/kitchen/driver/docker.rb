@@ -18,6 +18,7 @@
 # limitations under the License.
 
 require 'kitchen'
+require 'json'
 
 module Kitchen
 
@@ -141,7 +142,7 @@ module Kitchen
 
       def parse_container_ip(output)
         begin
-          info = Array(JSON.parse(output)).first
+          info = Array(::JSON.parse(output)).first
           settings = info['NetworkSettings']
           settings['IpAddress'] || settings['IPAddress']
         rescue
