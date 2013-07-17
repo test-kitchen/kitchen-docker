@@ -32,10 +32,6 @@ module Kitchen
       default_config :image,                'base'
       default_config :platform,             'ubuntu'
       default_config :port,                 '22'
-      default_config :memory,               nil
-      default_config :cpu,                  nil
-      default_config :dns,                  []
-      default_config :volume,               []
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true

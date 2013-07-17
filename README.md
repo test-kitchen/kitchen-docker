@@ -77,7 +77,7 @@ The default value is `false`.
 ### memory
 
 Sets the memory limit for the container. The value must be set in bytes.
-If not, set it defaults to dockers default settings. You can read more about 
+If not, set it defaults to dockers default settings. You can read more about
 `memory.limit_in_bytes` [here][memory_limit_in_bytes].
 
 ### cpu
