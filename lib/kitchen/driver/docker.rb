@@ -92,7 +92,11 @@ module Kitchen
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
         eos
-        [from, platform, base].join("\n")
+        custom = ''
+        Array(config[:provision_command]).each do |cmd|
+          custom << "RUN #{cmd}\n"
+        end
+        [from, platform, base, custom].join("\n")
       end
 
       def parse_image_id(output)
