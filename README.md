@@ -109,7 +109,7 @@ default settings. You can read more about cpu.shares [here][cpu_shares].
 
 ### volume
 
-Adds a data volume(s) to your container.
+Adds a data volume(s) to the suite container.
 
 Examples:
 
