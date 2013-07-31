@@ -125,7 +125,7 @@ module Kitchen
 
       def build_run_command(image_id)
         cmd = 'docker run -d'
-        Array(config[:foward]).each {|port| cmd << " -p #{port}"}
+        Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         cmd << " -m #{config[:memory]}" if config[:memory]
