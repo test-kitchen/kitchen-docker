@@ -36,6 +36,7 @@ module Kitchen
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
+      default_config :use_sudo,             true
 
       def verify_dependencies
         run_command('docker > /dev/null', :quiet => true)
@@ -67,9 +68,9 @@ module Kitchen
         when 'debian', 'ubuntu'
           <<-eos
             ENV DEBIAN_FRONTEND noninteractive
+            RUN dpkg-divert --local --rename --add /sbin/initctl
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
-            RUN dpkg-divert --local --rename --add /sbin/initctl
             RUN ln -s /bin/true /sbin/initctl
           eos
         when 'rhel', 'centos'
@@ -87,7 +88,6 @@ module Kitchen
         password = config[:password]
         base = <<-eos
           RUN mkdir -p /var/run/sshd
-          RUN echo '127.0.0.1 localhost.localdomain localhost' >> /etc/hosts
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
