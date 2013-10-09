@@ -159,7 +159,6 @@ module Kitchen
 
       def ensure_fqdn(state)
         ssh_args = build_ssh_args(state)
-        ssh(ssh_args, 'echo "127.0.0.1 `hostname`" | sudo tee -a /etc/hosts')
       end
 
       def rm_container(state)
