@@ -32,6 +32,33 @@ platforms:
   - recipe[yum]
 ```
 
+## Default Configuration
+
+This driver can determine an image and platform type for a select number of
+platforms. Currently, the following platform names are supported:
+
+```
+---
+platforms:
+- name: ubuntu-12.04
+- name: centos-6.4
+```
+
+This will effectively generate a configuration similar to:
+
+```
+---
+platforms:
+- name: ubuntu-12.04
+  driver_config:
+    image: ubuntu:12.04
+    platform: ubuntu
+- name: centos-6.4
+  driver_config:
+    image: centos:6.4
+    platform: centos
+```
+
 ## Configuration
 
 ### image
@@ -39,7 +66,10 @@ platforms:
 The Docker image to use as the base for the suite containers. You can find
 images using the [Docker Index][docker_index].
 
-The default value is `base`, an official Ubuntu [image][docker_default_image].
+The default will be determined by the Platform name, if a default exists
+(see the Default Configuration section for more details). If a default
+cannot be computed, then the default value is `base`, an official Ubuntu
+[image][docker_default_image].
 
 ### platform
 
@@ -49,7 +79,9 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 * `debian` or `ubuntu`
 * `rhel` or `centos`
 
-The default value is `ubuntu`.
+The default will be determined by the Platform name, if a default exists
+(see the Default Configuration section for more details). If a default
+cannot be computed, then the default value is `ubuntu`.
 
 ### require\_chef\_omnibus
 

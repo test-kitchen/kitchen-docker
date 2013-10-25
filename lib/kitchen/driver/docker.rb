@@ -29,14 +29,18 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :image,                'base'
-      default_config :platform,             'ubuntu'
       default_config :port,                 '22'
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
       default_config :use_sudo,             true
+      default_config :image do |driver|
+        driver.default_image
+      end
+      default_config :platform do |driver|
+        driver.default_platform
+      end
 
       def verify_dependencies
         run_command('docker > /dev/null', :quiet => true)
@@ -57,6 +61,21 @@ module Kitchen
         if config[:remove_images] && state[:image_id]
           rm_image(state)
         end
+      end
+
+      def default_image
+        case instance.platform.name
+        when 'ubuntu-12.04'
+          'ubuntu:12.04'
+        when 'centos-6.4'
+          'centos:6.4'
+        else
+          'base'
+        end
+      end
+
+      def default_platform
+        instance.platform.name.split('-').first || 'ubuntu'
       end
 
       protected
