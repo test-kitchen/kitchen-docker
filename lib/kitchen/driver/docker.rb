@@ -1,8 +1,5 @@
 # -*- encoding: utf-8 -*-
 #
-# Author:: Sean Porter (<portertech@gmail.com>)
-# Author:: AJ Christensen (<aj@junglist.gen.nz>)
-#
 # Copyright (C) 2013, Sean Porter
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
