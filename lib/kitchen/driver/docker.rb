@@ -49,6 +49,15 @@ module Kitchen
           'You must first install Docker http://www.docker.io/gettingstarted/'
       end
 
+      def default_image
+        platform, release = instance.platform.name.split('-')
+        release ? [platform, release].join(':') : 'base'
+      end
+
+      def default_platform
+        instance.platform.name.split('-').first || 'ubuntu'
+      end
+
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
@@ -61,21 +70,6 @@ module Kitchen
         if config[:remove_images] && state[:image_id]
           rm_image(state)
         end
-      end
-
-      def default_image
-        case instance.platform.name
-        when 'ubuntu-12.04'
-          'ubuntu:12.04'
-        when 'centos-6.4'
-          'centos:6.4'
-        else
-          'base'
-        end
-      end
-
-      def default_platform
-        instance.platform.name.split('-').first || 'ubuntu'
       end
 
       protected
