@@ -78,7 +78,7 @@ module Kitchen
           <<-eos
             ENV DEBIAN_FRONTEND noninteractive
             RUN dpkg-divert --local --rename --add /sbin/initctl
-            RUN ln -s /bin/true /sbin/initctl
+            RUN ln -sf /bin/true /sbin/initctl
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
