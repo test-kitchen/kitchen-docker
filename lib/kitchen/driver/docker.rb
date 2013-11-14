@@ -71,6 +71,12 @@ module Kitchen
 
       protected
 
+      def docker_command(cmd, options={})
+        docker = "docker"
+        docker << " -H #{config[:socket]}" if config[:socket]
+        run_command("#{docker} #{cmd}", options)
+      end
+
       def dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
@@ -119,7 +125,7 @@ module Kitchen
       end
 
       def build_image(state)
-        output = run_command("docker build -", :input => dockerfile)
+        output = docker_command("build -", :input => dockerfile)
         parse_image_id(output)
       end
 
@@ -133,7 +139,7 @@ module Kitchen
       end
 
       def build_run_command(image_id)
-        cmd = 'docker run -d'
+        cmd = "run -d"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
@@ -145,7 +151,7 @@ module Kitchen
 
       def run_container(state)
         cmd = build_run_command(state[:image_id])
-        output = run_command(cmd)
+        output = docker_command(cmd)
         parse_container_id(output)
       end
 
@@ -162,19 +168,19 @@ module Kitchen
 
       def container_address(state)
         container_id = state[:container_id]
-        output = run_command("docker inspect #{container_id}")
+        output = docker_command("inspect #{container_id}")
         parse_container_ip(output)
       end
 
       def rm_container(state)
         container_id = state[:container_id]
-        run_command("docker stop #{container_id}")
-        run_command("docker rm #{container_id}")
+        docker_command("stop #{container_id}")
+        docker_command("rm #{container_id}")
       end
 
       def rm_image(state)
         image_id = state[:image_id]
-        run_command("docker rmi #{image_id}")
+        docker_command("rmi #{image_id}")
       end
     end
   end
