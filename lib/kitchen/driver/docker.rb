@@ -28,7 +28,6 @@ module Kitchen
 
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
-      default_config :forward,              22
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
       default_config :use_sudo,             true
@@ -150,7 +149,7 @@ module Kitchen
       end
 
       def build_run_command(image_id)
-        cmd = "run -d"
+        cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
@@ -170,7 +169,8 @@ module Kitchen
         begin
           info = Array(::JSON.parse(output)).first
           ports = info['NetworkSettings']['Ports']
-          ports['22/tcp'].first['HostPort'].to_i
+          ssh_port = ports['22/tcp'].detect {|port| port['HostIp'] == '0.0.0.0'}
+          ssh_port['HostPort'].to_i
         rescue
           raise ActionFailed,
           'Could not parse Docker inspect output for container SSH port'
