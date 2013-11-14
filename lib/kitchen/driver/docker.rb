@@ -26,15 +26,17 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :port,                 '22'
       default_config :username,             'kitchen'
       default_config :password,             'kitchen'
+      default_config :forward,              22
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
       default_config :use_sudo,             true
+
       default_config :image do |driver|
         driver.default_image
       end
+
       default_config :platform do |driver|
         driver.default_platform
       end
@@ -58,8 +60,9 @@ module Kitchen
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = container_address(state) unless state[:hostname]
-        wait_for_sshd(state[:hostname])
+        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:port] = container_ssh_port(state)
+        wait_for_sshd(state[:hostname], :port => state[:port])
       end
 
       def destroy(state)
@@ -70,6 +73,14 @@ module Kitchen
       end
 
       protected
+
+      def socket_uri
+        URI.parse(config[:socket])
+      end
+
+      def remote_socket?
+        config[:socket] ? socket_uri.scheme == 'tcp' : false
+      end
 
       def docker_command(cmd, options={})
         docker = "docker"
@@ -155,21 +166,21 @@ module Kitchen
         parse_container_id(output)
       end
 
-      def parse_container_ip(output)
+      def parse_container_ssh_port(output)
         begin
           info = Array(::JSON.parse(output)).first
-          settings = info['NetworkSettings']
-          settings['IpAddress'] || settings['IPAddress']
+          ports = info['NetworkSettings']['Ports']
+          ports['22/tcp'].first['HostPort'].to_i
         rescue
           raise ActionFailed,
-          'Could not parse Docker inspect output for container IP address'
+          'Could not parse Docker inspect output for container SSH port'
         end
       end
 
-      def container_address(state)
+      def container_ssh_port(state)
         container_id = state[:container_id]
         output = docker_command("inspect #{container_id}")
-        parse_container_ip(output)
+        parse_container_ssh_port(output)
       end
 
       def rm_container(state)
