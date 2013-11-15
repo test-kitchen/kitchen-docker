@@ -121,7 +121,11 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+	remote_dir = ''
+	if (config[:remote_dir]) do 
+		remote_dir = "ADD . #{config[:remote_dir]"
+	end
+        [from, platform, base, custom, remote_dir].join("\n")
       end
 
       def parse_image_id(output)
