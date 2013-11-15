@@ -124,7 +124,7 @@ Custom command(s) to be run when provisioning the base for the suite containers.
 Examples:
 
 ```
-  provision_command: "curl -L https://www.opscode.com/chef/install.sh | sudo bash"
+  provision_command: "curl -L https://www.opscode.com/chef/install.sh | bash"
 ```
 
 ```
@@ -135,7 +135,7 @@ Examples:
 
 ```
 driver_config:
-  provision_command: "curl -L https://www.opscode.com/chef/install.sh | sudo bash"
+  provision_command: "curl -L https://www.opscode.com/chef/install.sh | bash"
   require_chef_omnibus: false
 ```
 
