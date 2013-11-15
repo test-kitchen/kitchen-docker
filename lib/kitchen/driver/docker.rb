@@ -141,7 +141,7 @@ module Kitchen
 
       def parse_container_id(output)
         container_id = output.chomp
-        unless container_id.size == 12
+        unless [12, 64].include?(container_id.size)
           raise ActionFailed,
           'Could not parse Docker run output for container ID'
         end
