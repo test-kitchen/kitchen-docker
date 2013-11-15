@@ -61,6 +61,24 @@ platforms:
 
 ## Configuration
 
+### socket
+
+The Docker daemon socket to use. By default, Docker it will listen on
+`unix:///var/run/docker.sock`, and no configuration here is required. If
+Docker is binding to another host/port or Unix socket, you will need to set
+this option. If a TCP socket is set, its host will be used for SSH access
+to containers.
+
+Examples:
+
+```
+  socket: unix:///tmp/docker.sock
+```
+
+```
+  socket: tcp://docker.example.com:4242
+```
+
 ### image
 
 The Docker image to use as the base for the suite containers. You can find
@@ -146,13 +164,13 @@ Adds a data volume(s) to the suite container.
 Examples:
 
 ```
-volume: /ftp
+  volume: /ftp
 ```
 
 ```
-volume:
-- /ftp
-- /srv
+  volume:
+  - /ftp
+  - /srv
 ```
 
 ## dns
@@ -163,13 +181,13 @@ dockers defaults.
 Examples:
 
 ```
-dns: 8.8.8.8
+  dns: 8.8.8.8
 ```
 
 ```
-dns:
-- 8.8.8.8
-- 8.8.4.4
+  dns:
+  - 8.8.8.8
+  - 8.8.4.4
 ```
 
 ### forward
@@ -180,13 +198,13 @@ the host (public) port in the mappings, if not, Docker chooses for you.
 Examples:
 
 ```
-forward: 80
+  forward: 80
 ```
 
 ```
-forward:
-- 22:2222
-- 80:8080
+  forward:
+  - 22:2222
+  - 80:8080
 ```
 
 ## Development
