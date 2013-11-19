@@ -30,8 +30,8 @@ module Kitchen
       default_config :password,             'kitchen'
       default_config :require_chef_omnibus, true
       default_config :remove_images,        false
-      default_config :use_sudo,             true
       default_config :privileged,           false
+      default_config :use_sudo,             true
 
       default_config :image do |driver|
         driver.default_image
@@ -151,13 +151,13 @@ module Kitchen
 
       def build_run_command(image_id)
         cmd = "run -d -p 22"
-        cmd << " -privileged=true" if config[:privileged]
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
+        cmd << " -privileged" if config[:privileged]
         cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
         cmd
       end

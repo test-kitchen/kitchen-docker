@@ -63,11 +63,11 @@ platforms:
 
 ### socket
 
-The Docker daemon socket to use. By default, Docker it will listen on
+The Docker daemon socket to use. By default, Docker will listen on
 `unix:///var/run/docker.sock`, and no configuration here is required. If
 Docker is binding to another host/port or Unix socket, you will need to set
 this option. If a TCP socket is set, its host will be used for SSH access
-to containers.
+to suite containers.
 
 Examples:
 
@@ -148,14 +148,13 @@ The default value is `false`.
 
 ### memory
 
-Sets the memory limit for the container. The value must be set in bytes.
-If not, set it defaults to dockers default settings. You can read more about
-`memory.limit_in_bytes` [here][memory_limit_in_bytes].
+Sets the memory limit for the suite container in bytes. Otherwise use Dockers
+default. You can read more about `memory.limit_in_bytes` [here][memory_limit].
 
 ### cpu
 
-Sets the cpu shares (relative weight). If not set, it defaults to dockers
-default settings. You can read more about cpu.shares [here][cpu_shares].
+Sets the CPU shares (relative weight) for the suite container. Otherwise use
+Dockers defaults. You can read more about cpu.shares [here][cpu_shares].
 
 ### volume
 
@@ -176,7 +175,7 @@ Examples:
 ## dns
 
 Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
-dockers defaults.
+Dockers defaults.
 
 Examples:
 
@@ -192,7 +191,7 @@ Examples:
 
 ### forward
 
-Set container port(s) to forward to the host machine. You may specify
+Set suite container port(s) to forward to the host machine. You may specify
 the host (public) port in the mappings, if not, Docker chooses for you.
 
 Examples:
@@ -209,21 +208,26 @@ Examples:
 
 ### hostname
 
-Set the hostname of the container.
-This uses the -h hostname param from Docker as of v0.6.0
+Set the suite container hostname. Otherwise use Dockers default.
 
 Examples:
 
 ```
-  hostname: mah-host.wicked-domain.com
+  hostname: foobar.local
 ```
 
-## privileged
+### privileged
 
-By default docker containers run as unprivileged. This option sets the
-`-privileged=true` option for docker when the container is started. This
-allows certain functionality inside the container which is not otherwise
-permitted.
+Run the suite container in privileged mode. This allows certain functionality
+inside the Docker container which is not otherwise permitted.
+
+The default value is `false`.
+
+Examples:
+
+```
+  privileged: true
+```
 
 ## Development
 
@@ -260,4 +264,4 @@ Apache 2.0 (see [LICENSE][license])
 [driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
-[memory_limit_in_bytes]:  https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
+[memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
