@@ -153,6 +153,7 @@ module Kitchen
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
+        cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
