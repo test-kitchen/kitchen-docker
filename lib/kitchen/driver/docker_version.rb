@@ -19,6 +19,6 @@ module Kitchen
   module Driver
 
     # Version string for Docker Kitchen driver
-    DOCKER_VERSION = "0.9.0"
+    DOCKER_VERSION = "0.10.0"
   end
 end
