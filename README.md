@@ -218,7 +218,7 @@ Examples:
   hostname: mah-host.wicked-domain.com
 ```
 
-## privileged_mode
+## privileged
 
 By default docker containers run as unprivileged. This option sets the
 `-privileged=true` option for docker when the container is started. This
