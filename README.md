@@ -192,7 +192,7 @@ Examples:
 
 ### forward
 
-Suite container port(s) to forward to the host machine. You may specify
+Set container port(s) to forward to the host machine. You may specify
 the host (public) port in the mappings, if not, Docker chooses for you.
 
 Examples:
@@ -205,6 +205,17 @@ Examples:
   forward:
   - 22:2222
   - 80:8080
+```
+
+### hostname
+
+Set the hostname of the container.
+This uses the -h hostname param from Docker as of v0.6.0
+
+Examples:
+
+```
+  hostname: mah-host.wicked-domain.com
 ```
 
 ## Development
