@@ -62,7 +62,6 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], :port => state[:port])
       end
 
       def destroy(state)
