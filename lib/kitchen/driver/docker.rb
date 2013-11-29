@@ -26,12 +26,15 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :username,             'kitchen'
-      default_config :password,             'kitchen'
-      default_config :require_chef_omnibus, true
-      default_config :remove_images,        false
-      default_config :privileged,           false
-      default_config :use_sudo,             true
+      default_config :socket,        nil
+      default_config :privileged,    false
+      default_config :remove_images, false
+      default_config :username,      'kitchen'
+      default_config :password,      'kitchen'
+
+      default_config :use_sudo do |driver|
+        !driver.remote_socket?
+      end
 
       default_config :image do |driver|
         driver.default_image
@@ -72,14 +75,14 @@ module Kitchen
         end
       end
 
+      def remote_socket?
+        config[:socket] ? socket_uri.scheme == 'tcp' : false
+      end
+
       protected
 
       def socket_uri
         URI.parse(config[:socket])
-      end
-
-      def remote_socket?
-        config[:socket] ? socket_uri.scheme == 'tcp' : false
       end
 
       def docker_command(cmd, options={})
