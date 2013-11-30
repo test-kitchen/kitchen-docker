@@ -56,7 +56,7 @@ module Kitchen
           }
           unless ::Docker.validate_version!
             raise UserError,
-            'The ruby client requires Docker v0.6.x, it is incompatible with your Docker server'
+            'The ruby client is incompatible with your Docker server'
           end
         else
           begin
