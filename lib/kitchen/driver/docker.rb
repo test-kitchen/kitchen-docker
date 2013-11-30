@@ -161,7 +161,7 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
-        cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+        cmd << " #{image_id} /sbin/init"
         cmd
       end
 
