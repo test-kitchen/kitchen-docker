@@ -29,9 +29,9 @@ module Kitchen
       default_config :socket,        nil
       default_config :privileged,    false
       default_config :remove_images, false
+      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
