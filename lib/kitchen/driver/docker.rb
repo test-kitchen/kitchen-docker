@@ -29,6 +29,7 @@ module Kitchen
       default_config :socket,        nil
       default_config :privileged,    false
       default_config :remove_images, false
+      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
 
@@ -161,7 +162,7 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
-        cmd << " #{image_id} /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+        cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
 
