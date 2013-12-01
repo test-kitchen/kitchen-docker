@@ -31,6 +31,7 @@ module Kitchen
       default_config :remove_images, false
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+      default_config :run_command,   '/sbin/init'
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -161,7 +162,7 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
-        cmd << " #{image_id} /sbin/init"
+        cmd << " #{image_id} #{config[:run_command]"
         cmd
       end
 
