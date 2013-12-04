@@ -204,7 +204,7 @@ module Kitchen
 
       def container_config(state)
         conf_hash = {
-          Cmd: ['/usr/sbin/sshd','-D','-o UseDNS=no','-o UsePAM=no'],
+          Cmd: config[:run_command].split,
           Image: state[:image_id],
           Volumes: {},
           AttachStdout: true,
