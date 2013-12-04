@@ -146,6 +146,24 @@ destroyed.
 
 The default value is `false`.
 
+### run_command
+
+This determines the run_command that starts the docker container. If this process
+is restarted during convergence, the container will need to be restarted before
+running the verify step.
+
+#### default
+```
+driver_config:
+  run_command: "/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"
+```
+
+#### alternative (compatible with docker >= 0.6.0)
+```
+driver_config:
+  run_command: "/sbin/init"
+```
+
 ### memory
 
 Sets the memory limit for the suite container in bytes. Otherwise use Dockers
