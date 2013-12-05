@@ -148,14 +148,13 @@ The default value is `false`.
 
 ### run_command
 
-This determines the run_command used to start the instance.
+Sets the command used to run the suite container.
 
-The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no`
+The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no`.
 
 Examples:
 
 ```
-driver_config:
   run_command: "/sbin/init"
 ```
 
