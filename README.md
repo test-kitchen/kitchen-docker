@@ -146,6 +146,19 @@ destroyed.
 
 The default value is `false`.
 
+### run_command
+
+This determines the run_command used to start the instance.
+
+The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no`
+
+Examples:
+
+```
+driver_config:
+  run_command: "/sbin/init"
+```
+
 ### memory
 
 Sets the memory limit for the suite container in bytes. Otherwise use Dockers
