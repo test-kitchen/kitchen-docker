@@ -26,8 +26,8 @@ platforms:
   - recipe[apt]
 - name: centos
   driver_config:
-    image: "centos"
-    platform: "rhel"
+    image: centos
+    platform: rhel
   run_list:
   - recipe[yum]
 ```
@@ -124,18 +124,18 @@ Custom command(s) to be run when provisioning the base for the suite containers.
 Examples:
 
 ```
-  provision_command: "curl -L https://www.opscode.com/chef/install.sh | bash"
+  provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
 ```
 
 ```
   provision_command:
-    - "apt-get install dnsutils"
-    - "apt-get install telnet"
+    - apt-get install dnsutils
+    - apt-get install telnet
 ```
 
 ```
 driver_config:
-  provision_command: "curl -L https://www.opscode.com/chef/install.sh | bash"
+  provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
   require_chef_omnibus: false
 ```
 
@@ -155,7 +155,7 @@ The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no`.
 Examples:
 
 ```
-  run_command: "/sbin/init"
+  run_command: /sbin/init
 ```
 
 ### memory
