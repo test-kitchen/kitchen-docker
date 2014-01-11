@@ -117,25 +117,6 @@ installed. There are several different behaviors available:
 
 The default value is `true`.
 
-### ruby\_client
-
-Determines whether to use the [Docker-api][docker_api_url] gem as your
-docker client. This allows test-kitchen to be run on a host which does
-not natively support Docker (eg. OSX, Windows?) to run tests on a remote
-docker node. Version compatibility with your version of Docker is tested
-at startup and will notify of incompatibilities. 
-
-Note that this option generally is not useful without also setting
-`socket: tcp://some-host:some-port`. 
-
-Examples:
-
-```
-  ruby_client: true
-```
-
-The default value is `false`
-
 ### provision\_command
 
 Custom command(s) to be run when provisioning the base for the suite containers.

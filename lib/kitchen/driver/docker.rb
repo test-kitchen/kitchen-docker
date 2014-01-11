@@ -33,7 +33,6 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
-      default_config :ruby_client,          false
       default_config :read_timeout,         300
 
       default_config :use_sudo do |driver|
@@ -49,22 +48,13 @@ module Kitchen
       end
 
       def verify_dependencies
-        if config[:ruby_client]
-          ::Docker.url = config[:socket] if config[:socket]
-          ::Docker.options = {
-            :read_timeout => config[:read_timeout]
-          }
-          unless ::Docker.validate_version!
-            raise UserError,
-            'The ruby client is incompatible with your Docker server'
-          end
-        else
-          begin
-            run_command('docker > /dev/null', :quiet => true)
-          rescue
-            raise UserError,
-            'You must first install Docker http://www.docker.io/gettingstarted/'
-          end
+        ::Docker.url = config[:socket] if config[:socket]
+        ::Docker.options = {
+          :read_timeout => config[:read_timeout]
+        }
+        unless ::Docker.validate_version!
+          raise UserError,
+          'The ruby client is incompatible with your Docker server'
         end
       end
 
@@ -105,12 +95,6 @@ module Kitchen
         URI.parse(config[:socket])
       end
 
-      def docker_command(cmd, options={})
-        docker = "docker"
-        docker << " -H #{config[:socket]}" if config[:socket]
-        run_command("#{docker} #{cmd}", options)
-      end
-
       def dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
@@ -148,24 +132,9 @@ module Kitchen
         [from, platform, base, custom].join("\n")
       end
 
-      def parse_image_id(output)
-        output.each_line do |line|
-          if line =~ /image id|build successful|successfully built/i
-            return line.split(/\s+/).last
-          end
-        end
-        raise ActionFailed,
-        'Could not parse Docker build output for image ID'
-      end
-
       def build_image(state)
-        if config[:ruby_client]
-          debug("Dockerfile (build_image):\n#{dockerfile}")
-          ::Docker::Image.build(dockerfile).id
-        else
-          output = docker_command("build -", :input => dockerfile)
-          parse_image_id(output)
-        end
+        debug("Dockerfile (build_image):\n#{dockerfile}")
+        ::Docker::Image.build(dockerfile).id
       end
 
       def get_container_by_id(state)
@@ -178,28 +147,6 @@ module Kitchen
         ::Docker::Image.all(:all => true).select { |i|
           /#{state[:image_id]}/ =~ i.id
         }.first
-      end
-
-      def parse_container_id(output)
-        container_id = output.chomp
-        unless [12, 64].include?(container_id.size)
-          raise ActionFailed,
-          'Could not parse Docker run output for container ID'
-        end
-        container_id
-      end
-
-      def build_run_command(image_id)
-        cmd = "run -d -p 22"
-        Array(config[:forward]).each {|port| cmd << " -p #{port}"}
-        Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
-        Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
-        cmd << " -h #{config[:hostname]}" if config[:hostname]
-        cmd << " -m #{config[:memory]}" if config[:memory]
-        cmd << " -c #{config[:cpu]}" if config[:cpu]
-        cmd << " -privileged" if config[:privileged]
-        cmd << " #{image_id} #{config[:run_command]}"
-        cmd
       end
 
       def container_config(state)
@@ -242,19 +189,13 @@ module Kitchen
       end
 
       def run_container(state)
-        if config[:ruby_client]
-          c_config = container_config(state)
-          container = ::Docker::Container.create(c_config)
-          debug("Container (run_container) Created: #{container.json.inspect}")
-          state[:container_id] = container.id
-          container.start(c_config)
-          debug("Container (run_container) Started: #{container.json.inspect}")
-          container.id
-        else
-          cmd = build_run_command(state[:image_id])
-          output = docker_command(cmd)
-          parse_container_id(output)
-        end
+        c_config = container_config(state)
+        container = ::Docker::Container.create(c_config)
+        debug("Container (run_container) Created: #{container.json.inspect}")
+        state[:container_id] = container.id
+        container.start(c_config)
+        debug("Container (run_container) Started: #{container.json.inspect}")
+        container.id
       end
 
       def parse_container_ssh_port(output)
@@ -270,32 +211,17 @@ module Kitchen
       end
 
       def container_ssh_port(state)
-        if config[:ruby_client]
-          container = get_container_by_id(state)
-          container.json['NetworkSettings']['Ports']['22/tcp'].first['HostPort']
-        else
-          output = docker_command("inspect #{state[:container_id]}")
-          parse_container_ssh_port(output)
-        end
+        container = get_container_by_id(state)
+        container.json['NetworkSettings']['Ports']['22/tcp'].first['HostPort']
       end
 
       def rm_container(state)
-        if config[:ruby_client]
-          get_container_by_id(state).stop
-          get_container_by_id(state).delete
-        else
-          container_id = state[:container_id]
-          docker_command("stop #{container_id}")
-          docker_command("rm #{container_id}")
-        end
+        get_container_by_id(state).stop
+        get_container_by_id(state).delete
       end
 
       def rm_image(state)
-        if config[:ruby_client]
-          get_image_by_id(state).remove
-        else
-          docker_command("rmi #{state[:image_id]}")
-        end
+        get_image_by_id(state).remove
       end
     end
   end
