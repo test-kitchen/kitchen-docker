@@ -47,6 +47,8 @@ module Kitchen
         driver.default_platform
       end
 
+      ::Docker.logger = ::Kitchen.logger
+
       def verify_dependencies
         ::Docker.url = config[:socket] if config[:socket]
         ::Docker.options = {
