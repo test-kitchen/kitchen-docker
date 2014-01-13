@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'test-kitchen', '>= 1.0.0.rc.2'
+  spec.add_dependency 'docker-api', '~> 1.7'
 
   spec.add_development_dependency 'bundler', '~> 1.3'
   spec.add_development_dependency 'rake'
