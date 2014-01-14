@@ -60,7 +60,7 @@ module Kitchen
 
       def default_image
         platform, release = instance.platform.name.split('-')
-        release ? [platform, release].join(':') : 'base'
+        release ? [platform, release].join(':') : "#{platform}:latest"
       end
 
       def default_platform
