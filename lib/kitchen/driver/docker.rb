@@ -54,7 +54,8 @@ module Kitchen
       end
 
       def default_platform
-        instance.platform.name.split('-').first || 'ubuntu'
+        platform, release = instance.platform.name.split('-')
+        release ? platform : 'ubuntu'
       end
 
       def create(state)
@@ -151,7 +152,9 @@ module Kitchen
       end
 
       def create_image(state)
-        ::Docker::Image.build(dockerfile, nil, @docker_connection).id
+        info("Fetching Docker base image '#{config[:image]}' and building...")
+        image = ::Docker::Image.build(dockerfile, nil, @docker_connection)
+        image.id
       end
 
       def create_container(state)
@@ -181,6 +184,7 @@ module Kitchen
       def destroy_container(state)
         container = docker_container(state)
         container.stop
+        container.wait
         container.delete
       end
 

@@ -19,3 +19,10 @@ desc "Run all quality tasks"
 task :quality => [:cane, :tailor, :stats]
 
 task :default => [:quality]
+
+begin
+  require 'kitchen/rake_tasks'
+  Kitchen::RakeTasks.new
+rescue LoadError
+  puts ">>>>> Kitchen gem not loaded, omitting tasks" unless ENV['CI']
+end
