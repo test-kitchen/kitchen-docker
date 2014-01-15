@@ -27,17 +27,13 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :socket,        nil
+      default_config :socket,        'unix:///var/run/docker.sock'
       default_config :privileged,    false
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
-      default_config :read_timeout,         300
-
-      default_config :use_sudo do |driver|
-        !driver.remote_socket?
-      end
+      default_config :read_timeout,  300
 
       default_config :image do |driver|
         driver.default_image
@@ -47,15 +43,9 @@ module Kitchen
         driver.default_platform
       end
 
-      def verify_dependencies
-        ::Docker.url = config[:socket] if config[:socket]
-        ::Docker.options = {
-          :read_timeout => config[:read_timeout]
-        }
-        unless ::Docker.validate_version!
-          raise UserError,
-          'The ruby client is incompatible with your Docker server'
-        end
+      def initialize(*args)
+        super(*args)
+        @docker_connection = ::Docker::Connection.new(config[:socket], :read_timeout => config[:read_timeout])
       end
 
       def default_image
@@ -68,31 +58,28 @@ module Kitchen
       end
 
       def create(state)
-        debug("State (create): #{state.inspect}")
-        debug("Config (create): #{config.inspect}")
-
-        state[:image_id] = build_image(state) unless state[:image_id]
-        state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:image_id] = create_image(state) unless state[:image_id]
+        state[:container_id] = create_container(state) unless state[:container_id]
+        state[:hostname] = container_ssh_host
         state[:port] = container_ssh_port(state)
         wait_for_sshd(state[:hostname], nil, :port => state[:port])
       end
 
       def destroy(state)
-        rm_container(state) if state[:container_id]
+        destroy_container(state) if state[:container_id]
         if config[:remove_images] && state[:image_id]
-          rm_image(state)
+          destroy_image(state)
         end
-      end
-
-      def remote_socket?
-        config[:socket] ? socket_uri.scheme == 'tcp' : false
       end
 
       protected
 
       def socket_uri
         URI.parse(config[:socket])
+      end
+
+      def remote_socket?
+        config[:socket] ? socket_uri.scheme == 'tcp' : false
       end
 
       def dockerfile
@@ -115,7 +102,7 @@ module Kitchen
           eos
         else
           raise ActionFailed,
-          "Unknown platform '#{config[:platform]}'"
+            "Unknown platform '#{config[:platform]}'"
         end
         username = config[:username]
         password = config[:password]
@@ -132,96 +119,74 @@ module Kitchen
         [from, platform, base, custom].join("\n")
       end
 
-      def build_image(state)
-        debug("Dockerfile (build_image):\n#{dockerfile}")
-        ::Docker::Image.build(dockerfile).id
-      end
-
-      def get_container_by_id(state)
-        ::Docker::Container.all(:all => true).select { |c|
-          /#{state[:container_id]}/ =~ c.id
-        }.first
-      end
-
-      def get_image_by_id(state)
-        ::Docker::Image.all(:all => true).select { |i|
-          /#{state[:image_id]}/ =~ i.id
-        }.first
-      end
-
       def container_config(state)
-        conf_hash = {
-          Cmd: config[:run_command].split,
-          Image: state[:image_id],
-          Volumes: {},
-          AttachStdout: true,
-          AttachStderr: true,
-          PortBindings: {},
-          Privileged: config[:privileged],
-          PublishAllPorts: false
+        data = {
+          :Cmd => config[:run_command].split,
+          :Image => state[:image_id],
+          :AttachStdout => true,
+          :AttachStderr => true,
+          :Privileged => config[:privileged],
+          :PublishAllPorts => false
         }
-
-        exposed_ports = []
-        exposed_ports << '22'
-        Array(config[:forward]).each { |port| exposed_ports << port.to_s }
-        Array(exposed_ports).each do |port|
-          if port.to_s.include? ':'
-            (hostport, guestport) = port.split(':')
-          else
-            hostport = ''
-            guestport = port.to_s
-          end
-          conf_hash[:PortBindings] ["#{guestport}/tcp"] = [{
-              HostIp: '',
-              HostPort: hostport
+        data[:CpuShares] = config[:cpu] if config[:cpu]
+        data[:Dns] = config[:dns] if config[:dns]
+        data[:Hostname] = config[:hostname] if config[:hostname]
+        data[:Memory] = config[:memory] if config[:memory]
+        forward = ['22'] + Array(config[:forward]).map { |mapping| mapping.to_s }
+        forward.compact!
+        data[:PortSpecs] = forward
+        data[:PortBindings] = forward.inject({}) do |bindings, mapping|
+          guest_port, host_port = mapping.split(':').reverse
+          bindings["#{guest_port}/tcp"] = [{
+            :HostIp => '',
+            :HostPort => host_port || ''
           }]
+          bindings
         end
-        conf_hash[:PortSpecs] = exposed_ports
-
-        conf_hash[:Dns] = config[:dns] if config[:dns]
-        Array(config[:volume]).each { |volume| conf_hash[:Volumes]["#{volume}"] = {} }
-        conf_hash[:Memory] = config[:memory] if config[:memory]
-        conf_hash[:CpuShares] = config[:cpu] if config[:cpu]
-        conf_hash[:Hostname] = config[:hostname] if config[:hostname]
-        debug("Container Config (container_config):\n#{conf_hash}")
-
-        conf_hash
+        data[:Volumes] = Array(config[:volume]).inject({}) do |volumes, volume|
+          volumes["#{volume}"] = {}
+          volumes
+        end
+        data
       end
 
-      def run_container(state)
-        c_config = container_config(state)
-        container = ::Docker::Container.create(c_config)
-        debug("Container (run_container) Created: #{container.json.inspect}")
-        state[:container_id] = container.id
-        container.start(c_config)
-        debug("Container (run_container) Started: #{container.json.inspect}")
+      def create_image(state)
+        ::Docker::Image.build(dockerfile, nil, @docker_connection).id
+      end
+
+      def create_container(state)
+        config_data = container_config(state)
+        container = ::Docker::Container.create(config_data, @docker_connection)
+        container.start(config_data)
         container.id
       end
 
-      def parse_container_ssh_port(output)
-        begin
-          info = Array(::JSON.parse(output)).first
-          ports = info['NetworkSettings']['Ports']
-          ssh_port = ports['22/tcp'].detect {|port| port['HostIp'] == '0.0.0.0'}
-          ssh_port['HostPort'].to_i
-        rescue
-          raise ActionFailed,
-          'Could not parse Docker inspect output for container SSH port'
-        end
+      def docker_image(state)
+        ::Docker::Image.get(state[:image_id], nil, @docker_connection)
+      end
+
+      def docker_container(state)
+        ::Docker::Container.get(state[:container_id], nil, @docker_connection)
+      end
+
+      def container_ssh_host
+        remote_socket? ? socket_uri.host : 'localhost'
       end
 
       def container_ssh_port(state)
-        container = get_container_by_id(state)
+        container = docker_container(state)
         container.json['NetworkSettings']['Ports']['22/tcp'].first['HostPort']
       end
 
-      def rm_container(state)
-        get_container_by_id(state).stop
-        get_container_by_id(state).delete
+      def destroy_container(state)
+        container = docker_container(state)
+        container.stop
+        container.delete
       end
 
-      def rm_image(state)
-        get_image_by_id(state).remove
+      def destroy_image(state)
+        image = docker_image(state)
+        image.remove
       end
     end
   end
