@@ -46,7 +46,7 @@ module Kitchen
       def initialize(*args)
         super(*args)
         @docker_connection = ::Docker::Connection.new(config[:socket], :read_timeout => config[:read_timeout])
-        if logger.debug?
+        if Kitchen.logger.debug?
           ::Docker.logger = Kitchen.logger
         end
       end
