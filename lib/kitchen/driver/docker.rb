@@ -147,10 +147,7 @@ module Kitchen
           }]
           bindings
         end
-        data[:Volumes] = Array(config[:volume]).inject({}) do |volumes, volume|
-          volumes["#{volume}"] = {}
-          volumes
-        end
+        data[:Volumes] = Hash[Array(config[:volume]).map { |volume| [volume, {}] }]
         data
       end
 
