@@ -96,6 +96,7 @@ module Kitchen
             RUN ln -sf /bin/true /sbin/initctl
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
+            RUN locale-gen en_US.UTF-8
           eos
         when 'rhel', 'centos'
           <<-eos
