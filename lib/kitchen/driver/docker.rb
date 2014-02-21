@@ -151,9 +151,12 @@ module Kitchen
         data
       end
 
-      def create_image(state)
+      def create_image(state, opts = {})
         info("Fetching Docker base image '#{config[:image]}' and building...")
-        image = ::Docker::Image.build(dockerfile, nil, @docker_connection)
+        opts[:rm] = config[:remove_images]
+        image = ::Docker::Image.build(dockerfile, opts, @docker_connection) do |chunk|
+          logger.info JSON.parse(chunk)["stream"].chomp!
+        end
         image.id
       end
 
