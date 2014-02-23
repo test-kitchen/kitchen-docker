@@ -155,7 +155,12 @@ module Kitchen
         if ::Kitchen.logger.debug?
           logger.debug chunk
         else
-          logger.info JSON.parse(chunk)["stream"].strip
+          parsed_chunk = JSON.parse(chunk)
+          parsed_chunk.each do |k, v|
+            if [ "stream", "status" ].include? k
+              logger.info parsed_chunk[k].strip
+            end
+          end
         end
       end
 
