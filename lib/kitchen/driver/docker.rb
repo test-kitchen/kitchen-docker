@@ -151,11 +151,19 @@ module Kitchen
         data
       end
 
+      def parse_log_chunk(chunk)
+        if ::Kitchen.logger.debug?
+          logger.debug chunk
+        else
+          logger.info JSON.parse(chunk)["stream"].strip
+        end
+      end
+
       def create_image(state, opts = {})
         info("Fetching Docker base image '#{config[:image]}' and building...")
         opts[:rm] = config[:remove_images]
         image = ::Docker::Image.build(dockerfile, opts, @docker_connection) do |chunk|
-          logger.info JSON.parse(chunk)["stream"].chomp!
+          parse_log_chunk(chunk)
         end
         image.id
       end
