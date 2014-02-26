@@ -34,6 +34,7 @@ module Kitchen
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :read_timeout,  300
+      default_config :upstart,       false
 
       default_config :image do |driver|
         driver.default_image
@@ -90,13 +91,15 @@ module Kitchen
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
         when 'debian', 'ubuntu'
-          <<-eos
-            ENV DEBIAN_FRONTEND noninteractive
-            RUN dpkg-divert --local --rename --add /sbin/initctl
-            RUN ln -sf /bin/true /sbin/initctl
-            RUN apt-get update
-            RUN apt-get install -y sudo openssh-server curl lsb-release
-          eos
+          (
+            ['ENV DEBIAN_FRONTEND noninteractive'] +
+            (config[:upstart] ? [] : [
+              'dpkg-divert --local --rename --add /sbin/initctl',
+              'RUN ln -sf /bin/true /sbin/initctl'
+            ]) +
+            ['RUN apt-get update',
+             'RUN apt-get install -y sudo openssh-server curl lsb-release']
+          ).join("\n")
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
