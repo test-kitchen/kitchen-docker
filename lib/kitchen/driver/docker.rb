@@ -35,7 +35,6 @@ module Kitchen
       default_config :password,      'kitchen'
       default_config :read_timeout,  300
       default_config :upstart,       false
-      default_config :apt_update,    true
 
       default_config :image do |driver|
         driver.default_image
@@ -98,8 +97,8 @@ module Kitchen
               'dpkg-divert --local --rename --add /sbin/initctl',
               'RUN ln -sf /bin/true /sbin/initctl'
             ]) +
-            (config[:apt_update] ? ['RUN apt-get update'] : []) +
-            ['RUN apt-get install -y sudo openssh-server curl lsb-release']
+            ['RUN apt-get update',
+             'RUN apt-get install -y sudo openssh-server curl lsb-release']
           ).join("\n")
         when 'rhel', 'centos'
           <<-eos
