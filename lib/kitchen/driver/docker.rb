@@ -45,6 +45,8 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :disable_upstart, true
+
       def verify_dependencies
         run_command('docker > /dev/null', :quiet => true)
         rescue
@@ -96,13 +98,16 @@ module Kitchen
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
         when 'debian', 'ubuntu'
-          <<-eos
-            ENV DEBIAN_FRONTEND noninteractive
+          disable_upstart = <<-eos
             RUN dpkg-divert --local --rename --add /sbin/initctl
             RUN ln -sf /bin/true /sbin/initctl
+          eos
+          packages = <<-eos
+            ENV DEBIAN_FRONTEND noninteractive
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
+          config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
