@@ -54,7 +54,7 @@ module Kitchen
 
       def default_image
         platform, release = instance.platform.name.split('-')
-        release ? [platform, release].join(':') : 'ubuntu'
+        release ? [platform, release].join(':') : platform
       end
 
       def default_platform
