@@ -43,6 +43,8 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :neuter_upstart, true
+
       def initialize(*args)
         super(*args)
         @docker_connection = ::Docker::Connection.new(config[:socket], :read_timeout => config[:read_timeout])
@@ -90,13 +92,16 @@ module Kitchen
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
         when 'debian', 'ubuntu'
-          <<-eos
-            ENV DEBIAN_FRONTEND noninteractive
+          neuter = <<-eos
             RUN dpkg-divert --local --rename --add /sbin/initctl
             RUN ln -sf /bin/true /sbin/initctl
+          eos
+          packages = <<-eos
+            ENV DEBIAN_FRONTEND noninteractive
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
+          config[:neuter_upstart] ? neuter + packages : packages
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
