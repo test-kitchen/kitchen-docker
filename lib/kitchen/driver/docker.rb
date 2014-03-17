@@ -51,7 +51,7 @@ module Kitchen
         run_command('docker > /dev/null', :quiet => true)
         rescue
           raise UserError,
-          'You must first install Docker http://www.docker.io/gettingstarted/'
+          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
       end
 
       def default_image
