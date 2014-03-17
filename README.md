@@ -12,7 +12,7 @@ A Test Kitchen Driver for Docker.
 
 ## Installation and Setup
 
-Please read the [Driver usage][driver_usage] page for more details.
+Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
 Example `.kitchen.local.yml`:
 
@@ -273,7 +273,7 @@ Apache 2.0 (see [LICENSE][license])
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
-[driver_usage]:           http://docs.kitchen-ci.org/drivers/usage
+[test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
 [memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
