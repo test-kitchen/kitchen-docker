@@ -1,0 +1,14 @@
+---
+driver:
+  name: docker
+
+provisioner:
+  name: dummy
+
+platforms:
+  - name: ubuntu-12.04
+  - name: centos-6.4
+  - name: unknown
+
+suites:
+  - name: default
