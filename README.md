@@ -6,10 +6,6 @@ A Test Kitchen Driver for Docker.
 
 * [Docker][docker_getting_started]
 
-## Known Issues
-
-* Upstart is neutered due to [this issue][docker_upstart_issue].
-
 ## Installation and Setup
 
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
@@ -114,6 +110,13 @@ installed. There are several different behaviors available:
   be passed the the install.sh script. Subsequent converges will skip if
   the installed version and the desired version match.
 * `false` or `nil` - no chef is installed.
+
+The default value is `true`.
+
+### disable\_upstart
+
+Disables upstart on debian/ubuntu containers, as many images do not support a
+working upstart.
 
 The default value is `true`.
 
