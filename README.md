@@ -115,7 +115,7 @@ The default value is `true`.
 
 ### disable\_upstart
 
-Disables upstart on debian/ubuntu containers, as many images do not support a
+Disables upstart on Debian/Ubuntu containers, as many images do not support a
 working upstart.
 
 The default value is `true`.
