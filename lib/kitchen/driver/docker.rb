@@ -115,6 +115,16 @@ module Kitchen
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
+        when 'arch'
+          <<-eos
+            RUN pacman -Syu --noconfirm
+            RUN pacman -S --noconfirm openssh curl
+            RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ecdsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ed25519_key
+            RUN /usr/bin/sshd
+          eos
         else
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
