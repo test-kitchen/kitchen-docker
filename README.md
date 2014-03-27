@@ -14,7 +14,8 @@ Example `.kitchen.local.yml`:
 
 ```
 ---
-driver_plugin: docker
+driver:
+  name: docker
 
 platforms:
 - name: ubuntu
