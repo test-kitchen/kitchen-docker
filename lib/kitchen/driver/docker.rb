@@ -28,10 +28,13 @@ module Kitchen
 
       default_config :socket,        'unix:///var/run/docker.sock'
       default_config :privileged,    false
+      default_config :use_cache,     true
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+
+      default_config :remove_intermediate_containers, false
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -145,7 +148,10 @@ module Kitchen
       end
 
       def build_image(state)
-        output = docker_command("build -", :input => dockerfile)
+        cmd = "build"
+        cmd << " --rm=#{config[:remove_intermediate_containers]}"
+        cmd << " --no-cache" unless config[:use_cache]
+        output = docker_command("#{cmd} -", :input => dockerfile)
         parse_image_id(output)
       end
 
