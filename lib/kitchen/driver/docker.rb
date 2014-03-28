@@ -118,11 +118,9 @@ module Kitchen
         when 'arch'
           <<-eos
             RUN pacman -Syu --noconfirm
-            RUN pacman -S --noconfirm openssh curl
+            RUN pacman -S --noconfirm openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ecdsa_key
-            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ed25519_key
           eos
         else
           raise ActionFailed,
