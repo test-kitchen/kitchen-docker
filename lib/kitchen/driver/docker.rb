@@ -123,7 +123,6 @@ module Kitchen
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ecdsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_ed25519_key
-            RUN /usr/bin/sshd
           eos
         else
           raise ActionFailed,
