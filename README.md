@@ -143,6 +143,13 @@ driver_config:
   require_chef_omnibus: false
 ```
 
+### use\_cache
+
+This determines if the Docker cache is used when provisioning the base for suite
+containers.
+
+The default value is `true`.
+
 ### remove\_images
 
 This determines if images are automatically removed when the suite container is
