@@ -252,6 +252,19 @@ Examples:
   privileged: true
 ```
 
+### arch
+
+Change the container's architecture to something other than the same
+as the hosting OS. Note, there's a limitation that this flag is only
+honored at run - with the current docker there's no way to pass in
+arch during 'build'.
+
+Examples:
+
+```
+  arch: i686
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]

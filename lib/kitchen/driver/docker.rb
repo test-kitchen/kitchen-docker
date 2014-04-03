@@ -170,6 +170,7 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
+        cmd << " --lxc-conf='lxc.arch = #{config[:arch]}'" if config[:arch]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
