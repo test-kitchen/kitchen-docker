@@ -113,8 +113,8 @@ module Kitchen
           <<-eos
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
-            RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
+            RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
         else
           raise ActionFailed,
