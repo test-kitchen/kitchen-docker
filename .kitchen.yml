@@ -7,10 +7,12 @@ provisioner:
 
 platforms:
   - name: ubuntu-12.04
+  - name: ubuntu-13.10
   - name: centos-6.4
   - name: unknown
-    image: ubuntu:12.04
-    platform: ubuntu
+    driver:
+      image: ubuntu:12.04
+      platform: ubuntu
   - name: dockerfile
     driver:
       username: dockerfile
