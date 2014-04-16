@@ -9,6 +9,13 @@ platforms:
   - name: ubuntu-12.04
   - name: centos-6.4
   - name: unknown
-
+    image: ubuntu:12.04
+    platform: ubuntu
+  - name: dockerfile
+    driver:
+      username: dockerfile
+      password: dockerfile
+      dockerfile: test/Dockerfile
+      run_command: /sbin/init
 suites:
   - name: default
