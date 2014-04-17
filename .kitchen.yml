@@ -21,3 +21,4 @@ platforms:
       run_command: /sbin/init
 suites:
   - name: default
+  - name: concurrency
