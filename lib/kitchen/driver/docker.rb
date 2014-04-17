@@ -15,9 +15,8 @@
 # limitations under the License.
 
 require 'kitchen'
-require 'ostruct'
-require 'erb'
 require 'json'
+require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
 
@@ -140,8 +139,8 @@ module Kitchen
       def dockerfile
         if config[:dockerfile]
           template = IO.read(File.expand_path(config[:dockerfile]))
-          options = OpenStruct.new(config.to_hash)
-          ERB.new(template).result(options.instance_eval {binding})
+          context = DockerERBContext.new(config.to_hash)
+          ERB.new(template).result(context.get_binding)
         else
           build_dockerfile
         end
