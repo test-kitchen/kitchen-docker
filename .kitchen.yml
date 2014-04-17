@@ -7,8 +7,18 @@ provisioner:
 
 platforms:
   - name: ubuntu-12.04
+  - name: ubuntu-13.10
   - name: centos-6.4
   - name: unknown
-
+    driver:
+      image: ubuntu:12.04
+      platform: ubuntu
+  - name: dockerfile
+    driver:
+      username: dockerfile
+      password: dockerfile
+      dockerfile: test/Dockerfile
+      run_command: /sbin/init
 suites:
   - name: default
+  - name: concurrency

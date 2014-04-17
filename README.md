@@ -32,7 +32,9 @@ platforms:
 ## Default Configuration
 
 This driver can determine an image and platform type for a select number of
-platforms. Currently, the following platform names are supported:
+platforms.
+
+Examples:
 
 ```
 ---
@@ -81,10 +83,8 @@ Examples:
 The Docker image to use as the base for the suite containers. You can find
 images using the [Docker Index][docker_index].
 
-The default will be determined by the Platform name, if a default exists
-(see the Default Configuration section for more details). If a default
-cannot be computed, then the default value is `base`, an official Ubuntu
-[image][docker_default_image].
+The default will be computed, using the platform name (see the Default
+Configuration section for more details).
 
 ### platform
 
@@ -94,9 +94,8 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 * `debian` or `ubuntu`
 * `rhel` or `centos`
 
-The default will be determined by the Platform name, if a default exists
-(see the Default Configuration section for more details). If a default
-cannot be computed, then the default value is `ubuntu`.
+The default will be computed, using the platform name (see the Default
+Configuration section for more details).
 
 ### require\_chef\_omnibus
 
@@ -250,6 +249,16 @@ Examples:
 
 ```
   privileged: true
+```
+
+## dockerfile
+
+Use a custom Dockerfile, instead of having Kitchen-Docker build one for you.
+
+Examples:
+
+```
+  dockerfile: test/Dockerfile
 ```
 
 ## Development

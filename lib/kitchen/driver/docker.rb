@@ -16,6 +16,7 @@
 
 require 'kitchen'
 require 'json'
+require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
 
@@ -61,7 +62,7 @@ module Kitchen
       end
 
       def default_platform
-        instance.platform.name.split('-').first || 'ubuntu'
+        instance.platform.name.split('-').first
       end
 
       def create(state)
@@ -92,10 +93,10 @@ module Kitchen
       def docker_command(cmd, options={})
         docker = "docker"
         docker << " -H #{config[:socket]}" if config[:socket]
-        run_command("#{docker} #{cmd}", options)
+        run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
 
-      def dockerfile
+      def build_dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
         when 'debian', 'ubuntu'
@@ -133,6 +134,16 @@ module Kitchen
           custom << "RUN #{cmd}\n"
         end
         [from, platform, base, custom].join("\n")
+      end
+
+      def dockerfile
+        if config[:dockerfile]
+          template = IO.read(File.expand_path(config[:dockerfile]))
+          context = DockerERBContext.new(config.to_hash)
+          ERB.new(template).result(context.get_binding)
+        else
+          build_dockerfile
+        end
       end
 
       def parse_image_id(output)
