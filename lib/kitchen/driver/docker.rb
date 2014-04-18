@@ -74,7 +74,7 @@ module Kitchen
       end
 
       def destroy(state)
-        rm_container(state) if state[:container_id]
+        rm_container(state) if container_exists?(state)
         if config[:remove_images] && state[:image_id]
           rm_image(state)
         end
@@ -198,6 +198,15 @@ module Kitchen
         parse_container_id(output)
       end
 
+      def inspect_container(state)
+        container_id = state[:container_id]
+        docker_command("inspect #{container_id}")
+      end
+
+      def container_exists?(state)
+        !!inspect_container(state) rescue false
+      end
+
       def parse_container_ssh_port(output)
         begin
           info = Array(::JSON.parse(output)).first
@@ -211,8 +220,7 @@ module Kitchen
       end
 
       def container_ssh_port(state)
-        container_id = state[:container_id]
-        output = docker_command("inspect #{container_id}")
+        output = inspect_container(state)
         parse_container_ssh_port(output)
       end
 

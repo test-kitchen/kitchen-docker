@@ -9,6 +9,10 @@ platforms:
   - name: ubuntu-12.04
   - name: ubuntu-13.10
   - name: centos-6.4
+  - name: debian
+  - name: arch
+    driver:
+      image: base/arch
   - name: unknown
     driver:
       image: ubuntu:12.04
