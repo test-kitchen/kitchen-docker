@@ -27,6 +27,7 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
+      default_config :binary,        'docker'
       default_config :socket,        'unix:///var/run/docker.sock'
       default_config :privileged,    false
       default_config :use_cache,     true
@@ -50,7 +51,7 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command('docker > /dev/null', :quiet => true)
+        run_command("#{config[:binary]} > /dev/null", :quiet => true)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
@@ -91,7 +92,7 @@ module Kitchen
       end
 
       def docker_command(cmd, options={})
-        docker = "docker"
+        docker = config[:binary].dup
         docker << " -H #{config[:socket]}" if config[:socket]
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
