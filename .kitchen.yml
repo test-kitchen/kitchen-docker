@@ -1,6 +1,7 @@
 ---
 driver:
   name: docker
+  provision_command: curl -L http://www.opscode.com/chef/install.sh | bash
 
 provisioner:
   name: dummy
@@ -23,6 +24,7 @@ platforms:
       password: dockerfile
       dockerfile: test/Dockerfile
       run_command: /sbin/init
+
 suites:
   - name: default
   - name: concurrency
