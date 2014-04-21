@@ -70,7 +70,7 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        state[:ssh_key] = "#{docker_config_root}/id_rsa_kitchen"
+        state[:ssh_key] = "#{docker_config_root}/id_rsa_kitchen" if File.exist? "#{docker_config_root}/id_rsa_kitchen"
         wait_for_sshd(state[:hostname], nil, :port => state[:port])
       end
 
@@ -79,6 +79,9 @@ module Kitchen
         if config[:remove_images] && state[:image_id]
           rm_image(state)
         end
+
+        # Remove config directory
+	FileUtils.rm_rf docker_config_root
       end
 
       def remote_socket?
@@ -111,11 +114,11 @@ module Kitchen
 
         # Delete previous
         Dir.glob("#{key_file}*").each do |file|
-          FileUtils.rm_rf file
+          FileUtils.rm file
         end         
 
-        # Generate new
-        %x(ssh-keygen -q -N '' -f #{key_file})
+        # Generate new key pair
+        run_command "ssh-keygen -q -N '' -f #{key_file}"
       end
 
       def build_dockerfile
