@@ -70,6 +70,7 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
+        state[:ssh_key] = "#{docker_config_root}/id_rsa_kitchen"
         wait_for_sshd(state[:hostname], nil, :port => state[:port])
       end
 
@@ -94,6 +95,27 @@ module Kitchen
         docker = "docker"
         docker << " -H #{config[:socket]}" if config[:socket]
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+      end
+
+      def docker_config_root
+        if @docker_config_root.nil?
+           @docker_config_root = File.join config[:kitchen_root], %w{.kitchen kitchen-docker}, instance.name
+           FileUtils.mkdir_p @docker_config_root
+        end
+
+        @docker_config_root
+      end
+
+      def generate_ssh_key_pair
+        key_file = "#{docker_config_root}/id_rsa_kitchen"
+
+        # Delete previous
+        Dir.glob("#{key_file}*").each do |file|
+          FileUtils.rm_rf file
+        end         
+
+        # Generate new
+        %x(ssh-keygen -q -N '' -f #{key_file})
       end
 
       def build_dockerfile
@@ -143,14 +165,30 @@ module Kitchen
         [from, platform, base, custom].join("\n")
       end
 
+      def dockerfile_sshd
+        generate_ssh_key_pair
+
+	<<-eos
+          RUN mkdir /home/kitchen/.ssh
+          ADD id_rsa_kitchen.pub /home/kitchen/.ssh/authorized_keys
+          RUN chmod 700 /home/kitchen/.ssh
+          RUN chmod 600 /home/kitchen/.ssh/authorized_keys
+          RUN chown -R kitchen:kitchen /home/kitchen/.ssh
+        eos
+      end
+
       def dockerfile
+        docker = ''
+
         if config[:dockerfile]
           template = IO.read(File.expand_path(config[:dockerfile]))
           context = DockerERBContext.new(config.to_hash)
-          ERB.new(template).result(context.get_binding)
+          docker = ERB.new(template).result(context.get_binding)
         else
-          build_dockerfile
+          docker = build_dockerfile
         end
+     
+         File.open("#{docker_config_root}/Dockerfile",'w') { |f| f.write [docker, dockerfile_sshd].join("\n") }
       end
 
       def parse_image_id(output)
@@ -166,7 +204,8 @@ module Kitchen
       def build_image(state)
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
-        output = docker_command("#{cmd} -", :input => dockerfile)
+	dockerfile
+        output = docker_command("#{cmd} #{docker_config_root}")
         parse_image_id(output)
       end
 
