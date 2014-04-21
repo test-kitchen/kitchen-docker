@@ -60,6 +60,22 @@ platforms:
 
 ## Configuration
 
+### binary
+
+The Docker binary to use.
+
+The default value is `docker`.
+
+Examples:
+
+```
+  binary: docker.io
+```
+
+```
+  binary: /opt/docker
+```
+
 ### socket
 
 The Docker daemon socket to use. By default, Docker will listen on
