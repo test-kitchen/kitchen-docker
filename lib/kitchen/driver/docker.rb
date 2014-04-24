@@ -16,6 +16,7 @@
 
 require 'kitchen'
 require 'json'
+require 'uri'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
