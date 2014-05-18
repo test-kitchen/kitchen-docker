@@ -100,6 +100,9 @@ module Kitchen
 
       def build_dockerfile
         from = "FROM #{config[:image]}"
+        if config[:http_proxy]
+          proxy = "RUN export http_proxy=\"#{config[:http_proxy]}\""
+        end
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
@@ -142,7 +145,7 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        [from, proxy, platform, base, custom].join("\n")
       end
 
       def dockerfile
