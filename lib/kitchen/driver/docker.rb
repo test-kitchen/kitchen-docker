@@ -185,7 +185,10 @@ module Kitchen
         cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
-        Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
+        Array(config[:volume]).each { |volume|
+          formatted = volume % { :instance_name => instance.name }
+          cmd << " -v #{formatted}"
+        }
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
