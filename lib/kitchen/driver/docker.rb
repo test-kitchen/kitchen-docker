@@ -33,7 +33,7 @@ module Kitchen
       default_config :privileged,    false
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
+      default_config :run_command,   '/bin/bash -c "mkdir -p /var/run/sshd && /usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no"'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
 
@@ -133,7 +133,6 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         base = <<-eos
-          RUN mkdir -p /var/run/sshd
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
