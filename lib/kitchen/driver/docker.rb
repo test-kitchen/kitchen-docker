@@ -132,12 +132,20 @@ module Kitchen
         end
         username = config[:username]
         password = config[:password]
-        base = <<-eos
-          RUN mkdir -p /var/run/sshd
-          RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
-          RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-        eos
+        if username == "root"
+          base = <<-eos
+             RUN mkdir -p /var/run/sshd
+             RUN echo #{username}:#{password} | chpasswd
+             RUN sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+          eos
+        else
+          base = <<-eos
+            RUN mkdir -p /var/run/sshd
+            RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
+            RUN echo #{username}:#{password} | chpasswd
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          eos
+        end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
