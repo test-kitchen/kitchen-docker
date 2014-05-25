@@ -36,6 +36,11 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+      default_config :tls,            false
+      default_config :tlsverify,      false
+      default_config :tlscacert,      nil
+      default_config :tlscert,        nil
+      default_config :tlskey,         nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -95,6 +100,11 @@ module Kitchen
       def docker_command(cmd, options={})
         docker = config[:binary].dup
         docker << " -H #{config[:socket]}" if config[:socket]
+        docker << " --tls" if config[:tls]
+        docker << " --tlsverify" if config[:tlsverify]
+        docker << " --tlscacert=#{config[:tlscacert]}" if config[:tlscacert]
+        docker << " --tlscert=#{config[:tlscert]}" if config[:tlscert]
+        docker << " --tlskey=#{config[:tlskey]}" if config[:tlskey]
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
 
