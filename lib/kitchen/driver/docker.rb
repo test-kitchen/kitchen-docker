@@ -37,10 +37,10 @@ module Kitchen
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,            false
-      default_config :tlsverify,      false
-      default_config :tlscacert,      nil
-      default_config :tlscert,        nil
-      default_config :tlskey,         nil
+      default_config :tls_verify,     false
+      default_config :tls_cacert,     nil
+      default_config :tls_cert,       nil
+      default_config :tls_key,        nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -101,10 +101,10 @@ module Kitchen
         docker = config[:binary].dup
         docker << " -H #{config[:socket]}" if config[:socket]
         docker << " --tls" if config[:tls]
-        docker << " --tlsverify" if config[:tlsverify]
-        docker << " --tlscacert=#{config[:tlscacert]}" if config[:tlscacert]
-        docker << " --tlscert=#{config[:tlscert]}" if config[:tlscert]
-        docker << " --tlskey=#{config[:tlskey]}" if config[:tlskey]
+        docker << " --tlsverify" if config[:tls_verify]
+        docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
+        docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
+        docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
 
