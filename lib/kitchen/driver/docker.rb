@@ -36,11 +36,11 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
-      default_config :tls,            false
-      default_config :tls_verify,     false
-      default_config :tls_cacert,     nil
-      default_config :tls_cert,       nil
-      default_config :tls_key,        nil
+      default_config :tls,           false
+      default_config :tls_verify,    false
+      default_config :tls_cacert,    nil
+      default_config :tls_cert,      nil
+      default_config :tls_key,       nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
