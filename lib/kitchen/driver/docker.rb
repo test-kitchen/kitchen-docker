@@ -118,6 +118,7 @@ module Kitchen
           eos
           packages = <<-eos
             #{"ENV http_proxy " + config[:http_proxy] if config[:http_proxy]}
+            #{"ENV https_proxy " + config[:https_proxy] if config[:https_proxy]}
             ENV DEBIAN_FRONTEND noninteractive
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
@@ -126,6 +127,7 @@ module Kitchen
         when 'rhel', 'centos'
           <<-eos
             #{"ENV http_proxy " + config[:http_proxy] if config[:http_proxy]}
+            #{"ENV https_proxy " + config[:https_proxy] if config[:https_proxy]}
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -134,6 +136,7 @@ module Kitchen
         when 'arch'
           <<-eos
             #{"ENV http_proxy " + config[:http_proxy] if config[:http_proxy]}
+            #{"ENV https_proxy " + config[:https_proxy] if config[:https_proxy]}
             RUN pacman -Syu --noconfirm
             RUN pacman -S --noconfirm openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
