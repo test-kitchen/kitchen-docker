@@ -226,7 +226,24 @@ Examples:
   - 8.8.8.8
   - 8.8.4.4
 ```
+### http\_proxy
 
+Sets an http proxy for the suite container using the `http_proxy` environment variable. 
+
+Examples:
+
+```
+  http_proxy: http://proxy.host.com:8080
+```
+### https\_proxy
+
+Sets an https proxy for the suite container using the `https_proxy` environment variable.
+
+Examples:
+
+```
+  https_proxy: http://proxy.host.com:8080
+```
 ### forward
 
 Set suite container port(s) to forward to the host machine. You may specify
