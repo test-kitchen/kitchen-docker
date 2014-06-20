@@ -110,6 +110,9 @@ module Kitchen
 
       def build_dockerfile
         from = "FROM #{config[:image]}"
+        if config[:http_proxy]
+          proxy = "http_proxy=\"#{config[:http_proxy]}\" "
+        end
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
@@ -118,21 +121,21 @@ module Kitchen
           eos
           packages = <<-eos
             ENV DEBIAN_FRONTEND noninteractive
-            RUN apt-get update
-            RUN apt-get install -y sudo openssh-server curl lsb-release
+            RUN #{proxy}apt-get update
+            RUN #{proxy}apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos'
           <<-eos
             RUN yum clean all
-            RUN yum install -y sudo openssh-server openssh-clients which curl
+            RUN #{proxy}yum install -y sudo openssh-server openssh-clients which curl
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
         when 'arch'
           <<-eos
-            RUN pacman -Syu --noconfirm
-            RUN pacman -S --noconfirm openssh sudo curl
+            RUN #{proxy}pacman -Syu --noconfirm
+            RUN #{proxy}pacman -S --noconfirm openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
