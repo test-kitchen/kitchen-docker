@@ -33,7 +33,7 @@ module Kitchen
       default_config :privileged,    false
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no'
+      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,           false
@@ -110,9 +110,6 @@ module Kitchen
 
       def build_dockerfile
         from = "FROM #{config[:image]}"
-        environment = ''
-        environment << "ENV http_proxy #{config[:http_proxy]}\n" if config[:http_proxy]
-        environment << "ENV https_proxy #{config[:https_proxy]}\n" if config[:https_proxy]
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
@@ -146,7 +143,6 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         base = <<-eos
-          RUN mkdir -p /var/run/sshd
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
@@ -155,7 +151,7 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, environment, platform, base, custom].join("\n")
+        [from, platform, base, custom].join("\n")
       end
 
       def dockerfile
@@ -204,6 +200,8 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
+        cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
+        cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -226,7 +224,7 @@ module Kitchen
       def parse_container_ssh_port(output)
         begin
           info = Array(::JSON.parse(output)).first
-          ports = info['NetworkSettings']['Ports']
+          ports = info['NetworkSettings']['Ports'] || info['HostConfig']['PortBindings']
           ssh_port = ports['22/tcp'].detect {|port| port['HostIp'] == '0.0.0.0'}
           ssh_port['HostPort'].to_i
         rescue
