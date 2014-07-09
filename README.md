@@ -94,6 +94,13 @@ Examples:
   socket: tcp://docker.example.com:4242
 ```
 
+If you use [Boot2Docker](https://github.com/boot2docker/boot2docker), set your `DOCKER_HOST` environment variable properly (e.g. `export DOCKER_HOST=tcp://192.168.59.103:2375`) or you have to use the following:
+
+```
+socket: tcp://192.168.59.103:2375
+```
+
+
 ### image
 
 The Docker image to use as the base for the suite containers. You can find
