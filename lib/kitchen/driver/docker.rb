@@ -65,6 +65,9 @@ module Kitchen
 
       def default_image
         platform, release = instance.platform.name.split('-')
+        if platform == "centos" && release
+          release = "centos" + release.split('.').first
+        end
         release ? [platform, release].join(':') : platform
       end
 
