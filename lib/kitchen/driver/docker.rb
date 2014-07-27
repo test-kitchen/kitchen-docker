@@ -64,8 +64,7 @@ module Kitchen
 
       def verify_dependencies
         begin
-          run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, 
-                     :use_sudo => false)
+          run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
