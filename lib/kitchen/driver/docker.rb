@@ -57,7 +57,7 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true)
+        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
