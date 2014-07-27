@@ -64,7 +64,7 @@ module Kitchen
 
       def verify_dependencies
         begin
-        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, 
+          run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, 
                      :use_sudo => false)
         rescue
           raise UserError,
