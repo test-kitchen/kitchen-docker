@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 require 'kitchen'
 require 'json'
 require 'uri'
@@ -58,7 +59,7 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} 2> /dev/null", :quiet => true)
+        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
