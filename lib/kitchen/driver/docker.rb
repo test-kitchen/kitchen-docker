@@ -142,14 +142,14 @@ module Kitchen
         when 'gentoo'
           <<-eos
             RUN emerge sync
-            RUN emerge net-misc/openssh
+            RUN emerge net-misc/openssh app-admin/sudo
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
         when 'gentoo-paludis'
           <<-eos
             RUN cave sync
-            RUN cave resolve -zx net-misc/openssh
+            RUN cave resolve -zx net-misc/openssh app-admin/sudo
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
