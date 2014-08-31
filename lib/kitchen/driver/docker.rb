@@ -179,13 +179,6 @@ module Kitchen
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
-        when 'gentoo'
-          <<-eos
-            RUN cave sync
-            RUN cave resolve -zx net-misc/openssh
-            RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-          eos
         else
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
