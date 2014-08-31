@@ -33,7 +33,7 @@ module Kitchen
       default_config :privileged,    false
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,           false
