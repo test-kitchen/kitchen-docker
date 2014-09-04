@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 require 'kitchen'
 require 'json'
 require 'uri'
@@ -59,10 +58,16 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
+        begin
+          run_command("#{config[:binary]} > /dev/null", :quiet => true)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+        end
+        if config[:cpuset] && !version_above?('1.1.0')
+          raise UserError, 'The cpuset option is only supported on docker '\
+          'version >= 1.1.0, either remove this option or upgarde docker'
+        end
       end
 
       def default_image
@@ -230,6 +235,7 @@ module Kitchen
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
+        cmd << " --cpuset=\"#{config[:cpuset]}\"" if config[:cpuset]
         cmd << " -privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
@@ -278,6 +284,12 @@ module Kitchen
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
+      end
+
+      def version_above?(version)
+        docker_version = docker_command('--version').split(',').first
+          .scan(/\d+/).join('.')
+        Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
     end
   end
