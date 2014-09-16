@@ -380,10 +380,22 @@ module Kitchen
         end
       end
 
+      def rm_container_retrying(container_id, count = 1)
+        begin
+          docker_command("rm #{container_id}")
+        rescue Kitchen::ShellOut::ShellCommandFailed => e
+          if count > 3
+            raise
+          end
+          sleep 2
+          rm_container_retrying(container_id, count + 1)
+        end
+      end
+
       def rm_container(state)
         container_id = state[:container_id]
         docker_command("stop -t 0 #{container_id}")
-        docker_command("rm #{container_id}")
+        rm_container_retrying(container_id)
       end
 
       def rm_image(state)
