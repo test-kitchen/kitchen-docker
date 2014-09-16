@@ -241,10 +241,22 @@ module Kitchen
         parse_container_ssh_port(output)
       end
 
+      def rm_container_retrying(container_id, count = 1)
+        docker_command("rm #{container_id}")
+      rescue Kitchen::ShellOut::ShellCommandFailed => e
+        if e.message =~ /Error response from daemon: Cannot destroy container #{container_id}/
+          raise if count > 2
+          sleep 1
+          rm_container_retrying(container_id, count + 1)
+        else
+          raise unless e.message =~ /Error response from daemon: No such container: #{container_id}/
+        end
+      end
+
       def rm_container(state)
         container_id = state[:container_id]
         docker_command("stop #{container_id}")
-        docker_command("rm #{container_id}")
+        rm_container_retrying(container_id)
       end
 
       def rm_image(state)
