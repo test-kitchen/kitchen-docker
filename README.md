@@ -109,6 +109,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 
 * `debian` or `ubuntu`
 * `rhel` or `centos`
+* `gentoo` or `gentoo-paludis`
 
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
@@ -176,7 +177,7 @@ The default value is `false`.
 
 Sets the command used to run the suite container.
 
-The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no`.
+The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes`.
 
 Examples:
 
