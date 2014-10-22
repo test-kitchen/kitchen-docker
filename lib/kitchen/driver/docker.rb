@@ -213,6 +213,8 @@ module Kitchen
         Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
+        Array(config[:link]).each {|link| cmd << " --link #{link}"}
+        cmd << " --name #{config[:container_name]}" if config[:container_name]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]

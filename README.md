@@ -211,7 +211,40 @@ Examples:
   - /srv
 ```
 
-## dns
+### volumes_from
+
+Mount volumes managed by other containers.
+
+Examples:
+
+```
+  volumes_from: repos
+```
+
+```
+  volumes_from:
+  - repos
+  - logging
+  - rvm
+```
+
+### link
+
+Adds link to another container to allow use of ports and easy access to IP of that container.
+
+Examples:
+
+```
+  link: db:db.local 
+```
+
+```
+  link:
+  - db:db.local
+  - cache: cache.local
+```
+
+### dns
 
 Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
 Dockers defaults.
