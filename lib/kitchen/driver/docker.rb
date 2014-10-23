@@ -214,9 +214,9 @@ module Kitchen
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         cmd << " -h #{config[:hostname]}" if config[:hostname]
-        cmd << " --name='#{config[:instancename]}'" if config[:instancename]
-        if config[:linkedinstances]
-          config[:linkedinstances].each do |instance|
+        cmd << " --name='#{config[:instance_name]}'" if config[:instance_name]
+        if config[:linked_instances]
+          config[:linked_instances].each do |instance|
             cmd << " --link=#{instance}"
           end
         end
