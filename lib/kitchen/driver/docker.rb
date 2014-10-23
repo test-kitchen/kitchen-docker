@@ -214,6 +214,12 @@ module Kitchen
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         cmd << " -h #{config[:hostname]}" if config[:hostname]
+        cmd << " --name='#{config[:instancename]}'" if config[:instancename]
+        if config[:linkedinstances]
+          config[:linkedinstances].each do |instance|
+            cmd << " --link=#{instance}"
+          end
+        end
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
