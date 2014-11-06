@@ -36,6 +36,7 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+      default_config :no_ssh_tcp_check,  false
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
@@ -80,7 +81,20 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        if config[:no_ssh_tcp_check]
+          wait_for_container(state)
+        else
+          wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        end
+      end
+
+      def wait_for_container(state)
+        logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
+          begin
+            container_exists?(state)
+            logger.info("Container Exists")
+          rescue false
+          end
       end
 
       def destroy(state)
