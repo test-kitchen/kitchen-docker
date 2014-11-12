@@ -33,7 +33,7 @@ module Kitchen
       default_config :privileged,    false
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,           false
@@ -136,6 +136,20 @@ module Kitchen
           <<-eos
             RUN pacman -Syu --noconfirm
             RUN pacman -S --noconfirm openssh sudo curl
+            RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
+          eos
+        when 'gentoo'
+          <<-eos
+            RUN emerge sync
+            RUN emerge net-misc/openssh app-admin/sudo
+            RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
+          eos
+        when 'gentoo-paludis'
+          <<-eos
+            RUN cave sync
+            RUN cave resolve -zx net-misc/openssh app-admin/sudo
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
