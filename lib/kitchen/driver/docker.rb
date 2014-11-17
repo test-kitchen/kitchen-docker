@@ -251,7 +251,9 @@ module Kitchen
 
       def inspect_container(state)
         container_id = state[:container_id]
-        docker_command("inspect #{container_id}")
+        unless container_id.nil?
+          docker_command("inspect #{container_id}")
+        end
       end
 
       def container_exists?(state)
