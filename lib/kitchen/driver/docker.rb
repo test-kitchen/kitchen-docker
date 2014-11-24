@@ -92,7 +92,6 @@ module Kitchen
         logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
           begin
             container_exists?(state)
-            logger.info("Container Exists")
           rescue false
           end
       end
