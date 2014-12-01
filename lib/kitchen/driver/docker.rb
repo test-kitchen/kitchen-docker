@@ -71,7 +71,6 @@ module Kitchen
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
         end
-
         if config[:cpuset] && !version_above?('1.1.0')
           raise UserError, 'The cpuset option is only supported on docker '\
           'version >= 1.1.0, either remove this option or upgarde docker'
