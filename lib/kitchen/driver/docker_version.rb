@@ -19,6 +19,10 @@ module Kitchen
   module Driver
 
     # Version string for Docker Kitchen driver
+<<<<<<< HEAD
     DOCKER_VERSION = '1.6.0'
+=======
+    DOCKER_VERSION = "1.6.0"
+>>>>>>> update dns flag, make inspect command quieter
   end
 end
