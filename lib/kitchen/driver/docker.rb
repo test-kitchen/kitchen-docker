@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 require 'kitchen'
 require 'json'
 require 'uri'
@@ -33,7 +33,12 @@ module Kitchen
       default_config :privileged,    false
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :run_command,   '/usr/sbin/sshd -D \
+                                      -o UseDNS=no \
+                                      -o UsePAM=no \
+                                      -o PasswordAuthentication=yes \
+                                      -o UsePrivilegeSeparation=no \
+                                      -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,           false
@@ -115,7 +120,7 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+        run_command("#{docker} #{cmd} 2>/dev/null", options.merge(:quiet => !logger.debug?))
       end
 
       def build_dockerfile
@@ -169,7 +174,8 @@ module Kitchen
         base = <<-eos
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
@@ -217,7 +223,7 @@ module Kitchen
       def build_run_command(image_id)
         cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
-        Array(config[:dns]).each {|dns| cmd << " -dns #{dns}"}
+        Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         cmd << " -h #{config[:hostname]}" if config[:hostname]
@@ -252,7 +258,7 @@ module Kitchen
         begin
           info = Array(::JSON.parse(output)).first
           ports = info['NetworkSettings']['Ports'] || info['HostConfig']['PortBindings']
-          ssh_port = ports['22/tcp'].detect {|port| port['HostIp'] == '0.0.0.0'}
+          ssh_port = ports['22/tcp'].detect{|port| port['HostIp'] == '0.0.0.0'}
           ssh_port['HostPort'].to_i
         rescue
           raise ActionFailed,
