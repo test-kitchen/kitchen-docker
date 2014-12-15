@@ -229,7 +229,7 @@ Examples:
 ```
 ### http\_proxy
 
-Sets an http proxy for the suite container using the `http_proxy` environment variable. 
+Sets an http proxy for the suite container using the `http_proxy` environment variable.
 
 Examples:
 
@@ -293,6 +293,34 @@ Examples:
 
 ```
   dockerfile: test/Dockerfile
+```
+
+### instance_name
+
+Set the name of container to link to other container(s).
+
+Examples:
+
+```
+  instance_name: web
+```
+
+### links
+
+Set ```instance_name```(and alias) of other container(s) that connect from the suite container.
+
+Examples:
+
+```
+ links: db:db
+```
+
+Examples:
+
+```
+  links:
+  - db:db
+  - kvs:kvs
 ```
 
 ## Development
