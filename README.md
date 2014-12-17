@@ -325,7 +325,7 @@ Examples:
 
 ### publish_all
 
-Publish all exposed ports to the host interfaces to communicate between the containers.  
+Publish all exposed ports to the host interfaces.  
 This option used to communicate between some containers.
 
 The default value is `false`.
