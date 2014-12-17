@@ -78,7 +78,7 @@ module Kitchen
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:hostname] = detect_hostname
         state[:port] = container_ssh_port(state)
         wait_for_sshd(state[:hostname], nil, :port => state[:port])
       end
@@ -87,6 +87,16 @@ module Kitchen
         rm_container(state) if container_exists?(state)
         if config[:remove_images] && state[:image_id]
           rm_image(state)
+        end
+      end
+
+      def detect_hostname
+        if remote_socket?
+          socket_uri.host        
+        elsif !config[:connect_host].nil?
+          config[:connect_host]
+        else
+          'localhost'
         end
       end
 
