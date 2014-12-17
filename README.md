@@ -323,6 +323,19 @@ Examples:
   - kvs:kvs
 ```
 
+### publish_all
+
+Publish all exposed ports to the host interfaces to communicate between the containers.  
+This option used to communicate between some containers.
+
+The default value is `false`.
+
+Examples:
+
+```
+  publish_all: true
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]

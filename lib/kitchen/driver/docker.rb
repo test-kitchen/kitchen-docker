@@ -41,6 +41,7 @@ module Kitchen
       default_config :tls_cacert,    nil
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
+      default_config :publish_all,   false
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -215,6 +216,7 @@ module Kitchen
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
+        cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
