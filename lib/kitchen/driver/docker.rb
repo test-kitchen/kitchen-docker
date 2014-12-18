@@ -13,8 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
- 
+
 require 'kitchen'
 require 'json'
 require 'uri'
@@ -29,7 +28,7 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :binary,        'docker'
+      default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
       default_config :use_cache,     true
