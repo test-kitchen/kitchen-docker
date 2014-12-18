@@ -19,14 +19,15 @@ require 'json'
 require 'uri'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
+
 module Kitchen
 
   module Driver
-
     # Docker driver for Kitchen.
     #
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
+      
 
       default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
@@ -62,11 +63,14 @@ module Kitchen
       end
 
       default_config :disable_upstart, true
-
+      
       def verify_dependencies
+       
         begin
-           run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
-        rescue
+          execute_cmd( "#{config[:binary]}" )
+        rescue Exception => e
+          logger.debug("There was an error #{e}")
+
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
         end
@@ -133,7 +137,7 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd} 2>/dev/null", options.merge(:quiet => !logger.debug?))
+        execute_cmd("#{docker} #{cmd} ", options)
       end
 
       def build_dockerfile
@@ -303,6 +307,40 @@ module Kitchen
           .scan(/\d+/).join('.')
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
+
+      def execute_cmd(cmd_line, options={})
+        if Helper.isWindows
+          run_command("#{cmd_line} > /NUL", options.merge( { :quiet => !logger.debug?, :use_sudo => false } )  )
+        else 
+          run_command("#{cmd_line} > /dev/null 2>&1", options.merge( { :quiet => !logger.debug?, :use_sudo => false } ) )
+        end
+      end
+        
+    end
+
+    class Helper 
+      def self.os
+        @os ||= (
+          host_os = RbConfig::CONFIG['host_os']
+          case host_os
+          when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+            :windows
+          when /darwin|mac os/
+            :macosx
+          when /linux/
+            :linux
+          when /solaris|bsd/
+            :unix
+          else
+            raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
+          end
+          )
+      end
+
+      def self.isWindows
+        os == :windows
+      end
+
     end
   end
 end
