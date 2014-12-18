@@ -67,7 +67,7 @@ module Kitchen
       def verify_dependencies
        
         begin
-          execute_cmd( "#{config[:binary]}" )
+          run_command( "#{config[:binary]} info #{Helper.envErrorRedirect}", :quiet => true, :use_sudo => false)
         rescue Exception => e
           logger.debug("There was an error #{e}")
 
@@ -137,7 +137,7 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        execute_cmd("#{docker} #{cmd} ", options)
+        run_command("#{docker} #{cmd} #{Helper.envErrorRedirect}", options.merge(:quiet => !logger.debug?))
       end
 
       def build_dockerfile
@@ -307,15 +307,7 @@ module Kitchen
           .scan(/\d+/).join('.')
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
-
-      def execute_cmd(cmd_line, options={})
-        if Helper.isWindows
-          run_command("#{cmd_line} > /NUL", options.merge( { :quiet => !logger.debug?, :use_sudo => false } )  )
-        else 
-          run_command("#{cmd_line} > /dev/null 2>&1", options.merge( { :quiet => !logger.debug?, :use_sudo => false } ) )
-        end
-      end
-        
+   
     end
 
     class Helper 
@@ -337,8 +329,12 @@ module Kitchen
           )
       end
 
-      def self.isWindows
-        os == :windows
+      def self.envErrorRedirect
+        if os == :windows
+          "> NUL"
+        else
+          "2> /dev/null" 
+        end 
       end
 
     end
