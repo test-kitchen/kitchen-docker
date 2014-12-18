@@ -18,11 +18,7 @@ require 'erb'
 
 module Kitchen
   module Driver
-<<<<<<< HEAD
-    # ERB Context
-=======
     #ERB Context
->>>>>>> update dns flag, make inspect command quieter
     class DockerERBContext
       def initialize(config={})
         config.each do |key, value|
