@@ -8,6 +8,25 @@ A Test Kitchen Driver for Docker.
 
 ## Installation and Setup
 
+### Gemfile
+
+Add an entry to your Gemfile. This fork is currently not hosted on the central ruby repository you will need to use the following to use this fork:
+
+```
+gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git'
+```
+
+To be safe, you should probably reference a tagged version instead of the HEAD version
+
+```
+gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git', :tag => '1.6.1'
+```
+
+
+
+### Test Kitchen
+
+
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
 Example `.kitchen.local.yml`:
@@ -380,7 +399,11 @@ example:
 
 ## Authors
 
-Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
+Created and maintained by 
+
+ - [Sean Porter][author] (<portertech@gmail.com>)
+ - Peter Abbott
+
 
 ## License
 
