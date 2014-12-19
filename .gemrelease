@@ -1,3 +1,6 @@
 ---
 bump:
-  tag: true 
+  tag: false
+  commit: false
+  push: false 
+  release: false
