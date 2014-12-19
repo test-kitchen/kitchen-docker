@@ -1,0 +1,8 @@
+source "https://rubygems.org"
+
+
+group :test do
+  gem 'test-kitchen'
+  gem 'kitchen-vagrant'
+  gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git', :tag => '1.6.1'
+end

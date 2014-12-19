@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright (C) 2014, Sean Porter
+# Copyright (C) 2014, Sean Porter, Peter Abbott
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ module Kitchen
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
 
-      default_config :binary,        'docker'
+      default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
       default_config :use_cache,     true
@@ -41,11 +41,13 @@ module Kitchen
                                       -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+      default_config :no_ssh_tcp_check,  false
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
+      default_config :publish_all,   false
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -62,11 +64,16 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, 
-                     :use_sudo => false)
+        begin
+           run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+        end
+        if config[:cpuset] && !version_above?('1.1.0')
+          raise UserError, 'The cpuset option is only supported on docker '\
+          'version >= 1.1.0, either remove this option or upgarde docker'
+        end
       end
 
       def default_image
@@ -86,7 +93,19 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        if config[:no_ssh_tcp_check]
+          wait_for_container(state)
+        else
+          wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        end
+      end
+
+      def wait_for_container(state)
+        logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
+          begin
+            container_exists?(state)
+          rescue false
+          end
       end
 
       def destroy(state)
@@ -220,9 +239,13 @@ module Kitchen
         Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
+        Array(config[:links]).each {|link| cmd << " --link #{link}"}
+        cmd << " --name #{config[:instance_name]}" if config[:instance_name]
+        cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
+        cmd << " --cpuset=\"#{config[:cpuset]}\"" if config[:cpuset]
         cmd << " -privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
@@ -273,6 +296,12 @@ module Kitchen
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
+      end
+
+      def version_above?(version)
+        docker_version = docker_command('--version').split(',').first
+          .scan(/\d+/).join('.')
+        Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
     end
   end

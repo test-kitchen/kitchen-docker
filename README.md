@@ -8,6 +8,25 @@ A Test Kitchen Driver for Docker.
 
 ## Installation and Setup
 
+### Gemfile
+
+Add an entry to your Gemfile. This fork is currently not hosted on the central ruby repository you will need to use the following to use this fork:
+
+```
+gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git'
+```
+
+To be safe, you should probably reference a tagged version instead of the HEAD version
+
+```
+gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git', :tag => '1.6.1'
+```
+
+
+
+### Test Kitchen
+
+
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
 Example `.kitchen.local.yml`:
@@ -202,6 +221,26 @@ default. You can read more about `memory.limit_in_bytes` [here][memory_limit].
 Sets the CPU shares (relative weight) for the suite container. Otherwise use
 Dockers defaults. You can read more about cpu.shares [here][cpu_shares].
 
+### cpuset
+
+Sets the CPU affinities (i.e. the CPUs on which to allow execution) for the
+suite container. Otherwise use Dockers defaults. You can read more in the
+[docker-run man page][docker_man].
+
+Examples:
+
+```
+  cpuset: 0-3
+```
+
+```
+  cpuset: '0,1'
+```
+Notice that when using commas in the `cpuset` value you **must** quote them as
+a string.
+
+**Note:** This feature is only available in docker versions >= 1.1.0.
+
 ### volume
 
 Adds a data volume(s) to the suite container.
@@ -236,7 +275,7 @@ Examples:
 ```
 ### http\_proxy
 
-Sets an http proxy for the suite container using the `http_proxy` environment variable. 
+Sets an http proxy for the suite container using the `http_proxy` environment variable.
 
 Examples:
 
@@ -302,6 +341,47 @@ Examples:
   dockerfile: test/Dockerfile
 ```
 
+### instance_name
+
+Set the name of container to link to other container(s).
+
+Examples:
+
+```
+  instance_name: web
+```
+
+### links
+
+Set ```instance_name```(and alias) of other container(s) that connect from the suite container.
+
+Examples:
+
+```
+ links: db:db
+```
+
+Examples:
+
+```
+  links:
+  - db:db
+  - kvs:kvs
+```
+
+### publish_all
+
+Publish all exposed ports to the host interfaces.  
+This option used to communicate between some containers.
+
+The default value is `false`.
+
+Examples:
+
+```
+  publish_all: true
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
@@ -319,7 +399,11 @@ example:
 
 ## Authors
 
-Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
+Created and maintained by 
+
+ - [Sean Porter][author] (<portertech@gmail.com>)
+ - Peter Abbott
+
 
 ## License
 
@@ -334,6 +418,7 @@ Apache 2.0 (see [LICENSE][license])
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
+[docker_man]:             https://github.com/docker/docker/blob/master/docs/man/docker-run.1.md
 [test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
