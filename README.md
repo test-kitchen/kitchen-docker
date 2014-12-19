@@ -1,10 +1,24 @@
 # Kitchen::Docker
 
+[![Build Status](https://travis-ci.org/peterabbott/kitchen-docker.svg?branch=delete)](https://travis-ci.org/peterabbott/kitchen-docker)
+
 A Test Kitchen Driver for Docker.
 
 ## Requirements
 
 * [Docker][docker_getting_started]
+
+## Versions
+
+### 1.6.1 
+
+- Merge of #71, #80, #91, #92
+
+
+
+
+
+
 
 ## Installation and Setup
 
