@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright (C) 2014, Sean Porter
+# Copyright (C) 2014, Peter Abbott
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 # limitations under the License.
 
 module KitchenDocker
-
-  module Driver
-    # Version string for Docker Kitchen driver
-    VERSION = '1.6.1.pre1'
-  end
+  # Version string for Docker Kitchen driver
+  VERSION = '1.6.1.pre2'
 end

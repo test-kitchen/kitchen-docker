@@ -1,4 +1,3 @@
 ---
 bump:
-  tag: false
-#module_path: kitchen/driver/
+  tag: true 
