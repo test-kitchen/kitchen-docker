@@ -6,8 +6,11 @@ rvm:
 - ruby-head
 
 env:
-  - CI=true
 
 matrix:
   allow_failures:
   - rvm: ruby-head
+
+branches:
+  except:
+    - /^v[0-9]/
