@@ -2,15 +2,16 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'kitchen/driver/docker_version'
+#require 'kitchen_docker/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'kitchen-docker'
   spec.version       = Kitchen::Driver::DOCKER_VERSION
-  spec.authors       = ['Sean Porter']
+  spec.authors       = ['Sean Porter', 'Peter Abbott']
   spec.email         = ['portertech@gmail.com']
   spec.description   = %q{A Test Kitchen Driver for Docker}
   spec.summary       = spec.description
-  spec.homepage      = 'https://github.com/portertech/kitchen-docker'
+  spec.homepage      = 'https://github.com/peterabbott/kitchen-docker'
   spec.license       = 'Apache 2.0'
 
   spec.files         = `git ls-files`.split($/)
@@ -26,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'cane'
   spec.add_development_dependency 'tailor'
   spec.add_development_dependency 'countloc'
+  spec.add_development_dependency 'gem-release'
 end

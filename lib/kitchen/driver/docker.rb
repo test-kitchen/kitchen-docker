@@ -67,8 +67,9 @@ module Kitchen
         begin
            run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
         rescue
-          raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+          if !ENV['CI']
+            raise UserError, "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
+          end
         end
         if config[:cpuset] && !version_above?('1.1.0')
           raise UserError, 'The cpuset option is only supported on docker '\

@@ -9,5 +9,8 @@ Tailor.config do |config|
     
     #this one because it makes it easier to read code
     style.spaces_after_comma 1, level: :info
+
+    #don't understand this one
+    style.max_code_lines_in_method 30, level: :warn
   end
 end
