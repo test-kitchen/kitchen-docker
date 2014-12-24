@@ -331,7 +331,7 @@ module Kitchen
 
       def self.envErrorRedirect
         if os == :windows
-          "> NUL"
+          "2> NUL"
         else
           "2> /dev/null" 
         end 
