@@ -166,6 +166,14 @@ containers.
 
 The default value is `true`.
 
+### use\_sudo
+
+This determines if Docker commands are run with `sudo`.
+
+The default value depends on the type of socket being used. For local sockets, the default value is `true`. For remote sockets, the default value is `false`.
+
+This should be set to `false` if you're using boot2docker, as every command passed into the VM runs as root by default.
+
 ### remove\_images
 
 This determines if images are automatically removed when the suite container is
