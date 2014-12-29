@@ -9,6 +9,7 @@ provisioner:
 platforms:
   - name: ubuntu-12.04
   - name: ubuntu-13.10
+  - name: ubuntu-14.04
   - name: centos-6.4
   - name: debian
   - name: arch
