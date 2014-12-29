@@ -97,6 +97,7 @@ module Kitchen
         if config[:no_ssh_tcp_check]
           wait_for_container(state)
         else
+          sleep 1
           wait_for_sshd(state[:hostname], nil, :port => state[:port])
         end
       end
