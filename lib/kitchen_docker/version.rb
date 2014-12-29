@@ -16,5 +16,5 @@
 
 module KitchenDocker
   # Version string for Docker Kitchen driver
-  VERSION = '1.6.3'
+  VERSION = '1.6.4'
 end
