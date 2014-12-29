@@ -146,9 +146,7 @@ module Kitchen
             RUN ln -sf /bin/true /sbin/initctl
           eos
           packages = <<-eos
-            ENV DEBIAN_FRONTEND noninteractive
-            RUN apt-get update
-            RUN apt-get install -y sudo openssh-server curl lsb-release
+            RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos'
@@ -186,10 +184,8 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         base = <<-eos
-          RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
-          RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
+          RUN useradd -d /home/#{username} -m -s /bin/bash #{username} && echo #{username}:#{password} | chpasswd
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username} && chmod 0440 /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
