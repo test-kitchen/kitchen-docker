@@ -164,7 +164,7 @@ module Kitchen
         base = <<-eos
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
