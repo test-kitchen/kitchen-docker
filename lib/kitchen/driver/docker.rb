@@ -59,7 +59,7 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} 2> /dev/null", :quiet => true)
+        run_command("#{config[:binary]} >> /dev/null 2>&1", :quiet => true)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
@@ -165,6 +165,7 @@ module Kitchen
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
