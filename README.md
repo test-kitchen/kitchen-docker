@@ -226,7 +226,24 @@ Examples:
   - /srv
 ```
 
-## dns
+### volumes_from
+
+Mount volumes managed by other containers.
+
+Examples:
+
+```
+  volumes_from: repos
+```
+
+```
+  volumes_from:
+  - repos
+  - logging
+  - rvm
+```
+
+### dns
 
 Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
 Dockers defaults.
@@ -340,7 +357,7 @@ Examples:
 
 ### publish_all
 
-Publish all exposed ports to the host interfaces.  
+Publish all exposed ports to the host interfaces.
 This option used to communicate between some containers.
 
 The default value is `false`.
