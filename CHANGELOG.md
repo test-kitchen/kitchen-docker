@@ -1,3 +1,7 @@
+## 1.7.0
+
+* Ensure a container id is set before attempting to inspect a container
+
 ## 1.6.0
 
 * `publish_all` option to publish all ports to the host interface
