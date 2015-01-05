@@ -241,7 +241,7 @@ module Kitchen
       end
 
       def container_exists?(state)
-        !!inspect_container(state) rescue false
+        state[:container_id] && !!inspect_container(state) rescue false
       end
 
       def parse_container_ssh_port(output)
