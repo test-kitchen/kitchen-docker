@@ -125,7 +125,7 @@ module Kitchen
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
-        when 'rhel', 'centos'
+        when 'rhel', 'centos', 'fedora'
           <<-eos
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
