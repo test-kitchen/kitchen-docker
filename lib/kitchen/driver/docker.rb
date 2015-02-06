@@ -44,6 +44,9 @@ module Kitchen
       default_config :tls_key,       nil
       default_config :publish_all,   false
 
+      default_config :ssh_timeout, 1
+      default_config :ssh_retries, 3
+
       default_config :use_sudo do |driver|
         !driver.remote_socket?
       end
@@ -82,7 +85,11 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        wait_for_sshd(state[:hostname], nil, {
+            :port => state[:port],
+            :ssh_timeout => config[:ssh_timeout],
+            :ssh_retries => config[:ssh_retries]
+        })
       end
 
       def destroy(state)
