@@ -61,6 +61,17 @@ module Kitchen
 
       default_config :disable_upstart, true
 
+      # Override wait_for_sshd.
+      # Default's wait_for_sshd returns always true for docker containers even
+      # if the ssh service is not available yet. It seems like it does not inspect if
+      # the forwarded port is listening. So we have to test a proper connection here.
+      def wait_for_sshd(hostname, username = nil, options = {})
+        Kitchen::SSH.new(hostname, username, { :logger => logger }
+                    .merge(options)) do |conn|
+            conn.exec("/bin/true")
+        end
+      end
+
       def verify_dependencies
         run_command("#{config[:binary]} >> /dev/null 2>&1", :quiet => true)
         rescue
@@ -85,8 +96,9 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, {
+        wait_for_sshd(state[:hostname], config[:username], {
             :port => state[:port],
+            :password => config[:password],
             :ssh_timeout => config[:ssh_timeout],
             :ssh_retries => config[:ssh_retries]
         })
