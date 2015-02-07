@@ -23,12 +23,8 @@ module Kitchen
 
   module Driver
     # Version string for Docker Kitchen driver
-<<<<<<< HEAD
     # Maintained by gem-release, refer to kitchen_docker/version.rb
     # Kept this module/class as it is the way test-kitchen does it
     DOCKER_VERSION = KitchenDocker::VERSION
-=======
-    DOCKER_VERSION = "1.7.0"
->>>>>>> bugfix/capabilities-flag
   end
 end
