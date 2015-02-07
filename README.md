@@ -206,6 +206,14 @@ containers.
 
 The default value is `true`.
 
+### use\_sudo
+
+This determines if Docker commands are run with `sudo`.
+
+The default value depends on the type of socket being used. For local sockets, the default value is `true`. For remote sockets, the default value is `false`.
+
+This should be set to `false` if you're using boot2docker, as every command passed into the VM runs as root by default.
+
 ### remove\_images
 
 This determines if images are automatically removed when the suite container is
@@ -271,7 +279,24 @@ Examples:
   - /srv
 ```
 
-## dns
+### volumes_from
+
+Mount volumes managed by other containers.
+
+Examples:
+
+```
+  volumes_from: repos
+```
+
+```
+  volumes_from:
+  - repos
+  - logging
+  - rvm
+```
+
+### dns
 
 Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
 Dockers defaults.
@@ -385,7 +410,7 @@ Examples:
 
 ### publish_all
 
-Publish all exposed ports to the host interfaces.  
+Publish all exposed ports to the host interfaces.
 This option used to communicate between some containers.
 
 The default value is `false`.
@@ -395,6 +420,25 @@ Examples:
 ```
   publish_all: true
 ```
+
+### cap_add
+Adds a capability to the running container, for example SYS_PTRACE
+
+````
+cap_add: 
+- SYS_PTRACE
+
+````
+
+### cap_add
+Drops a capability to the running container, for example CHOWN
+
+````
+cap_drop: 
+- CHOWN
+
+````
+
 
 ## Development
 

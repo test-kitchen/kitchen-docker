@@ -48,6 +48,8 @@ module Kitchen
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :publish_all,   false
+      default_config :cap_add,       nil 
+      default_config :cap_remove,    nil 
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -79,8 +81,8 @@ module Kitchen
 
       def default_image
         platform, release = instance.platform.name.split('-')
-        if platform == "centos" && release
-          release = "centos" + release.split('.').first
+        if platform == 'centos' && release
+          release = 'centos' + release.split('.').first
         end
         release ? [platform, release].join(':') : platform
       end
@@ -150,7 +152,7 @@ module Kitchen
             RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
-        when 'rhel', 'centos'
+        when 'rhel', 'centos', 'fedora'
           <<-eos
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
@@ -185,8 +187,10 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         base = <<-eos
-          RUN useradd -d /home/#{username} -m -s /bin/bash #{username} && echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username} && chmod 0440 /etc/sudoers.d/#{username}
+          RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
+          RUN echo #{username}:#{password} | chpasswd
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
@@ -247,6 +251,10 @@ module Kitchen
         cmd << " -privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
+        if version_above?('1.2.0') 
+          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_remove]
+        end
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -265,7 +273,7 @@ module Kitchen
       end
 
       def container_exists?(state)
-        !!inspect_container(state) rescue false
+        state[:container_id] && !!inspect_container(state) rescue false
       end
 
       def parse_container_ssh_port(output)
@@ -297,8 +305,8 @@ module Kitchen
       end
 
       def version_above?(version)
-        docker_version = docker_command('--version').split(',').first
-          .scan(/\d+/).join('.')
+        docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
+        
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
     end
