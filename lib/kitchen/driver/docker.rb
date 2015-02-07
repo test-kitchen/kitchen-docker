@@ -271,6 +271,12 @@ module Kitchen
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
       end
+
+      def version_above?(version)
+        docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
+        
+        Gem::Version.new(docker_version) >= Gem::Version.new(version)
+      end
     end
   end
 end
