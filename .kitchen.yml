@@ -36,7 +36,17 @@ platforms:
       image: ubuntu:14.04
       platform: ubuntu
       links: "db:db"
-
 suites:
   - name: default
   - name: concurrency
+  - name: capabilities
+    excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
+    driver:
+      provision_command:  
+      - curl -L http://www.chef.io/chef/install.sh | bash
+      - apt-get install -y net-tools 
+      username: kitchen
+      password: kitchen 
+      cap_drop:
+      - NET_ADMIN 
+     

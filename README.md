@@ -377,7 +377,7 @@ cap_add:
 
 ````
 
-### cap_add
+### cap_drop
 Drops a capability to the running container, for example CHOWN
 
 ````
