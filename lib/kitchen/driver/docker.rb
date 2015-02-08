@@ -49,7 +49,7 @@ module Kitchen
       default_config :tls_key,       nil
       default_config :publish_all,   false
       default_config :cap_add,       nil 
-      default_config :cap_remove,    nil 
+      default_config :cap_drop,    nil 
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -253,7 +253,7 @@ module Kitchen
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
         if version_above?('1.2.0') 
           Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
-          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_remove]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
         end
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
