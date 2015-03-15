@@ -267,7 +267,11 @@ module Kitchen
       def inspect_container(state)
         container_id = state[:container_id]
         unless container_id.nil?
-          docker_command("inspect #{container_id}")
+          begin
+            docker_command("inspect #{container_id}")
+          rescue
+            logger.warn("Container #{container_id} no longer exists")
+	  end
         end
       end
 
@@ -300,7 +304,6 @@ module Kitchen
             docker_command("rm #{container_id}") 
           rescue
             logger.info("problem removing the container #{container_id}, may have already gone")
-            inspect_container(state)   
           end
         end
       end
