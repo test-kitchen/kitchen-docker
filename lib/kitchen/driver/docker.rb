@@ -137,7 +137,7 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd} 2>/dev/null", options.merge(:quiet => !logger.debug?))
+        run_command("#{docker} #{cmd} 2>&1", options.merge(:quiet => !logger.debug?))
       end
 
       def build_dockerfile
@@ -252,8 +252,10 @@ module Kitchen
         cmd << " --privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
-        Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if version_above?('1.2.0') && config[:cap_add]
-        Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if version_above?('1.2.0') && config[:cap_drop]
+        if version_above?('1.2.0')
+          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
+        end
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -271,7 +273,7 @@ module Kitchen
             docker_command("inspect #{container_id}")
           rescue
             logger.warn("Container #{container_id} no longer exists")
-	  end
+          end
         end
       end
 
@@ -301,7 +303,7 @@ module Kitchen
         docker_command("stop #{container_id}")
         if container_exists?(state)
           begin
-            docker_command("rm #{container_id}") 
+            docker_command("rm #{container_id}")
           rescue
             logger.info("problem removing the container #{container_id}, may have already gone")
           end
