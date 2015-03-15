@@ -299,7 +299,8 @@ module Kitchen
           begin
             docker_command("rm #{container_id}") 
           rescue
-            logger.info("problem removing the containeri #{container_id}, may have already gone") 
+            logger.info("problem removing the container #{container_id}, may have already gone")
+            inspect_container(state)   
           end
         end
       end
