@@ -191,6 +191,7 @@ module Kitchen
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
@@ -294,7 +295,13 @@ module Kitchen
       def rm_container(state)
         container_id = state[:container_id]
         docker_command("stop #{container_id}")
-        docker_command("rm #{container_id}")
+        if container_exists?(state)
+          begin
+            docker_command("rm #{container_id}") 
+          rescue
+            logger.info("problem removing the containeri #{container_id}, may have already gone") 
+          end
+        end
       end
 
       def rm_image(state)
