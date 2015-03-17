@@ -83,6 +83,7 @@ module Kitchen
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
         wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        logger.info("Created Container: #{state[:container_id]}")
       end
 
       def destroy(state)
@@ -110,7 +111,7 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+        run_silently("#{docker} #{cmd} 2>&1", options)
       end
 
       def build_dockerfile
@@ -265,11 +266,19 @@ module Kitchen
         container_id = state[:container_id]
         docker_command("stop #{container_id}")
         docker_command("rm #{container_id}")
+        logger.info("Destroyed Container: #{state[:container_id]}")
       end
 
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
+      end
+
+      def run_silently(cmd, options = {})
+        merged = {
+          :live_stream => nil, :quiet => (logger.debug? ? false : true)
+        }.merge(options)
+        run_command(cmd, merged)
       end
     end
   end
