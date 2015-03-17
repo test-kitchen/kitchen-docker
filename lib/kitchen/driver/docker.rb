@@ -111,7 +111,11 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_silently("#{docker} #{cmd} 2>&1", options)
+        if options[:quiet]
+          run_silently("#{docker} #{cmd} 2>&1", options)
+        else 
+          run_command("#{docker} #{cmd} 2>&1", options)
+        end
       end
 
       def build_dockerfile
@@ -166,7 +170,9 @@ module Kitchen
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          #RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
@@ -232,13 +238,19 @@ module Kitchen
 
       def run_container(state)
         cmd = build_run_command(state[:image_id])
-        output = docker_command(cmd)
+        output = docker_command(cmd, :quiet => true)
         parse_container_id(output)
       end
 
       def inspect_container(state)
         container_id = state[:container_id]
-        docker_command("inspect #{container_id}")
+        unless container_id.nil?
+          begin
+            docker_command("inspect #{container_id}", :quiet => true)
+          rescue
+            logger.warn("Container #{container_id} no longer exists")
+          end
+        end
       end
 
       def container_exists?(state)
@@ -264,8 +276,14 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        docker_command("stop #{container_id}")
-        docker_command("rm #{container_id}")
+        
+        if container_exists?(state)
+          begin
+            docker_command("rm -f -v #{container_id}", :quiet => true)
+          rescue
+            logger.info("problem removing the container #{container_id}, may have already gone")
+          end
+        end
         logger.info("Destroyed Container: #{state[:container_id]}")
       end
 
@@ -276,7 +294,7 @@ module Kitchen
 
       def run_silently(cmd, options = {})
         merged = {
-          :live_stream => nil, :quiet => (logger.debug? ? false : true)
+          :live_stream => nil
         }.merge(options)
         run_command(cmd, merged)
       end
