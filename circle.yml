@@ -8,10 +8,7 @@ machine:
      2.1.5
 dependencies:
   bundler:
-    without: [ development ]
-  pre:
-    - rvm install 2.0.0-p598
-    - rvm install 2.2.0
+    without: [  ]
 
 test:
   override:
