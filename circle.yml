@@ -12,5 +12,4 @@ dependencies:
 
 test:
   override:
-    - bundle exec rake
-    - echo bundle exec kitchen test
+    - bundle exec rake test

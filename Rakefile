@@ -15,9 +15,22 @@ task :stats do
   sh "countloc -r lib"
 end
 
+namespace :test do
+  begin
+    require 'kitchen/rake_tasks'
+    Kitchen::RakeTasks.new
+  rescue LoadError
+    puts '>>>>> Kitchen gem not loaded, omitting tasks' unless ENV['CI']
+  end
+
+  task :kitchen do 
+    Rake::Task['test:kitchen:all'].invoke
+  end
+end
+
 desc "Run all quality tasks"
 task :quality => [:cane, :tailor, :stats]
-
+task :test => [:quality, 'test:kitchen' ]
 task :default => [:quality]
 
 begin
