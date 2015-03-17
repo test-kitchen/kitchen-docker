@@ -2,10 +2,8 @@
 driver:
   name: docker
   provision_command: curl -L http://www.chef.io/chef/install.sh | bash
-
 provisioner:
   name: dummy
-
 platforms:
   - name: ubuntu-12.04
   - name: ubuntu-14.04
@@ -15,10 +13,6 @@ platforms:
   - name: arch
     driver:
       image: base/arch
-  - name: unknown
-    driver:
-      image: ubuntu:12.04
-      platform: ubuntu
   - name: dockerfile
     driver:
       username: dockerfile
@@ -38,7 +32,9 @@ platforms:
       links: "db:db"
 suites:
   - name: default
+    excludes: [arch]
   - name: concurrency
+    excludes: [arch]
   - name: capabilities
     excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
     driver:
@@ -49,4 +45,3 @@ suites:
       password: kitchen 
       cap_drop:
       - NET_ADMIN 
-     
