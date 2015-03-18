@@ -214,9 +214,7 @@ module Kitchen
             RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
             RUN chmod 0440 /etc/sudoers.d/#{username}
           eos
-        else 
-          ''
-        end
+        else '' end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
