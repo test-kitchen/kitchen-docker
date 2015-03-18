@@ -348,7 +348,10 @@ module Kitchen
 
       def rm_image(state)
         image_id = state[:image_id]
-        docker_command("rmi #{image_id}")
+        begin
+          docker_command("rmi #{image_id}")
+        rescue
+          logger.info('Unable to remove image #{image_id}, going to ignore')
       end
 
       def version_above?(version)
