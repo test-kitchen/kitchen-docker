@@ -63,6 +63,10 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :platform_version do |driver|
+        driver.default_platform_version
+      end
+
       default_config :disable_upstart, true
 
       def verify_dependencies
@@ -91,24 +95,31 @@ module Kitchen
         instance.platform.name.split('-').first
       end
 
+      def default_platform_version
+        instance.platform.name.split('-').last
+      end
+
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
+
         if config[:no_ssh_tcp_check]
           wait_for_container(state)
         else
           sleep 1
           wait_for_sshd(state[:hostname], nil, :port => state[:port])
         end
+        logger.info("Created Container: #{state[:container_id]}")
       end
 
       def wait_for_container(state)
         logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
           begin
             container_exists?(state)
-          rescue false
+          rescue 
+            false
           end
       end
 
@@ -137,7 +148,12 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd} 2>&1", options.merge(:quiet => !logger.debug?))
+
+        if options[:quiet] == true
+          options.merge!(:live_stream => nil)
+        end
+
+        run_command("#{docker} #{cmd} 2>&1", options)
       end
 
       def build_dockerfile
@@ -191,14 +207,28 @@ module Kitchen
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
+        if supports_sudoers_d 
+          base = <<-eos
+            RUN mkdir -p /etc/sudoers.d
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+            RUN chmod 0440 /etc/sudoers.d/#{username}
+          eos
+        end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
         [from, platform, base, custom].join("\n")
+      end
+
+      def supports_sudoers_d
+        case config[:platform]
+        when 'rhel', 'centos', 'fedora'
+           config[:platform_version].to_i >= 6 
+        else
+           true 
+        end
       end
 
       def dockerfile
@@ -263,7 +293,7 @@ module Kitchen
 
       def run_container(state)
         cmd = build_run_command(state[:image_id])
-        output = docker_command(cmd)
+        output = docker_command(cmd, :quiet => true)
         parse_container_id(output)
       end
 
@@ -271,7 +301,7 @@ module Kitchen
         container_id = state[:container_id]
         unless container_id.nil?
           begin
-            docker_command("inspect #{container_id}")
+            docker_command("inspect #{container_id}", :quiet => true)
           rescue
             logger.warn("Container #{container_id} no longer exists")
           end
@@ -279,7 +309,12 @@ module Kitchen
       end
 
       def container_exists?(state)
-        state[:container_id] && !!inspect_container(state) rescue false
+        begin
+          state[:container_id] && docker_command("ps -q --no-trunc #{state[:container_id]}", :quiet => true).strip! == state[:container_id]
+        rescue
+           false
+        end
+        state[:container_id]
       end
 
       def parse_container_ssh_port(output)
@@ -301,14 +336,15 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        docker_command("stop #{container_id}")
+        
         if container_exists?(state)
           begin
-            docker_command("rm #{container_id}")
+            docker_command("rm -f -v #{container_id}", :quiet => true)
           rescue
             logger.info("problem removing the container #{container_id}, may have already gone")
           end
         end
+        logger.info("Destroyed Container: #{state[:container_id]}")
       end
 
       def rm_image(state)

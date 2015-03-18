@@ -10,6 +10,8 @@ platforms:
   - name: centos-5
   - name: centos-6.4
   - name: centos-7
+  - name: centos-6
+  - name: centos-5
   - name: debian
   - name: arch
     driver:
