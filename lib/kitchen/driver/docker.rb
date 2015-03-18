@@ -56,6 +56,11 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :platform_version do |driver|
+        driver.default_platform_version
+      end
+
+
       default_config :disable_upstart, true
 
       def verify_dependencies
@@ -75,6 +80,10 @@ module Kitchen
 
       def default_platform
         instance.platform.name.split('-').first
+      end
+
+      def default_platform_version
+        instance.platform.name.split('-').last
       end
 
       def create(state)
@@ -111,11 +120,12 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        if options[:quiet]
-          run_silently("#{docker} #{cmd} 2>&1", options)
-        else 
-          run_command("#{docker} #{cmd} 2>&1", options)
+
+        if options[:quiet] == true
+          options.merge!(:live_stream => nil)
         end
+
+        run_command("#{docker} #{cmd} 2>&1", options)
       end
 
       def build_dockerfile
@@ -170,15 +180,28 @@ module Kitchen
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN mkdir -p /etc/sudoers.d
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
+        if supports_sudoers_d 
+          base = <<-eos
+            RUN mkdir -p /etc/sudoers.d
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+            RUN chmod 0440 /etc/sudoers.d/#{username}
+          eos
+        end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
         [from, platform, base, custom].join("\n")
+      end
+
+      def supports_sudoers_d
+        case config[:platform]
+        when 'rhel', 'centos', 'fedora'
+           config[:platform_version].to_i >= 6 
+        else
+           true 
+        end
       end
 
       def dockerfile
@@ -254,7 +277,12 @@ module Kitchen
       end
 
       def container_exists?(state)
-        state[:container_id] && !!inspect_container(state) rescue false
+        begin
+          state[:container_id] && docker_command("ps -q --no-trunc #{state[:container_id]}", :quiet => true).strip! == state[:container_id]
+        rescue
+           false
+        end
+        state[:container_id]
       end
 
       def parse_container_ssh_port(output)
@@ -292,12 +320,6 @@ module Kitchen
         docker_command("rmi #{image_id}")
       end
 
-      def run_silently(cmd, options = {})
-        merged = {
-          :live_stream => nil
-        }.merge(options)
-        run_command(cmd, merged)
-      end
     end
   end
 end
