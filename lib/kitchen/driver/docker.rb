@@ -208,18 +208,20 @@ module Kitchen
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
         eos
-        if supports_sudoers_d
-          base = <<-eos
+        sudoers = if supports_sudoers_d
+          ssh = <<-eos
             RUN mkdir -p /etc/sudoers.d
             RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
             RUN chmod 0440 /etc/sudoers.d/#{username}
           eos
+        else 
+          ''
         end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        [from, platform, base, sudoers, custom].join("\n")
       end
 
       def supports_sudoers_d
