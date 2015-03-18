@@ -7,6 +7,7 @@ provisioner:
 platforms:
   - name: ubuntu-12.04
   - name: ubuntu-14.04
+  - name: centos-5
   - name: centos-6.4
   - name: centos-7
   - name: debian
