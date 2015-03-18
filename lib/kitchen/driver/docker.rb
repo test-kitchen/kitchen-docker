@@ -118,7 +118,7 @@ module Kitchen
         logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
           begin
             container_exists?(state)
-          rescue 
+          rescue
             false
           end
       end
@@ -208,7 +208,7 @@ module Kitchen
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
         eos
-        if supports_sudoers_d 
+        if supports_sudoers_d
           base = <<-eos
             RUN mkdir -p /etc/sudoers.d
             RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
@@ -225,9 +225,9 @@ module Kitchen
       def supports_sudoers_d
         case config[:platform]
         when 'rhel', 'centos', 'fedora'
-           config[:platform_version].to_i >= 6 
+           config[:platform_version].to_i >= 6
         else
-           true 
+           true
         end
       end
 
@@ -336,7 +336,6 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        
         if container_exists?(state)
           begin
             docker_command("rm -f -v #{container_id}", :quiet => true)
