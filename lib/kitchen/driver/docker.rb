@@ -352,6 +352,7 @@ module Kitchen
           docker_command("rmi #{image_id}")
         rescue
           logger.info('Unable to remove image #{image_id}, going to ignore')
+        end
       end
 
       def version_above?(version)
