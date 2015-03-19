@@ -21,7 +21,7 @@ platforms:
       username: dockerfile
       password: dockerfile
       dockerfile: test/Dockerfile
-      run_command: /sbin/init
+      run_command: /sbin/init -D -o UseDNS=no  -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid
   - name: database
     driver:
       image: ubuntu:14.04
