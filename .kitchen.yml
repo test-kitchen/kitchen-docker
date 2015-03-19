@@ -13,15 +13,16 @@ platforms:
   - name: centos-6
   - name: centos-5
   - name: debian
-  - name: arch
-    driver:
-      image: base/arch
-  - name: dockerfile
-    driver:
-      username: dockerfile
-      password: dockerfile
-      dockerfile: test/Dockerfile
-      run_command: /sbin/init -D -o UseDNS=no  -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid
+  # - name: arch
+  #   driver:
+  #     image: base/arch
+  # - name: dockerfile
+  #   driver:
+  #     username: dockerfile
+  #     password: dockerfile
+  #     use_cache: false
+  #     dockerfile: test/Dockerfile
+  #     run_command: /sbin/init 
   - name: database
     driver:
       image: ubuntu:14.04
@@ -35,11 +36,9 @@ platforms:
       links: "db:db"
 suites:
   - name: default
-    excludes: [arch]
   - name: concurrency
-    excludes: [arch]
   - name: capabilities
-    excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
+    excludes: [unknown,centos-7,centos-6.4,dockerfile]
     driver:
       provision_command:  
       - curl -L http://www.chef.io/chef/install.sh | bash
