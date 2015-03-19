@@ -1,0 +1,27 @@
+---
+driver:
+  name: docker
+  provision_command: curl -L http://www.chef.io/chef/install.sh | bash
+provisioner:
+  name: dummy
+platforms:
+  - name: ubuntu-12.04
+  - name: ubuntu-14.04
+  - name: centos-5
+  - name: centos-6.4
+  - name: centos-7
+  - name: centos-6
+  - name: centos-5
+  - name: debian
+suites:
+  - name: default
+  - name: capabilities
+    excludes: [centos-6.4, centos-7, centos-5, debian]
+    driver:
+      provision_command:  
+      - curl -L http://www.chef.io/chef/install.sh | bash
+      - apt-get install -y net-tools 
+      username: kitchen
+      password: kitchen 
+      cap_drop:
+      - NET_ADMIN 
