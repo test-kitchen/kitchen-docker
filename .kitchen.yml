@@ -23,7 +23,7 @@ platforms:
 suites:
   - name: default
   - name: capabilities
-    excludes: [ centos-7 ]
+    excludes: [ centos-7, debian ]
     driver:
       cap_drop:
       - NET_ADMIN 
