@@ -13,32 +13,10 @@ platforms:
   - name: centos-6
   - name: centos-5
   - name: debian
-  # - name: arch
-  #   driver:
-  #     image: base/arch
-  # - name: dockerfile
-  #   driver:
-  #     username: dockerfile
-  #     password: dockerfile
-  #     use_cache: false
-  #     dockerfile: test/Dockerfile
-  #     run_command: /sbin/init 
-  - name: database
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      instance_name: db
-      publish_all: true
-  - name: linked
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      links: "db:db"
 suites:
   - name: default
-  - name: concurrency
   - name: capabilities
-    excludes: [unknown,centos-7,centos-6.4,dockerfile]
+    excludes: [centos]
     driver:
       provision_command:  
       - curl -L http://www.chef.io/chef/install.sh | bash
