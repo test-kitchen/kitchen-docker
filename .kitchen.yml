@@ -1,15 +1,18 @@
 ---
 driver:
   name: docker
-  provision_command: curl -L http://www.opscode.com/chef/install.sh | bash
+  provision_command: curl -L http://www.chef.io/chef/install.sh | bash
 
 provisioner:
   name: dummy
 
 platforms:
   - name: ubuntu-12.04
-  - name: ubuntu-13.10
+  - name: ubuntu-14.04
   - name: centos-6.4
+  - name: centos-7
+  - name: centos-6
+  - name: centos-5
   - name: debian
   - name: arch
     driver:
@@ -24,6 +27,17 @@ platforms:
       password: dockerfile
       dockerfile: test/Dockerfile
       run_command: /sbin/init
+  - name: database
+    driver:
+      image: ubuntu:14.04
+      platform: ubuntu
+      instance_name: db
+      publish_all: true
+  - name: linked
+    driver:
+      image: ubuntu:14.04
+      platform: ubuntu
+      links: "db:db"
 
 suites:
   - name: default
