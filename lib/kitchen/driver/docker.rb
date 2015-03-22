@@ -27,8 +27,6 @@ module Kitchen
     #
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
-      
-
       default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
@@ -68,7 +66,7 @@ module Kitchen
 
 
       default_config :disable_upstart, true
-      
+
       def verify_dependencies
         begin
           run_command( "#{config[:binary]} info #{Helper.envErrorRedirect}", :quiet => true, :use_sudo => false)
@@ -212,7 +210,7 @@ module Kitchen
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
-        if supports_sudoers_d 
+        if supports_sudoers_d
           base = <<-eos
             RUN mkdir -p /etc/sudoers.d
             RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
@@ -229,9 +227,9 @@ module Kitchen
       def supports_sudoers_d
         case config[:platform]
         when 'rhel', 'centos', 'fedora'
-           config[:platform_version].to_i >= 6 
+           config[:platform_version].to_i >= 6
         else
-           true 
+           true
         end
       end
 
@@ -336,7 +334,7 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        
+
         if container_exists?(state)
           begin
             docker_command("rm -f -v #{container_id}", :quiet => true)
@@ -357,10 +355,9 @@ module Kitchen
           .scan(/\d+/).join('.')
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
-   
     end
-
-    class Helper 
+    # helper class
+    class Helper
       def self.os
         @os ||= (
           host_os = RbConfig::CONFIG['host_os']
@@ -383,8 +380,8 @@ module Kitchen
         if os == :windows
           "2> NUL"
         else
-          "2> /dev/null" 
-        end 
+          "2> /dev/null"
+        end
       end
     end
   end
