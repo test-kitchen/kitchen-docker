@@ -70,7 +70,7 @@ module Kitchen
 
       def verify_dependencies
         begin
-            run_command("#{config[:binary]} info #{Helper.envErrorRedirect}", \
+            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", \
                         :quiet => true, \
                         :use_sudo => false)
         rescue
@@ -383,12 +383,12 @@ module Kitchen
           when /solaris|bsd/
             :unix
           else
-            raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
+            raise UserError, "unknown os: #{host_os.inspect}"
           end
           )
       end
 
-      def self.envErrorRedirect
+      def self.env_error_redirect
         if os == :windows
           "2> NUL"
         else
