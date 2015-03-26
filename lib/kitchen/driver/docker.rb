@@ -158,7 +158,7 @@ module Kitchen
           options.merge!(:quiet => !logger.debug?)
         end
 
-        run_command("#{docker} #{cmd} #{Helper.envErrorRedirect}", options)
+        run_command("#{docker} #{cmd}", options)
       end
 
       def build_dockerfile
