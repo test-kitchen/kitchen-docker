@@ -19,15 +19,14 @@ require 'json'
 require 'uri'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
+
 module Kitchen
 
   module Driver
-
     # Docker driver for Kitchen.
     #
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
-
       default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
@@ -71,15 +70,19 @@ module Kitchen
 
       def verify_dependencies
         begin
-           run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
+            run_command("#{config[:binary]} info #{Helper.envErrorRedirect}", \
+                        :quiet => true, \
+                        :use_sudo => false)
         rescue
-          if !ENV['CI']
-            raise UserError, "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
+          unless ENV['CI']
+            raise UserError, \
+                  "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
           end
         end
         if config[:cpuset] && !version_above?('1.1.0')
-          raise UserError, 'The cpuset option is only supported on docker '\
-          'version >= 1.1.0, either remove this option or upgarde docker'
+          raise UserError, \
+                'The cpuset option is only supported on docker '\
+                'version >= 1.1.0, either remove this option or upgarde docker'
         end
       end
 
@@ -151,9 +154,11 @@ module Kitchen
 
         if options[:quiet] == true
           options.merge!(:live_stream => nil)
+        else
+          options.merge!(:quiet => !logger.debug?)
         end
 
-        run_command("#{docker} #{cmd} 2>&1", options)
+        run_command("#{docker} #{cmd} #{Helper.envErrorRedirect}", options)
       end
 
       def build_dockerfile
@@ -203,11 +208,13 @@ module Kitchen
         end
         username = config[:username]
         password = config[:password]
+
         base = <<-eos
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
         eos
+
         sudoers = if supports_sudoers_d
           ssh = <<-eos
             RUN mkdir -p /etc/sudoers.d
@@ -336,6 +343,7 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
+
         if container_exists?(state)
           begin
             docker_command("rm -f -v #{container_id}", :quiet => true)
@@ -358,6 +366,34 @@ module Kitchen
       def version_above?(version)
         docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
+      end
+    end
+    # helper class
+    class Helper
+      def self.os
+        @os ||= (
+          host_os = RbConfig::CONFIG['host_os']
+          case host_os
+          when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+            :windows
+          when /darwin|mac os/
+            :macosx
+          when /linux/
+            :linux
+          when /solaris|bsd/
+            :unix
+          else
+            raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
+          end
+          )
+      end
+
+      def self.envErrorRedirect
+        if os == :windows
+          "2> NUL"
+        else
+          "2> /dev/null"
+        end
       end
     end
   end
