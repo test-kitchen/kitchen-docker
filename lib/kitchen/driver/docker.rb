@@ -19,15 +19,14 @@ require 'json'
 require 'uri'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
+
 module Kitchen
 
   module Driver
-
     # Docker driver for Kitchen.
     #
     # @author Sean Porter <portertech@gmail.com>
     class Docker < Kitchen::Driver::SSHBase
-
       default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
@@ -63,19 +62,27 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :platform_version do |driver|
+        driver.default_platform_version
+      end
+
       default_config :disable_upstart, true
 
       def verify_dependencies
         begin
-           run_command("#{config[:binary]} > /dev/null 2>&1", :quiet => true, :use_sudo => false)
+            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", \
+                        :quiet => true, \
+                        :use_sudo => false)
         rescue
-          if !ENV['CI']
-            raise UserError, "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
+          unless ENV['CI']
+            raise UserError, \
+                  "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
           end
         end
         if config[:cpuset] && !version_above?('1.1.0')
-          raise UserError, 'The cpuset option is only supported on docker '\
-          'version >= 1.1.0, either remove this option or upgarde docker'
+          raise UserError, \
+                'The cpuset option is only supported on docker '\
+                'version >= 1.1.0, either remove this option or upgarde docker'
         end
       end
 
@@ -91,24 +98,31 @@ module Kitchen
         instance.platform.name.split('-').first
       end
 
+      def default_platform_version
+        instance.platform.name.split('-').last
+      end
+
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
+
         if config[:no_ssh_tcp_check]
           wait_for_container(state)
         else
           sleep 1
           wait_for_sshd(state[:hostname], nil, :port => state[:port])
         end
+        logger.info("Created Container: #{state[:container_id]}")
       end
 
       def wait_for_container(state)
         logger.info("Waiting for #{state[:hostname]}:#{state[:port]}...") until
           begin
             container_exists?(state)
-          rescue false
+          rescue
+            false
           end
       end
 
@@ -137,7 +151,14 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd} 2>&1", options.merge(:quiet => !logger.debug?))
+
+        if options[:quiet] == true
+          options.merge!(:live_stream => nil)
+        else
+          options.merge!(:quiet => !logger.debug?)
+        end
+
+        run_command("#{docker} #{cmd}", options)
       end
 
       def build_dockerfile
@@ -162,6 +183,7 @@ module Kitchen
         when 'arch'
           <<-eos
             RUN pacman -Syu --noconfirm
+            RUN pacman-db-upgrade
             RUN pacman -S --noconfirm openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
@@ -186,18 +208,34 @@ module Kitchen
         end
         username = config[:username]
         password = config[:password]
+
         base = <<-eos
           RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
+
+        sudoers = if supports_sudoers_d
+          ssh = <<-eos
+            RUN mkdir -p /etc/sudoers.d
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+            RUN chmod 0440 /etc/sudoers.d/#{username}
+          eos
+        else '' end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        [from, platform, base, sudoers, custom].join("\n")
+      end
+
+      def supports_sudoers_d
+        case config[:platform]
+        when 'rhel', 'centos', 'fedora'
+           config[:platform_version].to_i >= 6
+        else
+           true
+        end
       end
 
       def dockerfile
@@ -262,7 +300,7 @@ module Kitchen
 
       def run_container(state)
         cmd = build_run_command(state[:image_id])
-        output = docker_command(cmd)
+        output = docker_command(cmd, :quiet => true)
         parse_container_id(output)
       end
 
@@ -270,7 +308,7 @@ module Kitchen
         container_id = state[:container_id]
         unless container_id.nil?
           begin
-            docker_command("inspect #{container_id}")
+            docker_command("inspect #{container_id}", :quiet => true)
           rescue
             logger.warn("Container #{container_id} no longer exists")
           end
@@ -278,7 +316,12 @@ module Kitchen
       end
 
       def container_exists?(state)
-        state[:container_id] && !!inspect_container(state) rescue false
+        begin
+          state[:container_id] && docker_command("ps -q --no-trunc #{state[:container_id]}", :quiet => true).strip! == state[:container_id]
+        rescue
+           false
+        end
+        state[:container_id]
       end
 
       def parse_container_ssh_port(output)
@@ -300,24 +343,57 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        docker_command("stop #{container_id}")
+
         if container_exists?(state)
           begin
-            docker_command("rm #{container_id}")
+            docker_command("rm -f -v #{container_id}", :quiet => true)
           rescue
             logger.info("problem removing the container #{container_id}, may have already gone")
           end
         end
+        logger.info("Destroyed Container: #{state[:container_id]}")
       end
 
       def rm_image(state)
         image_id = state[:image_id]
-        docker_command("rmi #{image_id}")
+        begin
+          docker_command("rmi #{image_id}")
+        rescue
+          logger.info('Unable to remove image #{image_id}, going to ignore')
+        end
       end
 
       def version_above?(version)
         docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
         Gem::Version.new(docker_version) >= Gem::Version.new(version)
+      end
+    end
+    # helper class
+    class Helper
+      def self.os
+        @os ||= (
+          host_os = RbConfig::CONFIG['host_os']
+          case host_os
+          when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+            :windows
+          when /darwin|mac os/
+            :macosx
+          when /linux/
+            :linux
+          when /solaris|bsd/
+            :unix
+          else
+            raise UserError, "unknown os: #{host_os.inspect}"
+          end
+          )
+      end
+
+      def self.env_error_redirect
+        if os == :windows
+          "2> NUL"
+        else
+          "2> /dev/null"
+        end
       end
     end
   end

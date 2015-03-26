@@ -1,6 +1,0 @@
----
-bump:
-  tag: true 
-  commit: false
-  push: false 
-  release: false

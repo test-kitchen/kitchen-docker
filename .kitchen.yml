@@ -2,51 +2,28 @@
 driver:
   name: docker
   provision_command: curl -L http://www.chef.io/chef/install.sh | bash
-
 provisioner:
   name: dummy
-
 platforms:
   - name: ubuntu-12.04
-  - name: ubuntu-14.04
-  - name: centos-6.4
-  - name: centos-7
-  - name: debian
-  - name: arch
     driver:
-      image: base/arch
-  - name: unknown
-    driver:
-      image: ubuntu:12.04
-      platform: ubuntu
-  - name: dockerfile
-    driver:
-      username: dockerfile
-      password: dockerfile
-      dockerfile: test/Dockerfile
-      run_command: /sbin/init
-  - name: database
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      instance_name: db
-      publish_all: true
-  - name: linked
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      links: "db:db"
-suites:
-  - name: default
-  - name: concurrency
-  - name: capabilities
-    excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
-    driver:
-      provision_command:  
+      provision_command:
       - curl -L http://www.chef.io/chef/install.sh | bash
       - apt-get install -y net-tools 
-      username: kitchen
-      password: kitchen 
+  - name: ubuntu-14.04
+    driver:
+      provision_command:
+      - curl -L http://www.chef.io/chef/install.sh | bash
+      - apt-get install -y net-tools   
+  - name: centos-5
+  - name: centos-6.6
+  - name: centos-7
+  - name: centos-5
+  - name: debian
+suites:
+  - name: default
+  - name: capabilities
+    excludes: [ centos-7, debian ]
+    driver:
       cap_drop:
       - NET_ADMIN 
-     
