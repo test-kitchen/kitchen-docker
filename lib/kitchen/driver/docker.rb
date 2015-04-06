@@ -31,6 +31,9 @@ module Kitchen
       default_config :binary,        'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
+      default_config :security_opt,  nil
+      default_config :cap_add,       nil
+      default_config :cap_drop,      nil
       default_config :use_cache,     true
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
@@ -223,6 +226,9 @@ module Kitchen
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -privileged" if config[:privileged]
+        cmd << " --security-opt #{config[:security_opt]}" if config[:security_opt]
+        cmd << " --cap-add #{config[:cap_add]}" if config[:cap_add]
+        cmd << " --cap-drop #{config[:cap_drop]}" if config[:cap_drop]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
         cmd << " #{image_id} #{config[:run_command]}"
