@@ -328,22 +328,8 @@ Optional parameter.
 Example:
 
 ```
-security_opt: apparmor:my_profile
-```
-
-### cap\_add/cap\_drop
-
-Grant or Deny access to specific Linux Capabilities. This is another way to
-control security of a container, as access can be granted to specific devices
-(e.g. network), or specific operations (e.g. the mounting of filesystems).
-
-Optional parameter. (defaults to unset)
-
-Example:
-
-```
-cap_add: SYS_TIME
-cap_drop: ALL
+security_opt:
+  - apparmor:my_profile
 ```
 
 ## dockerfile
