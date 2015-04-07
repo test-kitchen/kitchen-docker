@@ -348,7 +348,8 @@ Optional parameter.
 Example:
 
 ```
-security_opt: apparmor:my_profile
+security_opt:
+  - apparmor:my_profile
 ```
 
 ### dockerfile
