@@ -317,6 +317,21 @@ Examples:
   privileged: true
 ```
 
+### security\_opt
+
+Apply a security profile to the Docker container. Allowing finer granularity of
+access control than privileged mode, through leveraging SELinux/AppArmor 
+profiles to grant access to specific resources
+
+Optional parameter.
+
+Example:
+
+```
+security_opt:
+  - apparmor:my_profile
+```
+
 ## dockerfile
 
 Use a custom Dockerfile, instead of having Kitchen-Docker build one for you.
