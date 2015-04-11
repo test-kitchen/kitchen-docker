@@ -241,15 +241,13 @@ module Kitchen
       end
 
       def container_exists?(state)
-        state[:container_id] && !!inspect_container(state) rescue false
+        state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
       end
 
       def parse_container_ssh_port(output)
         begin
-          info = Array(::JSON.parse(output)).first
-          ports = info['NetworkSettings']['Ports'] || info['HostConfig']['PortBindings']
-          ssh_port = ports['22/tcp'].detect {|port| port['HostIp'] == '0.0.0.0'}
-          ssh_port['HostPort'].to_i
+          host, port = output.split(':')
+          port.to_i
         rescue
           raise ActionFailed,
           'Could not parse Docker inspect output for container SSH port'
@@ -257,8 +255,13 @@ module Kitchen
       end
 
       def container_ssh_port(state)
-        output = inspect_container(state)
-        parse_container_ssh_port(output)
+        begin
+          output = docker_command("port #{state[:container_id]} 22/tcp")
+          parse_container_ssh_port(output)
+        rescue
+          raise ActionFailed,
+          'Docker reports container has no ssh port mapped'
+        end
       end
 
       def rm_container(state)
