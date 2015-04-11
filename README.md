@@ -188,7 +188,7 @@ destroyed.
 
 The default value is `false`.
 
-### run_command
+### run\_command
 
 Sets the command used to run the suite container.
 
@@ -226,7 +226,7 @@ Examples:
   - /srv
 ```
 
-### volumes_from
+### volumes\_from
 
 Mount volumes managed by other containers.
 
@@ -317,9 +317,11 @@ Examples:
   privileged: true
 ```
 
-### cap_add
+### cap\_add
 
-Adds a capability to the running container, for example SYS_PTRACE
+Adds a capability to the running container.
+
+Examples:
 
 ````
 cap_add:
@@ -327,9 +329,11 @@ cap_add:
 
 ````
 
-### cap_drop
+### cap\_drop
 
-Drops a capability to the running container, for example CHOWN
+Drops a capability from the running container.
+
+Examples:
 
 ````
 cap_drop:
@@ -341,11 +345,9 @@ cap_drop:
 
 Apply a security profile to the Docker container. Allowing finer granularity of
 access control than privileged mode, through leveraging SELinux/AppArmor
-profiles to grant access to specific resources
+profiles to grant access to specific resources.
 
-Optional parameter.
-
-Example:
+Examples:
 
 ```
 security_opt:
@@ -362,7 +364,7 @@ Examples:
   dockerfile: test/Dockerfile
 ```
 
-### instance_name
+### instance\_name
 
 Set the name of container to link to other container(s).
 
@@ -390,7 +392,7 @@ Examples:
   - kvs:kvs
 ```
 
-### publish_all
+### publish\_all
 
 Publish all exposed ports to the host interfaces.
 This option used to communicate between some containers.
