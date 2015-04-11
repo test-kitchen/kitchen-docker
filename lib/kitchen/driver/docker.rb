@@ -31,6 +31,9 @@ module Kitchen
       default_config :binary,        'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
+      default_config :cap_add,       nil
+      default_config :cap_drop,      nil
+      default_config :security_opt,  nil
       default_config :use_cache,     true
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
@@ -43,8 +46,6 @@ module Kitchen
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :publish_all,   false
-      default_config :cap_add,       nil
-      default_config :cap_drop,      nil
       default_config :wait_for_sshd, true
 
       default_config :use_sudo do |driver|
@@ -233,6 +234,7 @@ module Kitchen
         cmd << " --privileged" if config[:privileged]
         Array(config[:cap_add]).each {|cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
         Array(config[:cap_drop]).each {|cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
+        Array(config[:security_opt]).each {|opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
