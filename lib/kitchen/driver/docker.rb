@@ -222,7 +222,7 @@ module Kitchen
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
-        cmd << " -privileged" if config[:privileged]
+        cmd << " --privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
         cmd << " #{image_id} #{config[:run_command]}"
