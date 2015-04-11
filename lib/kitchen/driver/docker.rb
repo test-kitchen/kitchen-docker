@@ -43,8 +43,9 @@ module Kitchen
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :publish_all,   false
-      default_config :cap_add,       nil 
-      default_config :cap_drop,    nil 
+      default_config :cap_add,       nil
+      default_config :cap_drop,      nil
+      default_config :wait_for_sshd, true
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -84,7 +85,7 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port])
+        wait_for_sshd(state[:hostname], nil, :port => state[:port]) if config[:wait_for_sshd]
       end
 
       def destroy(state)
@@ -227,13 +228,11 @@ module Kitchen
         cmd << " -h #{config[:hostname]}" if config[:hostname]
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
-        cmd << " --privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
-        if version_above?('1.2.0') 
-          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
-          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
-        end
+        cmd << " --privileged" if config[:privileged]
+        Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
+        Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -242,11 +241,6 @@ module Kitchen
         cmd = build_run_command(state[:image_id])
         output = docker_command(cmd)
         parse_container_id(output)
-      end
-
-      def inspect_container(state)
-        container_id = state[:container_id]
-        docker_command("inspect #{container_id}")
       end
 
       def container_exists?(state)
@@ -259,7 +253,7 @@ module Kitchen
           port.to_i
         rescue
           raise ActionFailed,
-          'Could not parse Docker inspect output for container SSH port'
+          'Could not parse Docker port output for container SSH port'
         end
       end
 
@@ -282,12 +276,6 @@ module Kitchen
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
-      end
-
-      def version_above?(version)
-        docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
-        
-        Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
     end
   end
