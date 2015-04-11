@@ -43,6 +43,8 @@ module Kitchen
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :publish_all,   false
+      default_config :cap_add,       nil 
+      default_config :cap_drop,    nil 
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -225,6 +227,10 @@ module Kitchen
         cmd << " --privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
+        if version_above?('1.2.0') 
+          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
+        end
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -273,6 +279,12 @@ module Kitchen
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
+      end
+
+      def version_above?(version)
+        docker_version = docker_command('--version').split(',').first.scan(/\d+/).join('.')
+        
+        Gem::Version.new(docker_version) >= Gem::Version.new(version)
       end
     end
   end

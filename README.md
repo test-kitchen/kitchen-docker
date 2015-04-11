@@ -368,6 +368,25 @@ Examples:
   publish_all: true
 ```
 
+### cap_add
+Adds a capability to the running container, for example SYS_PTRACE
+
+````
+cap_add: 
+- SYS_PTRACE
+
+````
+
+### cap_drop
+Drops a capability to the running container, for example CHOWN
+
+````
+cap_drop: 
+- CHOWN
+
+````
+
+
 ## Development
 
 * Source hosted at [GitHub][repo]
