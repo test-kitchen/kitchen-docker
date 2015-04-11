@@ -4,7 +4,7 @@ A Test Kitchen Driver for Docker.
 
 ## Requirements
 
-* [Docker][docker_getting_started] **(>= 1.2)**
+* [Docker][docker_installation] **(>= 1.2)**
 
 ## Installation and Setup
 
@@ -433,7 +433,7 @@ Apache 2.0 (see [LICENSE][license])
 [issues]:                 https://github.com/portertech/kitchen-docker/issues
 [license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/portertech/kitchen-docker
-[docker_getting_started]: http://www.docker.io/gettingstarted/
+[docker_installation]:    https://docs.docker.com/installation/#installation
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
