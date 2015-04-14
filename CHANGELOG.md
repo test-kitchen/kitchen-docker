@@ -1,3 +1,19 @@
+## 2.0.0
+
+* Use Docker `top` and `port` instead of `inspect`
+
+* Don't create the kitchen user if it already exists
+
+* Docker container capabilities options: cap_add, cap_drop
+
+* Docker security profile option (SELinux/AppArmor): security_opt
+
+* wait_for_sshd option (boolean)
+
+* Create `/etc/sudoers.d` if missing
+
+* Fixed option deprecation warnings, require Docker >= 1.2
+
 ## 1.7.0
 
 * Ensure a container id is set before attempting to inspect a container
