@@ -1,0 +1,18 @@
+machine:
+  services:
+    - docker
+
+  # Version of ruby to use
+  ruby:
+    version:
+     2.1.5
+dependencies:
+  bundler:
+    without: [  ]
+
+test:
+  override:
+    - bundle exec rake test
+    - bundle exec kitchen test ubuntu 
+    - bundle exec kitchen test centos
+    - bundle exec kitchen test debian 
