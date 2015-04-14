@@ -71,7 +71,7 @@ module Kitchen
         run_command("#{config[:binary]} >> /dev/null 2>&1", :quiet => true)
         rescue
           raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/' unless ENV['CI']
       end
 
       def default_image
@@ -195,15 +195,6 @@ module Kitchen
         [from, platform, base, custom].join("\n")
       end
 
-      def supports_sudoers_d
-        case config[:platform]
-        when 'rhel', 'centos', 'fedora'
-           config[:platform_version].to_i >= 6 
-        else
-           true 
-        end
-      end
-
       def dockerfile
         if config[:dockerfile]
           template = IO.read(File.expand_path(config[:dockerfile]))
@@ -299,7 +290,7 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        
+
         if container_exists?(state)
           begin
             docker_command("rm -f -v #{container_id}", :quiet => true)
