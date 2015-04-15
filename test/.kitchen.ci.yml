@@ -1,6 +1,6 @@
 ---
 driver:
-  name: docker_ssh
+  name: docker
   provision_command: curl -L http://www.chef.io/chef/install.sh | bash
 provisioner:
   name: dummy
