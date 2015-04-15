@@ -13,6 +13,4 @@ dependencies:
 test:
   override:
     - bundle exec rake test
-    - bundle exec kitchen test ubuntu 
-    - bundle exec kitchen test centos
-    - bundle exec kitchen test debian 
+    - KITCHEN_YAML=.kitchen.ci.yml bundle exec kitchen test ubuntu 
