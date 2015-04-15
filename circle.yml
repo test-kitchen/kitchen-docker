@@ -1,0 +1,16 @@
+machine:
+  services:
+    - docker
+
+  # Version of ruby to use
+  ruby:
+    version:
+     2.1.5
+dependencies:
+  bundler:
+    without: [  ]
+
+test:
+  override:
+    - bundle exec rake test
+    - KITCHEN_YAML=test/.kitchen.ci.yml bundle exec kitchen test 

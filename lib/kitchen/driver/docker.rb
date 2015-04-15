@@ -60,13 +60,18 @@ module Kitchen
         driver.default_platform
       end
 
+      default_config :platform_version do |driver|
+        driver.default_platform_version
+      end
+
+
       default_config :disable_upstart, true
 
       def verify_dependencies
         run_command("#{config[:binary]} >> /dev/null 2>&1", :quiet => true)
         rescue
           raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/' unless ENV['CI']
       end
 
       def default_image
@@ -81,12 +86,17 @@ module Kitchen
         instance.platform.name.split('-').first
       end
 
+      def default_platform_version
+        instance.platform.name.split('-').last
+      end
+
       def create(state)
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
         wait_for_sshd(state[:hostname], nil, :port => state[:port]) if config[:wait_for_sshd]
+        logger.info("Created Container: #{state[:container_id]}")
       end
 
       def destroy(state)
@@ -114,7 +124,12 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+
+        if options[:quiet] == true
+          options.merge!(:live_stream => nil)
+        end
+
+        run_command("#{docker} #{cmd} 2>&1", options)
       end
 
       def build_dockerfile
@@ -241,12 +256,16 @@ module Kitchen
 
       def run_container(state)
         cmd = build_run_command(state[:image_id])
-        output = docker_command(cmd)
+        output = docker_command(cmd, :quiet => true)
         parse_container_id(output)
       end
 
       def container_exists?(state)
-        state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
+        begin
+          state[:container_id] && docker_command("ps -q --no-trunc #{state[:container_id]}", :quiet => true).strip! == state[:container_id]
+        rescue
+           false
+        end
       end
 
       def parse_container_ssh_port(output)
@@ -271,14 +290,22 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        docker_command("stop #{container_id}")
-        docker_command("rm #{container_id}")
+
+        if container_exists?(state)
+          begin
+            docker_command("rm -f -v #{container_id}", :quiet => true)
+          rescue
+            logger.info("problem removing the container #{container_id}, may have already gone")
+          end
+        end
+        logger.info("Destroyed Container: #{state[:container_id]}")
       end
 
       def rm_image(state)
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
       end
+
     end
   end
 end
