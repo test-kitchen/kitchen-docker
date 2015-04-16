@@ -77,11 +77,10 @@ module Kitchen
         begin
             options = {:live_stream => false, :use_sudo => false}
             run_command("#{config[:binary]} info #{Helper.env_error_redirect}", options)
-        rescue e
-          unless ENV['CI']
+        rescue
             raise UserError, \
-                  "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
-          end
+               "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/" \
+               unless ENV['CI']
         end
         if config[:cpuset] && !version_above?('1.1.0')
           raise UserError, \
