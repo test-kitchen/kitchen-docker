@@ -8,38 +8,8 @@ A Test Kitchen Driver for Docker.
 
 * [Docker][docker_installation] **(>= 1.2)**
 
-## Versions
-
-### 1.6.1 
-
-- Merge of #71, #80, #91, #92
-
-
-
-
-
-
 
 ## Installation and Setup
-
-### Gemfile
-
-Add an entry to your Gemfile. This fork is currently not hosted on the central ruby repository you will need to use the following to use this fork:
-
-```
-gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git'
-```
-
-To be safe, you should probably reference a tagged version instead of the HEAD version
-
-```
-gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git', :tag => '1.6.1'
-```
-
-
-
-### Test Kitchen
-
 
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
@@ -494,11 +464,7 @@ example:
 
 ## Authors
 
-Created and maintained by 
-
- - [Sean Porter][author] (<portertech@gmail.com>)
- - Peter Abbott
-
+Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
 
 ## License
 
@@ -513,7 +479,6 @@ Apache 2.0 (see [LICENSE][license])
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
-[docker_man]:             https://github.com/docker/docker/blob/master/docs/man/docker-run.1.md
 [test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
