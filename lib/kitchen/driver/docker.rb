@@ -75,8 +75,8 @@ module Kitchen
 
       def verify_dependencies
         begin
-            options = {:live_stream => false, :use_sudo => false}  
-            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", options) 
+            options = {:live_stream => false, :use_sudo => false}
+            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", options)
         rescue e
           unless ENV['CI']
             raise UserError, \
