@@ -12,5 +12,5 @@ dependencies:
 
 test:
   override:
-    - bundle exec rake test
+    - bundle exec rake
     - KITCHEN_YAML=test/.kitchen.ci.yml bundle exec kitchen test 
