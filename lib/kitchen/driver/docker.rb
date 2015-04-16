@@ -75,10 +75,9 @@ module Kitchen
 
       def verify_dependencies
         begin
-            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", \
-                        :quiet => true, \
-                        :use_sudo => false)
-        rescue
+            options = {:live_stream => false, :use_sudo => false}  
+            run_command("#{config[:binary]} info #{Helper.env_error_redirect}", options) 
+        rescue e
           unless ENV['CI']
             raise UserError, \
                   "You must first install the Docker CLI tool http://www.docker.io/gettingstarted/"
@@ -161,7 +160,6 @@ module Kitchen
         else
           options.merge!(:quiet => !logger.debug?)
         end
-
         run_command("#{docker} #{cmd}", options)
       end
 
