@@ -1,7 +1,7 @@
 Tailor.config do |config|
   config.formatters "text"
   config.file_set 'lib/**/*.rb' do |style|
-    style.max_line_length 80, level: :warn
+    style.max_line_length 100, level: :warn
     style.spaces_before_lbrace true, level: :warn
     style.indentation_spaces 2,  level: :warn 
     style.spaces_after_lbrace 1, level: :warn

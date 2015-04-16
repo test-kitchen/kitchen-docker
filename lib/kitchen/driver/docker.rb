@@ -30,6 +30,9 @@ module Kitchen
       default_config :binary,       'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
       default_config :privileged,    false
+      default_config :cap_add,       nil
+      default_config :cap_drop,      nil
+      default_config :security_opt,  nil
       default_config :use_cache,     true
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D \
@@ -49,6 +52,8 @@ module Kitchen
       default_config :publish_all,   false
       default_config :cap_add,       nil
       default_config :cap_drop,    nil
+      default_config :wait_for_sshd, true
+
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -107,7 +112,6 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-
         if config[:no_ssh_tcp_check]
           wait_for_container(state)
         else
@@ -210,32 +214,18 @@ module Kitchen
         password = config[:password]
 
         base = <<-eos
-          RUN useradd -d /home/#{username} -m -s /bin/bash #{username}
+          RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+          RUN mkdir -p /etc/sudoers.d
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+          RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
-
-        sudoers = if supports_sudoers_d
-          ssh = <<-eos
-            RUN mkdir -p /etc/sudoers.d
-            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-            RUN chmod 0440 /etc/sudoers.d/#{username}
-          eos
-        else '' end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
         [from, platform, base, sudoers, custom].join("\n")
-      end
-
-      def supports_sudoers_d
-        case config[:platform]
-        when 'rhel', 'centos', 'fedora'
-           config[:platform_version].to_i >= 6
-        else
-           true
-        end
       end
 
       def dockerfile
@@ -278,6 +268,7 @@ module Kitchen
         cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
+        Array(config[:add_host]).each {|host, ip| cmd << " --add-host=#{host}:#{ip}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
@@ -290,10 +281,9 @@ module Kitchen
         cmd << " --privileged" if config[:privileged]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
-        if version_above?('1.2.0')
-          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
-          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"}  if config[:cap_drop]
-        end
+        Array(config[:cap_add]).each {|cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
+        Array(config[:cap_drop]).each {|cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
+        Array(config[:security_opt]).each {|opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -304,41 +294,32 @@ module Kitchen
         parse_container_id(output)
       end
 
-      def inspect_container(state)
-        container_id = state[:container_id]
-        unless container_id.nil?
-          begin
-            docker_command("inspect #{container_id}", :quiet => true)
-          rescue
-            logger.warn("Container #{container_id} no longer exists")
-          end
-        end
-      end
-
       def container_exists?(state)
         begin
           state[:container_id] && docker_command("ps -q --no-trunc #{state[:container_id]}", :quiet => true).strip! == state[:container_id]
         rescue
            false
         end
-        state[:container_id]
       end
 
       def parse_container_ssh_port(output)
         begin
-          info = Array(::JSON.parse(output)).first
-          ports = info['NetworkSettings']['Ports'] || info['HostConfig']['PortBindings']
-          ssh_port = ports['22/tcp'].detect{|port| port['HostIp'] == '0.0.0.0'}
-          ssh_port['HostPort'].to_i
+          host, port = output.split(':')
+          port.to_i
         rescue
           raise ActionFailed,
-          'Could not parse Docker inspect output for container SSH port'
+          'Could not parse Docker port output for container SSH port'
         end
       end
 
       def container_ssh_port(state)
-        output = inspect_container(state)
-        parse_container_ssh_port(output)
+        begin
+          output = docker_command("port #{state[:container_id]} 22/tcp")
+          parse_container_ssh_port(output)
+        rescue
+          raise ActionFailed,
+          'Docker reports container has no ssh port mapped'
+        end
       end
 
       def rm_container(state)

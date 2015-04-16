@@ -6,7 +6,7 @@ A Test Kitchen Driver for Docker.
 
 ## Requirements
 
-* [Docker][docker_getting_started]
+* [Docker][docker_installation] **(>= 1.2)**
 
 ## Versions
 
@@ -221,7 +221,7 @@ destroyed.
 
 The default value is `false`.
 
-### run_command
+### run\_command
 
 Sets the command used to run the suite container.
 
@@ -279,7 +279,7 @@ Examples:
   - /srv
 ```
 
-### volumes_from
+### volumes\_from
 
 Mount volumes managed by other containers.
 
@@ -370,7 +370,44 @@ Examples:
   privileged: true
 ```
 
-## dockerfile
+### cap\_add
+
+Adds a capability to the running container.
+
+Examples:
+
+````
+cap_add:
+- SYS_PTRACE
+
+````
+
+### cap\_drop
+
+Drops a capability from the running container.
+
+Examples:
+
+````
+cap_drop:
+- CHOWN
+
+````
+
+### security\_opt
+
+Apply a security profile to the Docker container. Allowing finer granularity of
+access control than privileged mode, through leveraging SELinux/AppArmor
+profiles to grant access to specific resources.
+
+Examples:
+
+```
+security_opt:
+  - apparmor:my_profile
+```
+
+### dockerfile
 
 Use a custom Dockerfile, instead of having Kitchen-Docker build one for you.
 
@@ -380,7 +417,7 @@ Examples:
   dockerfile: test/Dockerfile
 ```
 
-### instance_name
+### instance\_name
 
 Set the name of container to link to other container(s).
 
@@ -408,7 +445,7 @@ Examples:
   - kvs:kvs
 ```
 
-### publish_all
+### publish\_all
 
 Publish all exposed ports to the host interfaces.
 This option used to communicate between some containers.
@@ -472,7 +509,7 @@ Apache 2.0 (see [LICENSE][license])
 [issues]:                 https://github.com/portertech/kitchen-docker/issues
 [license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/portertech/kitchen-docker
-[docker_getting_started]: http://www.docker.io/gettingstarted/
+[docker_installation]:    https://docs.docker.com/installation/#installation
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/

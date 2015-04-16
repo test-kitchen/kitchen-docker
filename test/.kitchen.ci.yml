@@ -27,27 +27,3 @@ suites:
     driver:
       cap_drop:
       - NET_ADMIN 
-  - name: arch
-    driver:
-      image: base/arch
-  - name: unknown
-    driver:
-      image: ubuntu:12.04
-      platform: ubuntu
-  - name: dockerfile
-    driver:
-      username: dockerfile
-      password: dockerfile
-      dockerfile: test/Dockerfile
-      run_command: /sbin/init
-  - name: database
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      instance_name: db
-      publish_all: true
-  - name: linked
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      links: "db:db"
