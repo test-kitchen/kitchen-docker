@@ -1,45 +1,12 @@
 # Kitchen::Docker
 
-[![Build Status](https://travis-ci.org/peterabbott/kitchen-docker.svg?branch=delete)](https://travis-ci.org/peterabbott/kitchen-docker)
-
 A Test Kitchen Driver for Docker.
 
 ## Requirements
 
 * [Docker][docker_installation] **(>= 1.2)**
 
-## Versions
-
-### 1.6.1 
-
-- Merge of #71, #80, #91, #92
-
-
-
-
-
-
-
 ## Installation and Setup
-
-### Gemfile
-
-Add an entry to your Gemfile. This fork is currently not hosted on the central ruby repository you will need to use the following to use this fork:
-
-```
-gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git'
-```
-
-To be safe, you should probably reference a tagged version instead of the HEAD version
-
-```
-gem 'kitchen-docker', :git => 'https://github.com/peterabbott/kitchen-docker.git', :tag => '1.6.1'
-```
-
-
-
-### Test Kitchen
-
 
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
@@ -261,7 +228,8 @@ Examples:
 Notice that when using commas in the `cpuset` value you **must** quote them as
 a string.
 
-**Note:** This feature is only available in docker versions >= 1.1.0.
+-**Note:** This feature is only available in docker versions >= 1.1.0
+
 
 ### volume
 
@@ -458,25 +426,6 @@ Examples:
   publish_all: true
 ```
 
-### cap_add
-Adds a capability to the running container, for example SYS_PTRACE
-
-````
-cap_add: 
-- SYS_PTRACE
-
-````
-
-### cap_drop
-Drops a capability to the running container, for example CHOWN
-
-````
-cap_drop: 
-- CHOWN
-
-````
-
-
 ## Development
 
 * Source hosted at [GitHub][repo]
@@ -494,11 +443,7 @@ example:
 
 ## Authors
 
-Created and maintained by 
-
- - [Sean Porter][author] (<portertech@gmail.com>)
- - Peter Abbott
-
+Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
 
 ## License
 
@@ -513,7 +458,6 @@ Apache 2.0 (see [LICENSE][license])
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
-[docker_man]:             https://github.com/docker/docker/blob/master/docs/man/docker-run.1.md
 [test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
 [chef_omnibus_dl]:        http://www.opscode.com/chef/install/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
