@@ -210,6 +210,27 @@ default. You can read more about `memory.limit_in_bytes` [here][memory_limit].
 Sets the CPU shares (relative weight) for the suite container. Otherwise use
 Dockers defaults. You can read more about cpu.shares [here][cpu_shares].
 
+### cpuset
+
+Sets the CPU affinities (i.e. the CPUs on which to allow execution) for the
+suite container. Otherwise use Dockers defaults. You can read more in the
+[docker-run man page][docker_man].
+
+Examples:
+
+```
+  cpuset: 0-3
+```
+
+```
+  cpuset: '0,1'
+```
+Notice that when using commas in the `cpuset` value you **must** quote them as
+a string.
+
+-**Note:** This feature is only available in docker versions >= 1.1.0
+
+
 ### volume
 
 Adds a data volume(s) to the suite container.

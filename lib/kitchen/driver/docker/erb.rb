@@ -17,9 +17,8 @@
 require 'erb'
 
 module Kitchen
-
   module Driver
-
+    # ERB Context
     class DockerERBContext
       def initialize(config={})
         config.each do |key, value|
