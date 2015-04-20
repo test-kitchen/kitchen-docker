@@ -392,6 +392,24 @@ Examples:
   - kvs:kvs
 ```
 
+### environments
+
+Set ```environment variable(s)``` of other container(s) that connect from the suite container.
+
+Examples:
+
+```
+ environments: deep=purple
+```
+
+Examples:
+
+```
+  environments:
+  - deep=purple
+  - hoge=fuga
+```
+
 ### publish\_all
 
 Publish all exposed ports to the host interfaces.
