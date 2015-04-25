@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Use `NUL` instead of `/dev/null` on Windows for output redirection
+
 ## 2.0.0
 
 * Use Docker `top` and `port` instead of `inspect`
