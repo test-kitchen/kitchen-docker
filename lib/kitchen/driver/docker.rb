@@ -63,10 +63,19 @@ module Kitchen
       default_config :disable_upstart, true
 
       def verify_dependencies
-        run_command("#{config[:binary]} >> /dev/null 2>&1", :quiet => true)
+        run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+      end
+
+      def dev_null
+        case RbConfig::CONFIG["host_os"]
+        when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+          "NUL"
+        else
+          "/dev/null"
+        end
       end
 
       def default_image
