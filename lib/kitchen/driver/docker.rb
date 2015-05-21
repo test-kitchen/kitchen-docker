@@ -226,8 +226,12 @@ module Kitchen
       end
 
       def build_run_command(image_id)
-        cmd = "run -d -p 22"
-        Array(config[:forward]).each {|port| cmd << " -p #{port}"}
+        cmd = "run -d"
+        ports = Array(config[:forward])
+        if ports.select {|port| port.split(":")[-1] == "22" }.empty?
+          cmd << " -p 22"
+        end
+        ports.each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
         Array(config[:add_host]).each {|host, ip| cmd << " --add-host=#{host}:#{ip}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
