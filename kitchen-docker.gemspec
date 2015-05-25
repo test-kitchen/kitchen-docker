@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'test-kitchen', '>= 1.0.0'
+  spec.add_dependency 'mixlib-shellout', '< 2.1.0'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
