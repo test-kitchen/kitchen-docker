@@ -166,6 +166,22 @@ driver_config:
   require_chef_omnibus: false
 ```
 
+### provision\_docker\_command
+
+Custom Dockerfile command(s) to be run when provisioning the base for the suite containers.
+The difference between this and provision_command is that all provision_command's are prefixed with RUN.
+See https://docs.docker.com/reference/builder/ for potential options.
+
+Examples:
+
+```
+  provision_docker_command:
+    - COPY ./script.sh /tmp/script.sh
+    - RUN /tmp/script.sh
+```
+
+Useful if you have full script's to run that are painful to add/escape in YAML as provision_command's.
+
 ### use\_cache
 
 This determines if the Docker cache is used when provisioning the base for suite
