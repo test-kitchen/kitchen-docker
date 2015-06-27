@@ -222,7 +222,6 @@ module Kitchen
         # and remove after running docker.
         dockerfile_tmp_path = '.Dockerfile-kitchen-tmp'
         File.open(dockerfile_tmp_path, 'w') { |f| f.write(dockerfile) }
-        options.delete(:input)
         output = docker_command("#{cmd} -f #{dockerfile_tmp_path} .")
         run_command("rm -f #{dockerfile_tmp_path}", {:quiet => !logger.debug?})
         parse_image_id(output)
