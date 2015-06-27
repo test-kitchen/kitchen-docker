@@ -176,7 +176,7 @@ Examples:
 
 ```
   provision_docker_command:
-    - COPY ./script.sh /tmp/script.sh
+    - COPY script.sh /tmp/script.sh
     - RUN /tmp/script.sh
 ```
 
