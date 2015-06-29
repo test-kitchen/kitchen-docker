@@ -182,11 +182,15 @@ module Kitchen
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
         eos
-        custom = ''
-        Array(config[:provision_command]).each do |cmd|
-          custom << "RUN #{cmd}\n"
+        custom_docker_cmd = ''
+        Array(config[:provision_docker_command]).each do |cmd|
+          custom_docker_cmd << "#{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        custom_cmd = ''
+        Array(config[:provision_command]).each do |cmd|
+          custom_cmd << "RUN #{cmd}\n"
+        end
+        [from, platform, base, custom_docker_cmd, custom_cmd].join("\n")
       end
 
       def dockerfile
@@ -212,7 +216,15 @@ module Kitchen
       def build_image(state)
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
-        output = docker_command("#{cmd} -", :input => dockerfile)
+        # Previously we sent the Dockerfile to stdin, which works fine until you want
+        # to use things like COPY or ADD in a Dockerfile.
+        # To workaround this, write out Dockerfile to a tmp file in the current dir,
+        # and remove after running docker.
+        # Needs to be a unique filename, as we may have concurrent test-kitchen runs.
+        dockerfile_tmp_path = ".Dockerfile-kitchen-tmp-#{(0...20).map { ('a'..'z').to_a[rand(26)] }.join}"
+        File.open(dockerfile_tmp_path, 'w') { |f| f.write(dockerfile) }
+        output = docker_command("#{cmd} -f #{dockerfile_tmp_path} .")
+        run_command("rm -f #{dockerfile_tmp_path}", {:quiet => !logger.debug?})
         parse_image_id(output)
       end
 
