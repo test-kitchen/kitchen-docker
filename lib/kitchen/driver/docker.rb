@@ -129,6 +129,11 @@ module Kitchen
       def build_dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
+        environment = ''
+        environment << "ENV no_proxy #{config[:no_proxy]}\n" if config[:no_proxy]
+        environment << "ENV ftp_proxy #{config[:ftp_proxy]}\n" if config[:ftp_proxy]
+        environment << "ENV http_proxy #{config[:http_proxy]}\n" if config[:http_proxy]
+        environment << "ENV https_proxy #{config[:https_proxy]}\n" if config[:https_proxy]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
             RUN dpkg-divert --local --rename --add /sbin/initctl
@@ -186,7 +191,7 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        [from, environment, platform, base, custom].join("\n")
       end
 
       def dockerfile
