@@ -220,7 +220,8 @@ module Kitchen
         # to use things like COPY or ADD in a Dockerfile.
         # To workaround this, write out Dockerfile to a tmp file in the current dir,
         # and remove after running docker.
-        dockerfile_tmp_path = '.Dockerfile-kitchen-tmp'
+        # Needs to be a unique filename, as we may have concurrent test-kitchen runs.
+        dockerfile_tmp_path = ".Dockerfile-kitchen-tmp-#{(0...20).map { ('a'..'z').to_a[rand(26)] }.join}"
         File.open(dockerfile_tmp_path, 'w') { |f| f.write(dockerfile) }
         output = docker_command("#{cmd} -f #{dockerfile_tmp_path} .")
         run_command("rm -f #{dockerfile_tmp_path}", {:quiet => !logger.debug?})
