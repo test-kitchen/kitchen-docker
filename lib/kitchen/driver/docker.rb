@@ -218,10 +218,10 @@ module Kitchen
         # To workaround this, write out Dockerfile to a tmp file in the current dir,
         # and remove after running docker.
         # Needs to be a unique filename, as we may have concurrent test-kitchen runs.
-        dockerfile_tmp_path = ".Dockerfile-kitchen-tmp-#{SecureRandom.hex(20)}"
-        File.open(dockerfile_tmp_path, 'w') { |f| f.write(dockerfile) }
-        output = docker_command("#{cmd} -f #{dockerfile_tmp_path} .")
-        File.unlink(dockerfile_tmp_path)
+        output = Tempfile.create('Dockerfile-kitchen', Dir.pwd) do |tempf|
+          tempf.write(dockerfile)
+          docker_command("#{cmd} -f #{tempf.path} .")
+        end
         parse_image_id(output)
       end
 
