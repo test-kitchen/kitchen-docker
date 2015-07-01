@@ -181,6 +181,12 @@ The default value depends on the type of socket being used. For local sockets, t
 
 This should be set to `false` if you're using boot2docker, as every command passed into the VM runs as root by default.
 
+When sudo is not disabled, you may want to concider adding something similar to the following to your sudoers file to ensure it is able to function without issues:
+```
+# Allow sudo docker commands without password
+%docker   ALL=NOPASSWD:SETENV: /usr/bin/docker
+```
+
 ### remove\_images
 
 This determines if images are automatically removed when the suite container is
