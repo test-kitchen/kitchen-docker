@@ -12,7 +12,7 @@ Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
 Example `.kitchen.local.yml`:
 
-```
+```yaml
 ---
 driver:
   name: docker
@@ -36,7 +36,7 @@ platforms.
 
 Examples:
 
-```
+```yaml
 ---
 platforms:
 - name: ubuntu-12.04
@@ -45,7 +45,7 @@ platforms:
 
 This will effectively generate a configuration similar to:
 
-```
+```yaml
 ---
 platforms:
 - name: ubuntu-12.04
@@ -68,11 +68,11 @@ The default value is `docker`.
 
 Examples:
 
-```
+```yaml
   binary: docker.io
 ```
 
-```
+```yaml
   binary: /opt/docker
 ```
 
@@ -86,17 +86,17 @@ to suite containers.
 
 Examples:
 
-```
+```yaml
   socket: unix:///tmp/docker.sock
 ```
 
-```
+```yaml
   socket: tcp://docker.example.com:4242
 ```
 
 If you use [Boot2Docker](https://github.com/boot2docker/boot2docker), set your `DOCKER_HOST` environment variable properly (e.g. `export DOCKER_HOST=tcp://192.168.59.103:2375`) or you have to use the following:
 
-```
+```yaml
 socket: tcp://192.168.59.103:2375
 ```
 
@@ -150,17 +150,17 @@ Custom command(s) to be run when provisioning the base for the suite containers.
 
 Examples:
 
-```
+```yaml
   provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
 ```
 
-```
+```yaml
   provision_command:
     - apt-get install dnsutils
     - apt-get install telnet
 ```
 
-```
+```yaml
 driver_config:
   provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
   require_chef_omnibus: false
@@ -196,7 +196,7 @@ The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAut
 
 Examples:
 
-```
+```yaml
   run_command: /sbin/init
 ```
 
@@ -216,11 +216,11 @@ Adds a data volume(s) to the suite container.
 
 Examples:
 
-```
+```yaml
   volume: /ftp
 ```
 
-```
+```yaml
   volume:
   - /ftp
   - /srv
@@ -232,11 +232,11 @@ Mount volumes managed by other containers.
 
 Examples:
 
-```
+```yaml
   volumes_from: repos
 ```
 
-```
+```yaml
   volumes_from:
   - repos
   - logging
@@ -250,11 +250,11 @@ Dockers defaults.
 
 Examples:
 
-```
+```yaml
   dns: 8.8.8.8
 ```
 
-```
+```yaml
   dns:
   - 8.8.8.8
   - 8.8.4.4
@@ -265,7 +265,7 @@ Sets an http proxy for the suite container using the `http_proxy` environment va
 
 Examples:
 
-```
+```yaml
   http_proxy: http://proxy.host.com:8080
 ```
 ### https\_proxy
@@ -274,7 +274,7 @@ Sets an https proxy for the suite container using the `https_proxy` environment 
 
 Examples:
 
-```
+```yaml
   https_proxy: http://proxy.host.com:8080
 ```
 ### forward
@@ -284,11 +284,11 @@ the host (public) port in the mappings, if not, Docker chooses for you.
 
 Examples:
 
-```
+```yaml
   forward: 80
 ```
 
-```
+```yaml
   forward:
   - 22:2222
   - 80:8080
@@ -300,7 +300,7 @@ Set the suite container hostname. Otherwise use Dockers default.
 
 Examples:
 
-```
+```yaml
   hostname: foobar.local
 ```
 
@@ -313,7 +313,7 @@ The default value is `false`.
 
 Examples:
 
-```
+```yaml
   privileged: true
 ```
 
@@ -323,11 +323,11 @@ Adds a capability to the running container.
 
 Examples:
 
-````
+```yaml
 cap_add:
 - SYS_PTRACE
 
-````
+```
 
 ### cap\_drop
 
@@ -335,11 +335,10 @@ Drops a capability from the running container.
 
 Examples:
 
-````
+```yaml
 cap_drop:
 - CHOWN
-
-````
+```
 
 ### security\_opt
 
@@ -349,7 +348,7 @@ profiles to grant access to specific resources.
 
 Examples:
 
-```
+```yaml
 security_opt:
   - apparmor:my_profile
 ```
@@ -360,7 +359,7 @@ Use a custom Dockerfile, instead of having Kitchen-Docker build one for you.
 
 Examples:
 
-```
+```yaml
   dockerfile: test/Dockerfile
 ```
 
@@ -370,7 +369,7 @@ Set the name of container to link to other container(s).
 
 Examples:
 
-```
+```yaml
   instance_name: web
 ```
 
@@ -380,13 +379,13 @@ Set ```instance_name```(and alias) of other container(s) that connect from the s
 
 Examples:
 
-```
+```yaml
  links: db:db
 ```
 
 Examples:
 
-```
+```yaml
   links:
   - db:db
   - kvs:kvs
@@ -401,7 +400,7 @@ The default value is `false`.
 
 Examples:
 
-```
+```yaml
   publish_all: true
 ```
 
