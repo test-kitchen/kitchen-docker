@@ -91,6 +91,7 @@ module Kitchen
       end
 
       def create(state)
+        state[:ssh_key] = generate_private_key
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
@@ -124,6 +125,59 @@ module Kitchen
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+      end
+
+      # Return string to be placed in the authorized_keys file in the container
+      def public_key
+        'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDMhWlMWZXC+y/3LOZYpfH0IpjT+BHZAVc'   +
+        'Cy2K8YDc29GERbF//FMkt8J+3g4eLsv+mRhqnBDVhrL7RdxI2ufaZtACHwGf43qqqe0YWqm0'  +
+        'PpqhEQDzBufNGsrI2tSFbzUgrJWU1xUjGz48jAwzPVzIGyDPSEAYyPHOSTzLo7sl2ARAlg25'  +
+        'eKmQzjtJ0R4+gvT487n6Ow8jHMS2O/AxO+w4KsNVYTo/J6S83Nnt//RuAYSwEPbsJprLjmirn' +
+        'HfPtoOJE7NN7O8AaUCscYIHmWz9i7myQRLbUQYtoBnUWCRO1lFfG9n7mU0jmZkDe1cQzIveab' +
+        'EVJLChr7558j3WOkMBR kitchen_docker_key'
+      end
+
+      # Private key to be generated in File.join(config[:kitchen_root], '.kitchen')
+      def private_key
+        pk = <<-pk
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAzIVpTFmVwvsv9yzmWKXx9CKY0/gR2QFXAstivGA3NvRhEWxf
+/xTJLfCft4OHi7L/pkYapwQ1Yay+0XcSNrn2mbQAh8Bn+N6qqntGFqptD6aoREA8
+wbnzRrKyNrUhW81IKyVlNcVIxs+PIwMMz1cyBsgz0hAGMjxzkk8y6O7JdgEQJYNu
+XipkM47SdEePoL0+PO5+jsPIxzEtjvwMTvsOCrDVWE6PyekvNzZ7f/0bgGEsBD27
+Caay45oq5x3z7aDiROzTezvAGlArHGCB5ls/Yu5skES21EGLaAZ1FgkTtZRXxvZ+
+5lNI5mZA3tXEMyL3mmxFSSwoa++efI91jpDAUQIDAQABAoIBAE9+V3Q+qdA0k+st
+/4ZbUdUDkYVqOX2wYKKMbR8tAqkQiZ4dEp7x9FQv39STgh7Rfz6gpwFdyGXjn/OI
+pYKx+2C4rzAUoBUCbzF+YrqymVto+qQ0l6jw3tcO4+gRtRqair+CdHlW6jekO01v
+hQ4eJSqvrDysz8u85Wrr76zMC3Aavcs+nau0F0JsTpieAGxv1+AcZOydWORaRZWf
+ZFa2i2LRXibO0Dy4mpBm4F6ejHxpZPCv99wFF69VGdG5ojSSGW8L75r1LkaIbYlr
+NtMuHTm9mzUotOvpX4CAw05jzgSTIIrh652CEKNP4A5vJaua0FDeyj63saB1My5l
+A23FF2UCgYEA5nyuZCmvuSeqKG7IgbjdVeJiw1L52stGHFmxgYAL3aLWHxBILVwd
+ySkcLbF+19VqEkZlKTWJCAKkq/8QUshFNDdkTSVpY2arjJi/5OFPn+/L+dfSQcM7
+wsU5HxwFtMyfL2aFJqk0PMQVKQMbr1UcWGdAtQxDjRtw90uvPYdzVYcCgYEA4yju
+/97bVo1ZizWZVZOxwWvHU6EmHzYVzMJ4yDEaPd5szp7OSSXrZ5KTVi7m/inV+QIl
+TgrbogKwPZqvVRYo4LkHx49UQ6Pob1d4iDZpMWe/8KChOn/wnVUVecM689CdjUwb
+dB9v7VuLqPmiGfwzYn3rgSXikDKg2KkPZQiBsWcCgYAVSay9uY/uVPiFVX4VZSKk
+PQ2MJszG5YFrOumHIXF3HgQSyGkyL1Dc9HwSyFMD0kVCvNe5D6XBZKUa8arrSm4B
+3Z/Y9Dygnqn3iWAn3puBFR/Myp8zzblmStr0wZzRTxjgwuJHaNdXSXD+4beb4QuG
+KrsyPZi7nq43WPktgKYpXwKBgG/IYuPyzMiowhmpBI2CIoTl/q5+rH3LZarfQARz
+dVBgtfZvW1/PkynijTJp3i3QdIUWszjWSwJMhGGsTv916iO7qcJgG701WVoBF0Ug
+UV+IiIFm6jAZaVRi3DCRC9+TFxTDEPdxyOhqli1OuqBC5R5gjJV/CSCgaVp0xyiW
+qQudAoGBAKxMCLeT+aMJUXM0epwah1CT182HvBrL0DVOXsKxmooplqqlIjgj1Hu2
+jF3T6hAtHtBnz36E/WNpdyO58S8zH/nFczQfU7GIzkGXOEuvhKqna+SXZQK/7X5t
+8sMBOAusdkZSVkArMWILQPHyOo2xpByme1cVy7J7OzmlcUKsP0zm
+-----END RSA PRIVATE KEY-----
+        pk
+      end
+
+      # Generate the private key for passwordless kitchen login
+      def generate_private_key
+        path = File.join(config[:kitchen_root], '.kitchen', 'docker_id_rsa')
+        File.open(path, 'w') do |f|
+          f.write(private_key)
+          f.chmod(0600)
+        end
+        path
       end
 
       def build_dockerfile
@@ -172,8 +226,10 @@ module Kitchen
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
         end
+
         username = config[:username]
         password = config[:password]
+
         base = <<-eos
           RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
           RUN echo #{username}:#{password} | chpasswd
@@ -181,6 +237,11 @@ module Kitchen
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
+          RUN mkdir /home/kitchen/.ssh
+          RUN chown -R kitchen:kitchen /home/kitchen/.ssh
+          RUN chmod 0700 /home/kitchen/.ssh
+          RUN echo '#{public_key}' >> /home/kitchen/.ssh/authorized_keys
+          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys && chmod 0600 /home/kitchen/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
