@@ -131,8 +131,6 @@ module Kitchen
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
 
-      # Generate the private key for passwordless kitchen login. Return contents of the
-      # private key
       def generate_keys
         if ! File.exist?(config[:public_key]) or ! File.exist?(config[:private_key])
           private_key = OpenSSL::PKey::RSA.new 2048
