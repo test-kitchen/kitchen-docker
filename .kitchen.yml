@@ -35,7 +35,7 @@ platforms:
     driver:
       image: ubuntu:14.04
       platform: ubuntu
-  #     links: "db:db"
+      links: "db:db"
 suites:
   - name: default
   - name: concurrency
