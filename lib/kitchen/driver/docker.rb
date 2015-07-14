@@ -17,7 +17,7 @@
 require 'kitchen'
 require 'json'
 require 'uri'
-require 'sshkey'
+require 'net/ssh'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
@@ -135,13 +135,15 @@ module Kitchen
       # private key
       def generate_keys
         if ! File.exist?(config[:public_key]) or ! File.exist?(config[:private_key])
-          k = SSHKey.generate(type: "RSA", bits: 2048, comment: "docker_key")
-          File.open(config[:public_key], 'w') do |f|
-            f.write(k.ssh_public_key)
+          private_key = OpenSSL::PKey::RSA.new 2048
+          blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
+          public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
+          File.open(config[:private_key], 'w') do |f|
+            f.write(private_key)
             f.chmod(0600)
           end
-          File.open(config[:private_key], 'w') do |f|
-            f.write(k.private_key)
+          File.open(config[:public_key], 'w') do |f|
+            f.write(public_key)
             f.chmod(0600)
           end
         end
@@ -204,7 +206,7 @@ module Kitchen
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
-          RUN mkdir /home/kitchen/.ssh
+          RUN [ ! -d /home/kitchen/.ssh ] && mkdir /home/kitchen/.ssh
           RUN chown -R kitchen:kitchen /home/kitchen/.ssh
           RUN chmod 0700 /home/kitchen/.ssh
           RUN echo '#{IO.read(config[:public_key])}' >> /home/kitchen/.ssh/authorized_keys
