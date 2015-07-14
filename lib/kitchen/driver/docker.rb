@@ -144,7 +144,6 @@ module Kitchen
             f.write(k.private_key)
             f.chmod(0600)
           end
-          return IO.read(config[:private_key])
         end
       end
       
