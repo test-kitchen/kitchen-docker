@@ -220,7 +220,7 @@ module Kitchen
         # Needs to be a unique filename, as we may have concurrent test-kitchen runs.
         output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |tempf|
           tempf.write(dockerfile)
-          tempf.rewind
+          tempf.close
           docker_command("#{cmd} -f #{tempf.path} .")
         end
         parse_image_id(output)
