@@ -132,7 +132,7 @@ module Kitchen
       end
 
       def generate_keys
-        if ! File.exist?(config[:public_key]) or ! File.exist?(config[:private_key])
+        if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
           private_key = OpenSSL::PKey::RSA.new 2048
           blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
           public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
@@ -196,6 +196,7 @@ module Kitchen
 
         username = config[:username]
         password = config[:password]
+        public_key_str = IO.read(config[:public_key])
 
         base = <<-eos
           RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
@@ -207,8 +208,9 @@ module Kitchen
           RUN [ ! -d /home/kitchen/.ssh ] && mkdir /home/kitchen/.ssh
           RUN chown -R kitchen:kitchen /home/kitchen/.ssh
           RUN chmod 0700 /home/kitchen/.ssh
-          RUN echo '#{IO.read(config[:public_key])}' >> /home/kitchen/.ssh/authorized_keys
-          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys && chmod 0600 /home/kitchen/.ssh/authorized_keys
+          RUN echo '#{public_key_str}' >> /home/kitchen/.ssh/authorized_keys
+          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys
+          RUN chmod 0600 /home/kitchen/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
