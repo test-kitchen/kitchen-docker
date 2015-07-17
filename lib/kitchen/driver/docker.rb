@@ -206,12 +206,12 @@ module Kitchen
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
-          RUN [ ! -d /home/kitchen/.ssh ] && mkdir /home/kitchen/.ssh
-          RUN chown -R kitchen:kitchen /home/kitchen/.ssh
-          RUN chmod 0700 /home/kitchen/.ssh
-          RUN echo '#{public_key_str}' >> /home/kitchen/.ssh/authorized_keys
-          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys
-          RUN chmod 0600 /home/kitchen/.ssh/authorized_keys
+          RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
+          RUN chown -R #{username} /home/#{username}/.ssh
+          RUN chmod 0700 /home/#{username}/.ssh
+          RUN echo '#{public_key_str}' >> /home/#{username}/.ssh/authorized_keys
+          RUN chown #{username} /home/#{username}/.ssh/authorized_keys
+          RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
