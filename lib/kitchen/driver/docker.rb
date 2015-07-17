@@ -134,20 +134,20 @@ module Kitchen
 
       def generate_keys
         if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
-          private_key = OpenSSL::PKey::RSA.new 2048
+          private_key = OpenSSL::PKey::RSA.new(2048)
           blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
           public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
-          File.open(config[:private_key], 'w') do |f|
-            f.write(private_key)
-            f.chmod(0600)
+          File.open(config[:private_key], 'w') do |file|
+            file.write(private_key)
+            file.chmod(0600)
           end
-          File.open(config[:public_key], 'w') do |f|
-            f.write(public_key)
-            f.chmod(0600)
+          File.open(config[:public_key], 'w') do |file|
+            file.write(public_key)
+            file.chmod(0600)
           end
         end
       end
-      
+
       def build_dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
@@ -197,7 +197,7 @@ module Kitchen
 
         username = config[:username]
         password = config[:password]
-        public_key_str = IO.read(config[:public_key])
+        public_key = IO.read(config[:public_key])
 
         base = <<-eos
           RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
@@ -206,12 +206,12 @@ module Kitchen
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
-          RUN [ ! -d /home/kitchen/.ssh ] && mkdir /home/kitchen/.ssh
-          RUN chown -R kitchen:kitchen /home/kitchen/.ssh
-          RUN chmod 0700 /home/kitchen/.ssh
-          RUN echo '#{public_key_str}' >> /home/kitchen/.ssh/authorized_keys
-          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys
-          RUN chmod 0600 /home/kitchen/.ssh/authorized_keys
+          RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
+          RUN chown -R #{username} /home/#{username}/.ssh
+          RUN chmod 0700 /home/#{username}/.ssh
+          RUN echo '#{public_key}' >> /home/#{username}/.ssh/authorized_keys
+          RUN chown #{username} /home/#{username}/.ssh/authorized_keys
+          RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
@@ -243,15 +243,10 @@ module Kitchen
       def build_image(state)
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
-        # Previously we sent the Dockerfile to stdin, which works fine until you want
-        # to use things like COPY or ADD in a Dockerfile.
-        # To workaround this, write out Dockerfile to a tmp file in the current dir,
-        # and remove after running docker.
-        # Needs to be a unique filename, as we may have concurrent test-kitchen runs.
-        output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |tempf|
-          tempf.write(dockerfile)
-          tempf.close
-          docker_command("#{cmd} -f #{tempf.path} .")
+        output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
+          file.write(dockerfile)
+          file.close
+          docker_command("#{cmd} -f #{file.path} .")
         end
         parse_image_id(output)
       end

@@ -1,3 +1,16 @@
+## 2.2.0
+
+* Use a temporary file for each suite instance Docker container
+Dockerfile, instead of passing their contents via STDIN. This allows for
+the use of commands like ADD and COPY. **Users must now use Docker >= 1.5.0**
+
+* Passwordless suite instance Docker container login (SSH), using a
+generated key pair.
+
+* Support for sharing a host device with suite instance Docker containers.
+
+* README YAML highlighting.
+
 ## 2.1.0
 
 * Use `NUL` instead of `/dev/null` on Windows for output redirection
@@ -26,9 +39,9 @@
 
 * `publish_all` option to publish all ports to the host interface
 
-* `instance_name` option to name the docker container
+* `instance_name` option to name the Docker container
 
-* `links` option to link suite instance docker containers
+* `links` option to link suite instance Docker containers
 
 * `socket` option will now default to ENV `DOCKER_HOST` if set
 
