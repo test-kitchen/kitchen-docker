@@ -137,17 +137,17 @@ module Kitchen
           private_key = OpenSSL::PKey::RSA.new 2048
           blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
           public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
-          File.open(config[:private_key], 'w') do |f|
-            f.write(private_key)
-            f.chmod(0600)
+          File.open(config[:private_key], 'w') do |file|
+            file.write(private_key)
+            file.chmod(0600)
           end
-          File.open(config[:public_key], 'w') do |f|
-            f.write(public_key)
-            f.chmod(0600)
+          File.open(config[:public_key], 'w') do |file|
+            file.write(public_key)
+            file.chmod(0600)
           end
         end
       end
-      
+
       def build_dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
