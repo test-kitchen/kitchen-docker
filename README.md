@@ -4,7 +4,7 @@ A Test Kitchen Driver for Docker.
 
 ## Requirements
 
-* [Docker][docker_installation] **(>= 1.2)**
+* [Docker][docker_installation] **(>= 1.5)**
 
 ## Installation and Setup
 
