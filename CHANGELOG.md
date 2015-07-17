@@ -2,7 +2,7 @@
 
 * Use a temporary file for each suite instance docker container
 Dockerfile, instead of passing their contents via STDIN. This allows for
-the use of commands like ADD and COPY. _Users must use Docker >= 1.5.0_
+the use of commands like ADD and COPY. **Users must now use Docker >= 1.5.0**
 
 * Passwordless container login (SSH), using a generated key pair.
 
