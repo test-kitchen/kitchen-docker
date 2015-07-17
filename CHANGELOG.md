@@ -1,3 +1,15 @@
+## 2.2.0
+
+* Use a temporary file for each suite instance docker container
+Dockerfile, instead of passing their contents via STDIN. This allows for
+the use of commands like ADD and COPY.
+
+* Passwordless container login (SSH), using a generated key pair.
+
+* Support for sharing a host device with suite instance docker containers.
+
+* README YAML highlighting.
+
 ## 2.1.0
 
 * Use `NUL` instead of `/dev/null` on Windows for output redirection
