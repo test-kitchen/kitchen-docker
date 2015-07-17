@@ -263,6 +263,7 @@ module Kitchen
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
+        Array(config[:devices]).each {|device| cmd << " --device #{device}"}
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
         cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]

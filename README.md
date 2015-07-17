@@ -404,6 +404,22 @@ Examples:
   publish_all: true
 ```
 
+### devices
+
+Share a host device with the container.  Host device must be an absolute path.
+
+Examples:
+```
+devices: /dev/vboxdrv
+```
+
+Examples:
+```
+devices:
+  - /dev/vboxdrv
+  - /dev/vboxnetctl
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
