@@ -39,6 +39,9 @@ platforms:
 suites:
   - name: default
   - name: concurrency
+  - name: context
+    driver:
+      build_context: false
   - name: capabilities
     excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
     driver:
