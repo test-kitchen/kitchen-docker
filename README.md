@@ -383,8 +383,6 @@ Examples:
  links: db:db
 ```
 
-Examples:
-
 ```yaml
   links:
   - db:db
@@ -406,14 +404,14 @@ Examples:
 
 ### devices
 
-Share a host device with the container.  Host device must be an absolute path.
+Share a host device with the container. Host device must be an absolute path.
 
 Examples:
+
 ```
 devices: /dev/vboxdrv
 ```
 
-Examples:
 ```
 devices:
   - /dev/vboxdrv
