@@ -66,6 +66,10 @@ module Kitchen
 
       default_config :disable_upstart, true
 
+      default_config :build_context do |driver|
+        !driver.remote_socket?
+      end
+
       def verify_dependencies
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
         rescue
@@ -244,9 +248,10 @@ module Kitchen
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
         output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
-          file.write(dockerfile)
+          dockerfile_data = dockerfile
+          file.write(dockerfile_data)
           file.close
-          docker_command("#{cmd} -f #{file.path} .")
+          docker_command("#{cmd} -f #{file.path} #{config[:build_context] ? '.' : '-'}", input: dockerfile_data)
         end
         parse_image_id(output)
       end
