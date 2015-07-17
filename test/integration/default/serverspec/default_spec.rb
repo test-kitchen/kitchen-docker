@@ -1,7 +1,4 @@
-require 'serverspec'
-
-include Serverspec::Helper::Exec
-include Serverspec::Helper::DetectOS
+require_relative 'spec_helper'
 
 describe file('/etc/passwd') do
   it { should be_file }

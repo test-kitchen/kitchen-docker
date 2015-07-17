@@ -17,6 +17,7 @@
 require 'kitchen'
 require 'json'
 require 'uri'
+require 'net/ssh'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
@@ -47,6 +48,8 @@ module Kitchen
       default_config :tls_key,       nil
       default_config :publish_all,   false
       default_config :wait_for_sshd, true
+      default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
+      default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -91,6 +94,8 @@ module Kitchen
       end
 
       def create(state)
+        generate_keys
+        state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
@@ -126,6 +131,22 @@ module Kitchen
         run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
       end
 
+      def generate_keys
+        if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
+          private_key = OpenSSL::PKey::RSA.new 2048
+          blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
+          public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
+          File.open(config[:private_key], 'w') do |f|
+            f.write(private_key)
+            f.chmod(0600)
+          end
+          File.open(config[:public_key], 'w') do |f|
+            f.write(public_key)
+            f.chmod(0600)
+          end
+        end
+      end
+      
       def build_dockerfile
         from = "FROM #{config[:image]}"
         platform = case config[:platform]
@@ -172,8 +193,11 @@ module Kitchen
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
         end
+
         username = config[:username]
         password = config[:password]
+        public_key_str = IO.read(config[:public_key])
+
         base = <<-eos
           RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
           RUN echo #{username}:#{password} | chpasswd
@@ -181,6 +205,12 @@ module Kitchen
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
+          RUN [ ! -d /home/kitchen/.ssh ] && mkdir /home/kitchen/.ssh
+          RUN chown -R kitchen:kitchen /home/kitchen/.ssh
+          RUN chmod 0700 /home/kitchen/.ssh
+          RUN echo '#{public_key_str}' >> /home/kitchen/.ssh/authorized_keys
+          RUN chown kitchen:kitchen /home/kitchen/.ssh/authorized_keys
+          RUN chmod 0600 /home/kitchen/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
