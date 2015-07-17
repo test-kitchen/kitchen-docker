@@ -251,7 +251,8 @@ module Kitchen
           dockerfile_data = dockerfile
           file.write(dockerfile_data)
           file.close
-          docker_command("#{cmd} -f #{file.path} #{config[:build_context] ? '.' : '-'}", input: dockerfile_data)
+          build_context = config[:build_context] ? '.' : '-'
+          docker_command("#{cmd} -f #{file.path} #{build_context}", input: dockerfile_data)
         end
         parse_image_id(output)
       end
