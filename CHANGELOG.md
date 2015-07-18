@@ -1,3 +1,7 @@
+## Unreleased
+
+* `build_context` option to enable or disable sending the build context.
+
 ## 2.2.0
 
 * Use a temporary file for each suite instance Docker container
