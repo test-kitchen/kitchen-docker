@@ -418,6 +418,20 @@ devices:
   - /dev/vboxnetctl
 ```
 
+### build_context
+
+Transfer the cookbook directory as build context. This is required for
+Dockerfile directives like ADD and COPY. When using a remote Docker server, the
+whole directory has to be copied, which can be quite slow.
+
+The default value is `true` for local Docker and `false` for remote Docker.
+
+Examples:
+
+```yaml
+  build_context: true
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
