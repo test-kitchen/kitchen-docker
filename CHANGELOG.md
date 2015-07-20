@@ -1,6 +1,7 @@
-## Unreleased
+## 2.3.0
 
-* `build_context` option to enable or disable sending the build context.
+* `build_context` option (boolean) to enable/disable sending the build
+context to Docker.
 
 ## 2.2.0
 
