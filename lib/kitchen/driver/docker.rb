@@ -217,11 +217,15 @@ module Kitchen
           RUN chown #{username} /home/#{username}/.ssh/authorized_keys
           RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
         eos
-        custom = ''
-        Array(config[:provision_command]).each do |cmd|
-          custom << "RUN #{cmd}\n"
+        custom_docker_cmd = ''
+        Array(config[:provision_docker_command]).each do |cmd|
+          custom_docker_cmd << "#{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        custom_cmd = ''
+        Array(config[:provision_command]).each do |cmd|
+          custom_cmd << "RUN #{cmd}\n"
+        end
+        [from, platform, base, custom_docker_cmd, custom_cmd].join("\n")
       end
 
       def dockerfile
