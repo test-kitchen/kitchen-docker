@@ -31,15 +31,19 @@ module Kitchen
     class Docker < Kitchen::Driver::SSHBase
 
       default_config :binary,        'docker'
-      default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
+      default_config :socket,        ENV['DOCKER_HOST'] ||
+                                     'unix:///var/run/docker.sock'
       default_config :privileged,    false
       default_config :cap_add,       nil
       default_config :cap_drop,      nil
       default_config :security_opt,  nil
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
-                                     '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :run_command,   '/usr/sbin/sshd -D ' +
+                                     '-o UseDNS=no -o UsePAM=no ' +
+                                     '-o PasswordAuthentication=yes ' +
+                                     '-o UsePrivilegeSeparation=no ' +
+                                     '-o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
       default_config :tls,           false
@@ -49,8 +53,10 @@ module Kitchen
       default_config :tls_key,       nil
       default_config :publish_all,   false
       default_config :wait_for_sshd, true
-      default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
-      default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
+      default_config :private_key,   File.join(Dir.pwd,
+                                     '.kitchen', 'docker_id_rsa')
+      default_config :public_key,    File.join(Dir.pwd,
+                                     '.kitchen', 'docker_id_rsa.pub')
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -74,7 +80,8 @@ module Kitchen
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
         rescue
           raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+          'You must first install the Docker CLI tool ' +
+          'http://www.docker.io/gettingstarted/'
       end
 
       def dev_null
@@ -105,7 +112,8 @@ module Kitchen
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port]) if config[:wait_for_sshd]
+        wait_for_sshd(state[:hostname], nil,
+            :port => state[:port]) if config[:wait_for_sshd]
       end
 
       def destroy(state)
@@ -137,7 +145,8 @@ module Kitchen
       end
 
       def generate_keys
-        if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
+        if !File.exist?(config[:public_key]) ||
+            !File.exist?(config[:private_key])
           private_key = OpenSSL::PKey::RSA.new(2048)
           blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
           public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
@@ -211,7 +220,8 @@ module Kitchen
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           RUN mkdir -p /etc/sudoers.d
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' \
+              >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
           RUN mkdir -p #{homedir}/.ssh
           RUN chown -R #{username} #{homedir}/.ssh
@@ -255,7 +265,8 @@ module Kitchen
         output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
           file.write(dockerfile_contents)
           file.close
-          docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+          docker_command("#{cmd} -f #{file.path} #{build_context}",
+              :input => dockerfile_contents)
         end
         parse_image_id(output)
       end
@@ -273,9 +284,11 @@ module Kitchen
         cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
-        Array(config[:add_host]).each {|host, ip| cmd << " --add-host=#{host}:#{ip}"}
+        Array(config[:add_host]).each {|host, ip|
+          cmd << " --add-host=#{host}:#{ip}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
-        Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
+        Array(config[:volumes_from]).each {|container|
+          cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
         Array(config[:devices]).each {|device| cmd << " --device #{device}"}
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
@@ -286,9 +299,12 @@ module Kitchen
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
         cmd << " --privileged" if config[:privileged]
-        Array(config[:cap_add]).each {|cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
-        Array(config[:cap_drop]).each {|cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
-        Array(config[:security_opt]).each {|opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
+        Array(config[:cap_add]).each {|cap|
+          cmd << " --cap-add=#{cap}"} if config[:cap_add]
+        Array(config[:cap_drop]).each {|cap|
+          cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
+        Array(config[:security_opt]).each {|opt|
+          cmd << " --security-opt=#{opt}"} if config[:security_opt]
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -300,7 +316,8 @@ module Kitchen
       end
 
       def container_exists?(state)
-        state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
+        state[:container_id] &&
+          !!docker_command("top #{state[:container_id]}") rescue false
       end
 
       def parse_container_ssh_port(output)

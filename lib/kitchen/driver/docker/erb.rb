@@ -20,6 +20,7 @@ module Kitchen
 
   module Driver
 
+    # ERB Context used to pass variables into a template dockerfile
     class DockerERBContext
       def initialize(config={})
         config.each do |key, value|
