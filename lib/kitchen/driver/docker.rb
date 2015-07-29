@@ -202,20 +202,23 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         public_key = IO.read(config[:public_key])
+        homedir = username == 'root' ? '/root' : "/home/#{username}"
 
         base = <<-eos
-          RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
+          RUN if ! getent passwd #{username}; then \
+                useradd -d #{homedir} -m -s /bin/bash #{username}; \
+              fi
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           RUN mkdir -p /etc/sudoers.d
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
-          RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
-          RUN chown -R #{username} /home/#{username}/.ssh
-          RUN chmod 0700 /home/#{username}/.ssh
-          RUN echo '#{public_key}' >> /home/#{username}/.ssh/authorized_keys
-          RUN chown #{username} /home/#{username}/.ssh/authorized_keys
-          RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
+          RUN mkdir -p #{homedir}/.ssh
+          RUN chown -R #{username} #{homedir}/.ssh
+          RUN chmod 0700 #{homedir}/.ssh
+          RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys
+          RUN chown #{username} #{homedir}/.ssh/authorized_keys
+          RUN chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
