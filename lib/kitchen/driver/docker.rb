@@ -166,6 +166,13 @@ module Kitchen
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
+	when 'opensuse', 'sles'
+	  <<-eos
+            RUN zypper clean
+            RUN zypper install -y sudo openssh which curl
+            RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          eos
         when 'rhel', 'centos', 'fedora'
           <<-eos
             RUN yum clean all
@@ -202,26 +209,48 @@ module Kitchen
         username = config[:username]
         password = config[:password]
         public_key = IO.read(config[:public_key])
+#           RUN echo #{username}:#{password} | chpasswd
 
-        base = <<-eos
-          RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
-          RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN mkdir -p /etc/sudoers.d
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
-          RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
-          RUN chown -R #{username} /home/#{username}/.ssh
-          RUN chmod 0700 /home/#{username}/.ssh
-          RUN echo '#{public_key}' >> /home/#{username}/.ssh/authorized_keys
-          RUN chown #{username} /home/#{username}/.ssh/authorized_keys
-          RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
-        eos
+        if config[:platform] == 'opensuse' || config[:platform] == 'sles'
+          basesuse = <<-eos
+            RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
+            RUN echo #{username}:`perl -e 'print crypt("#{password}", "salt")'` | chpasswd -e
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+            RUN mkdir -p /etc/sudoers.d
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+            RUN chmod 0440 /etc/sudoers.d/#{username}
+            RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
+            RUN chown -R #{username} /home/#{username}/.ssh
+            RUN chmod 0700 /home/#{username}/.ssh
+            RUN echo '#{public_key}' >> /home/#{username}/.ssh/authorized_keys
+            RUN chown #{username} /home/#{username}/.ssh/authorized_keys
+            RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
+          eos
+	else
+          base = <<-eos
+            RUN if ! getent passwd #{username}; then useradd -d /home/#{username} -m -s /bin/bash #{username}; fi
+            RUN echo #{username}:#{password} | chpasswd
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+            RUN mkdir -p /etc/sudoers.d
+            RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
+            RUN chmod 0440 /etc/sudoers.d/#{username}
+            RUN [ ! -d /home/#{username}/.ssh ] && mkdir /home/#{username}/.ssh
+            RUN chown -R #{username} /home/#{username}/.ssh
+            RUN chmod 0700 /home/#{username}/.ssh
+            RUN echo '#{public_key}' >> /home/#{username}/.ssh/authorized_keys
+            RUN chown #{username} /home/#{username}/.ssh/authorized_keys
+            RUN chmod 0600 /home/#{username}/.ssh/authorized_keys
+          eos
+	end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        if config[:platform] == 'opensuse' || config[:platform] == 'sles'
+          [from, platform, basesuse, custom].join("\n") 
+        else
+          [from, platform, base, custom].join("\n")
+        end
       end
 
       def dockerfile
