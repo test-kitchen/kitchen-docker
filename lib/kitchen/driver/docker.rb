@@ -70,6 +70,10 @@ module Kitchen
         !driver.remote_socket?
       end
 
+      default_config :hostname do |driver|
+        driver.instance.name
+      end
+
       def verify_dependencies
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
         rescue
