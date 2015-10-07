@@ -51,6 +51,7 @@ module Kitchen
       default_config :wait_for_sshd, true
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
+      default_config :tag,           nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -254,10 +255,11 @@ module Kitchen
         cmd << " --no-cache" unless config[:use_cache]
         dockerfile_contents = dockerfile
         build_context = config[:build_context] ? '.' : '-'
+        tag = config[:tag] || "kitchen-#{config[:image]}"
         output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
           file.write(dockerfile_contents)
           file.close
-          docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+          docker_command("#{cmd} -t #{tag} -f #{file.path} #{build_context}", :input => dockerfile_contents)
         end
         parse_image_id(output)
       end
