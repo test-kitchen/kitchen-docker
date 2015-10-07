@@ -432,6 +432,18 @@ Examples:
   build_context: true
 ```
 
+### tag
+
+Pass a repository:tag value for the built Docker image. Defaults to
+kitchen-#{image}. Passing a platform name like centos-7 essentially generates
+a repository:tag value of kitchen-centos:centos7.
+
+Examples:
+
+```yaml
+  tag: "foo:bar"
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
