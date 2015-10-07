@@ -201,7 +201,7 @@ module Kitchen
 
         username = config[:username]
         password = config[:password]
-        public_key = IO.read(config[:public_key])
+        public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
         base = <<-eos
