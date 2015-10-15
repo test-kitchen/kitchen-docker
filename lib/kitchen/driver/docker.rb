@@ -214,6 +214,13 @@ module Kitchen
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
           RUN mkdir -p #{homedir}/.ssh
+        eos
+        if config[:forward_ssh_agent] && File.directory?('.ssh')
+          base <<-eos
+          COPY .ssh/ #{homedir}/.ssh
+          eos
+        end
+        base <<-eos
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
           RUN touch #{homedir}/.ssh/authorized_keys
