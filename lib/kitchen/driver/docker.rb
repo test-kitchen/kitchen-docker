@@ -216,11 +216,11 @@ module Kitchen
           RUN mkdir -p #{homedir}/.ssh
         eos
         if config[:forward_ssh_agent] && File.directory?('.ssh')
-          base <<-eos
+          base += <<-eos
           COPY .ssh/ #{homedir}/.ssh
           eos
         end
-        base <<-eos
+        base += <<-eos
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
           RUN touch #{homedir}/.ssh/authorized_keys
