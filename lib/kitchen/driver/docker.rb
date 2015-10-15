@@ -214,6 +214,13 @@ module Kitchen
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
           RUN chmod 0440 /etc/sudoers.d/#{username}
           RUN mkdir -p #{homedir}/.ssh
+        eos
+        if config[:forward_ssh_agent] && File.directory?('.ssh')
+          base += <<-eos
+          COPY .ssh/ #{homedir}/.ssh
+          eos
+        end
+        base += <<-eos
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
           RUN touch #{homedir}/.ssh/authorized_keys
@@ -254,11 +261,27 @@ module Kitchen
         cmd << " --no-cache" unless config[:use_cache]
         dockerfile_contents = dockerfile
         build_context = config[:build_context] ? '.' : '-'
-        output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
-          file.write(dockerfile_contents)
-          file.close
-          docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+
+        if Tempfile.respond_to? :create
+          # Older ruby:
+          output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
+            file.write(dockerfile_contents)
+            file.close
+            docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+          end
+        else
+          # Newer ruby:
+          file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          begin
+            file.write(dockerfile_contents)
+            file.close
+            output = docker_command("#{cmd} -f #{file.path} #{build_context}")
+          ensure
+            file.close unless file.closed?
+            file.unlink
+          end
         end
+
         parse_image_id(output)
       end
 
@@ -280,6 +303,7 @@ module Kitchen
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
         Array(config[:devices]).each {|device| cmd << " --device #{device}"}
+        
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
         cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
