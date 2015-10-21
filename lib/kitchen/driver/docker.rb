@@ -201,7 +201,7 @@ module Kitchen
 
         username = config[:username]
         password = config[:password]
-        public_key = IO.read(config[:public_key])
+        public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
         base = <<-eos
@@ -216,7 +216,7 @@ module Kitchen
           RUN mkdir -p #{homedir}/.ssh
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
-          RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys
+          RUN touch #{homedir}/.ssh/authorized_keys
           RUN chown #{username} #{homedir}/.ssh/authorized_keys
           RUN chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
@@ -224,7 +224,9 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        [from, platform, base, custom].join("\n")
+        ssh_key = "RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys"
+        # Empty string to ensure the file ends with a newline.
+        [from, platform, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
