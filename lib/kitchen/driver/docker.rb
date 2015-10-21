@@ -253,12 +253,23 @@ module Kitchen
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
         dockerfile_contents = dockerfile
-        build_context = config[:build_context] ? '.' : '-'
-        output = Tempfile.create('Dockerfile-kitchen-', Dir.pwd) do |file|
-          file.write(dockerfile_contents)
-          file.close
-          docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+        if config[:build_context]
+          output = docker_command("#{cmd} -",
+              :input => dockerfile_contents)
+        else
+          file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          begin
+            file.write(dockerfile)
+            file.close
+            # Requires docker >= 1.5
+            output = docker_command("#{cmd} -f #{file.path} #{build_context}",
+                :input => dockerfile_contents)
+          ensure
+            file.close unless file.closed?
+            file.unlink
+          end
         end
+
         parse_image_id(output)
       end
 
