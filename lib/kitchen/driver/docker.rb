@@ -204,6 +204,11 @@ module Kitchen
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
+        custom_env = ''
+        Array(config[:custom_env]).each do |cenv|
+          custom_env << "ENV #{cenv}\n"
+        end
+
         base = <<-eos
           RUN if ! getent passwd #{username}; then \
                 useradd -d #{homedir} -m -s /bin/bash #{username}; \
@@ -226,7 +231,7 @@ module Kitchen
         end
         ssh_key = "RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
-        [from, platform, base, custom, ssh_key, ''].join("\n")
+        [from, custom_env, platform, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
