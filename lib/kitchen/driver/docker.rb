@@ -162,8 +162,8 @@ module Kitchen
         end
         
         if config[:https_proxy]
-          env_variables << "ENV http_proxy #{config[:https_proxy]}\n" 
-          env_variables << "ENV HTTP_PROXY #{config[:https_proxy]}\n"
+          env_variables << "ENV https_proxy #{config[:https_proxy]}\n" 
+          env_variables << "ENV HTTPS_PROXY #{config[:https_proxy]}\n"
         end
         
         if config[:no_proxy]
