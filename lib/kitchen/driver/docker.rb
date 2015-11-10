@@ -154,13 +154,23 @@ module Kitchen
 
       def build_dockerfile
         from = "FROM #{config[:image]}"
+        
         env_variables = ''
-        env_variables << "ENV http_proxy #{config[:http_proxy]}\n" if config[:http_proxy]
-        env_variables << "ENV HTTP_PROXY #{config[:http_proxy]}\n" if config[:http_proxy]
-        env_variables << "ENV https_proxy #{config[:https_proxy]}\n" if config[:https_proxy]
-        env_variables << "ENV HTTPS_PROXY #{config[:https_proxy]}\n" if config[:https_proxy]
-        env_variables << "ENV no_proxy #{config[:no_proxy]}\n" if config[:no_proxy]
-        env_variables << "ENV NO_PROXY #{config[:no_proxy]}\n" if config[:no_proxy]
+        if config[:http_proxy]
+          env_variables << "ENV http_proxy #{config[:http_proxy]}\n" 
+          env_variables << "ENV HTTP_PROXY #{config[:http_proxy]}\n"
+        end
+        
+        if config[:https_proxy]
+          env_variables << "ENV http_proxy #{config[:https_proxy]}\n" 
+          env_variables << "ENV HTTP_PROXY #{config[:https_proxy]}\n"
+        end
+        
+        if config[:no_proxy]
+          env_variables << "ENV no_proxy #{config[:no_proxy]}\n"
+          env_variables << "ENV NO_PROXY #{config[:no_proxy]}\n"
+        end
+
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
