@@ -154,6 +154,23 @@ module Kitchen
 
       def build_dockerfile
         from = "FROM #{config[:image]}"
+        
+        env_variables = ''
+        if config[:http_proxy]
+          env_variables << "ENV http_proxy #{config[:http_proxy]}\n" 
+          env_variables << "ENV HTTP_PROXY #{config[:http_proxy]}\n"
+        end
+        
+        if config[:https_proxy]
+          env_variables << "ENV https_proxy #{config[:https_proxy]}\n" 
+          env_variables << "ENV HTTPS_PROXY #{config[:https_proxy]}\n"
+        end
+        
+        if config[:no_proxy]
+          env_variables << "ENV no_proxy #{config[:no_proxy]}\n"
+          env_variables << "ENV NO_PROXY #{config[:no_proxy]}\n"
+        end
+
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
@@ -226,7 +243,7 @@ module Kitchen
         end
         ssh_key = "RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
-        [from, platform, base, custom, ssh_key, ''].join("\n")
+        [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
