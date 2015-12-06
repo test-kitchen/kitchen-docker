@@ -21,7 +21,6 @@ task :yaml_lint do
   sh 'yaml-lint ./.kitchen.yml'
 end
 
-
 desc "Run all quality tasks"
 task :quality => [:cane, :tailor, :stats, :yaml_lint]
 
