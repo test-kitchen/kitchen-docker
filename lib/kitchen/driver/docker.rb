@@ -348,8 +348,15 @@ module Kitchen
 
       def rm_container(state)
         container_id = state[:container_id]
-        docker_command("stop #{container_id}")
-        docker_command("rm #{container_id}")
+
+        begin
+          docker_command "exec #{container_id} shutdown now"
+          docker_command "wait #{container_id}" # Wait for shutdown
+        rescue Kitchen::ShellOut::ShellCommandFailed
+          nil
+        end
+        docker_command "stop #{container_id}"
+        docker_command "rm #{container_id}"
       end
 
       def rm_image(state)
