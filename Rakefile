@@ -15,8 +15,15 @@ task :stats do
   sh "countloc -r lib"
 end
 
+desc "lint YAML files"
+task :yaml_lint do
+  sh 'yaml-lint ./.travis.yml'
+  sh 'yaml-lint ./.kitchen.yml'
+end
+
+
 desc "Run all quality tasks"
-task :quality => [:cane, :tailor, :stats]
+task :quality => [:cane, :tailor, :stats, :yaml_lint]
 
 task :default => [:quality]
 
