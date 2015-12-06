@@ -52,6 +52,7 @@ module Kitchen
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
 
+      default_config :sudo_detection, true
       default_config :use_sudo do |driver|
         !driver.remote_socket?
       end
@@ -71,10 +72,14 @@ module Kitchen
       end
 
       def verify_dependencies
-        run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
-        rescue
-          raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+        run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true)
+      rescue => e
+        raise e unless config[:sudo_detection]
+        run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true, use_sudo: !config[:sudo])
+        config[:sudo] = !config[:sudo]
+      rescue
+        raise UserError,
+        'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
       end
 
       def dev_null

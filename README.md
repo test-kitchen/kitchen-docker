@@ -181,6 +181,12 @@ The default value depends on the type of socket being used. For local sockets, t
 
 This should be set to `false` if you're using boot2docker, as every command passed into the VM runs as root by default.
 
+### sudo\_detection
+
+This determines if Docker command initialization should also be tried with the the opposite `use_sudo` command when the first attempt failed.
+
+The default value is `true`.
+
 ### remove\_images
 
 This determines if images are automatically removed when the suite container is
