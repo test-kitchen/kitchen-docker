@@ -241,7 +241,7 @@ module Kitchen
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
-        ssh_key = "RUN echo '#{public_key}' >> #{homedir}/.ssh/authorized_keys"
+        ssh_key = "RUN echo \"#{public_key}\" >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
         [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")
       end
