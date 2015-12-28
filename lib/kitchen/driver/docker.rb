@@ -42,6 +42,7 @@ module Kitchen
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :password,      'kitchen'
+      default_config :uid,           501
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
@@ -218,12 +219,13 @@ module Kitchen
 
         username = config[:username]
         password = config[:password]
+        uid = config[:uid]
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
         base = <<-eos
           RUN if ! getent passwd #{username}; then \
-                useradd -d #{homedir} -m -s /bin/bash #{username}; \
+                useradd -d #{homedir} -m -s /bin/bash -u #{uid} #{username}; \
               fi
           RUN echo #{username}:#{password} | chpasswd
           RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
