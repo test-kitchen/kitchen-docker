@@ -192,8 +192,8 @@ module Kitchen
           eos
         when 'alpine'
           <<-eos
-            RUN apk --update
-            RUN apk add openssh
+            RUN apk update
+            RUN apk add openssh curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
