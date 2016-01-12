@@ -185,6 +185,7 @@ module Kitchen
           config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos', 'fedora'
           <<-eos
+            ENV container docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
