@@ -14,7 +14,8 @@ platforms:
   - name: debian
   - name: arch
     driver:
-      image: base/arch
+      image: base/archlinux
+      provision_command:
   - name: unknown
     driver:
       image: ubuntu:12.04
