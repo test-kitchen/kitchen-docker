@@ -39,6 +39,7 @@ platforms:
       links: "db:db"
 suites:
   - name: default
+    excludes: [arch]
   - name: concurrency
   - name: context
     driver:
