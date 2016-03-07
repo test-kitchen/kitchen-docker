@@ -70,6 +70,8 @@ module Kitchen
         !driver.remote_socket?
       end
 
+      MUTEX_FOR_SSH_KEYS = Mutex.new
+
       def verify_dependencies
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
         rescue
@@ -137,17 +139,19 @@ module Kitchen
       end
 
       def generate_keys
-        if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
-          private_key = OpenSSL::PKey::RSA.new(2048)
-          blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
-          public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
-          File.open(config[:private_key], 'w') do |file|
-            file.write(private_key)
-            file.chmod(0600)
-          end
-          File.open(config[:public_key], 'w') do |file|
-            file.write(public_key)
-            file.chmod(0600)
+        MUTEX_FOR_SSH_KEYS.synchronize do
+          if !File.exist?(config[:public_key]) || !File.exist?(config[:private_key])
+            private_key = OpenSSL::PKey::RSA.new(2048)
+            blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
+            public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
+            File.open(config[:private_key], 'w') do |file|
+              file.write(private_key)
+              file.chmod(0600)
+            end
+            File.open(config[:public_key], 'w') do |file|
+              file.write(public_key)
+              file.chmod(0600)
+            end
           end
         end
       end
