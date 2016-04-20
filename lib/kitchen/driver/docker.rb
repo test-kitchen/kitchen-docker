@@ -32,6 +32,7 @@ module Kitchen
 
       default_config :binary,        'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
+      default_config :ssh_host,      nil
       default_config :privileged,    false
       default_config :cap_add,       nil
       default_config :cap_drop,      nil
@@ -105,7 +106,7 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:hostname] = ssh_host
         state[:port] = container_ssh_port(state)
         wait_for_sshd(state[:hostname], nil, :port => state[:port]) if config[:wait_for_sshd]
       end
@@ -122,6 +123,16 @@ module Kitchen
       end
 
       protected
+
+      def ssh_host
+        if config[:ssh_host]
+          config[:ssh_host]
+        elsif remote_socket?
+          socket_uri.host
+        else
+          'localhost'
+        end
+      end
 
       def socket_uri
         URI.parse(config[:socket])
