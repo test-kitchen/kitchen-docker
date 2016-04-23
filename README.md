@@ -204,6 +204,19 @@ Examples:
   run_command: /sbin/init
 ```
 
+### Environment variables
+Add to your driver config:
+
+```
+    driver_config:
+      env:
+        mysql_url: 'rds.somewhere.com'
+        mysql_port: '3306'
+        dns_server: '8.8.8.8'
+
+```
+These environment variables are loaded on a new converge.  Succeeding convergences do not pick up changes, destroy then converge again to pick up changes.
+
 ### memory
 
 Sets the memory limit for the suite container in bytes. Otherwise use Dockers
