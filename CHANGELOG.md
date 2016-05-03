@@ -1,3 +1,13 @@
+## 2.4.0
+
+* [#148](https://github.com/portertech/kitchen-docker/issues/148) Restored support for older versions of Ruby.
+* [#149](https://github.com/portertech/kitchen-docker/pulls/149) Handle connecting to a container directly as root.
+* [#154](https://github.com/portertech/kitchen-docker/pulls/154) Improve container caching by reordering the build steps.
+* [#176](https://github.com/portertech/kitchen-docker/pulls/176) Expose proxy environment variables to the container automatically.
+* [#192](https://github.com/portertech/kitchen-docker/pulls/192) Set `$container=docker` for CentOS images.
+* [#196](https://github.com/portertech/kitchen-docker/pulls/196) Mutex SSH key generation for use with `kitchen -c`.
+* [#192](https://github.com/portertech/kitchen-docker/pulls/192) Don't wait when stopping a container.
+
 ## 2.3.0
 
 * `build_context` option (boolean) to enable/disable sending the build
