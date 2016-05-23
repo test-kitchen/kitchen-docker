@@ -309,6 +309,12 @@ module Kitchen
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
         cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
+        cmd << " --name='#{config[:instance_name]}'" if config[:instance_name]
+        if config[:linked_instances]
+          config[:linked_instances].each do |instance|
+            cmd << " --link=#{instance}"
+          end
+        end
         cmd << " -m #{config[:memory]}" if config[:memory]
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
