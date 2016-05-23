@@ -19,6 +19,7 @@ require 'json'
 require 'securerandom'
 require 'uri'
 require 'net/ssh'
+require 'tempfile'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
