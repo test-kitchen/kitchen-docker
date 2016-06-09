@@ -230,6 +230,22 @@ Examples:
   - /srv
 ```
 
+### tmpfs
+
+Mount a tmpfs inside of the container without requiring privileged mode
+
+Examples:
+
+```yaml
+  tmpfs: /run:rw,noexec,nosuid,size=65536k
+```
+
+```yaml
+  tmpfs:
+  - /run/lock
+  - /tmp
+```
+
 ### volumes\_from
 
 Mount volumes managed by other containers.
