@@ -452,6 +452,18 @@ Examples:
   build_context: true
 ```
 
+### options
+
+Any additional docker command line options
+
+Examples:
+
+```yaml
+  options:
+    - "--ip=172.10.0.10"
+    - "--net=bridge"
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
