@@ -281,7 +281,7 @@ module Kitchen
         output = begin
           file.write(dockerfile)
           file.close
-          docker_command("#{cmd} -f #{file.path} #{build_context}", :input => dockerfile_contents)
+          docker_command("#{cmd} -f \"#{file.path}\" #{build_context}", :input => dockerfile_contents)
         ensure
           file.close unless file.closed?
           file.unlink
