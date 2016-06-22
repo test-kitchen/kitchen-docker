@@ -1,7 +1,10 @@
+<% # Make sure the local copy of the driver is loaded %>
+<% lib = File.expand_path('../lib', __FILE__) %>
+<% $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib) %>
 ---
 driver:
   name: docker
-  provision_command: curl -L http://www.chef.io/chef/install.sh | bash
+  provision_command: true
 
 provisioner:
   name: dummy
@@ -25,31 +28,16 @@ platforms:
       password: dockerfile
       dockerfile: test/Dockerfile
       run_command: /sbin/init
-  - name: database
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      instance_name: db
-      publish_all: true
-  - name: linked
-    driver:
-      image: ubuntu:14.04
-      platform: ubuntu
-      links: "db:db"
+
 suites:
   - name: default
-  - name: concurrency
   - name: context
     driver:
       build_context: false
   - name: capabilities
     excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
     driver:
-      provision_command:  
-      - curl -L http://www.chef.io/chef/install.sh | bash
-      - apt-get install -y net-tools 
-      username: kitchen
-      password: kitchen 
+      provision_command: apt-get install -y net-tools
       cap_drop:
-      - NET_ADMIN 
-     
+      - NET_ADMIN
+

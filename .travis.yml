@@ -1,11 +1,17 @@
+sudo: required
+dist: trusty
 language: ruby
 
 rvm:
-- 2.0.0
-- 1.9.3
-- 1.9.2
-- ruby-head
+- "2.1"
+- "2.2"
+- "2.3"
 
-matrix:
-  allow_failures:
-  - rvm: ruby-head
+services:
+- docker
+
+script:
+- docker version
+- kitchen --version
+- rake spec
+- kitchen test -d always
