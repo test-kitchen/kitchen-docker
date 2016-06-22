@@ -10,34 +10,35 @@ provisioner:
   name: dummy
 
 platforms:
-  - name: ubuntu-12.04
-  - name: ubuntu-14.04
-  - name: centos-6.4
-  - name: centos-7
-  - name: debian
-  - name: arch
-    driver:
-      image: base/arch
-  - name: unknown
-    driver:
-      image: ubuntu:12.04
-      platform: ubuntu
-  - name: dockerfile
-    driver:
-      username: dockerfile
-      password: dockerfile
-      dockerfile: test/Dockerfile
-      run_command: /sbin/init
+- name: ubuntu-12.04
+- name: ubuntu-14.04
+- name: ubuntu-16.04
+- name: centos-6
+- name: centos-7
+- name: debian
+- name: arch
+  driver:
+    image: base/archlinux
+- name: unknown
+  driver:
+    image: ubuntu:12.04
+    platform: ubuntu
+- name: dockerfile
+  driver:
+    username: dockerfile
+    password: dockerfile
+    dockerfile: test/Dockerfile
+    run_command: /sbin/init
 
 suites:
-  - name: default
-  - name: context
-    driver:
-      build_context: false
-  - name: capabilities
-    excludes: [arch,unknown,centos-7,centos-6.4,dockerfile]
-    driver:
-      provision_command: apt-get install -y net-tools
-      cap_drop:
-      - NET_ADMIN
+- name: default
+- name: context
+  driver:
+    build_context: false
+- name: capabilities
+  excludes: [arch,unknown,centos-7,centos-6,dockerfile]
+  driver:
+    provision_command: apt-get install -y net-tools
+    cap_drop:
+    - NET_ADMIN
 
