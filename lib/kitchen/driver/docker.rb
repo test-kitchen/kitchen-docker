@@ -272,7 +272,7 @@ module Kitchen
           end
         end
         raise ActionFailed,
-        'Could not parse Docker build output for image ID'
+          'Could not parse Docker build output for image ID'
       end
 
       def build_image(state)
