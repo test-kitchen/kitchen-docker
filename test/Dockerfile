@@ -1,4 +1,4 @@
-FROM centos:6.4
+FROM centos:6
 RUN yum clean all
 RUN yum install -y sudo openssh-server openssh-clients which curl htop
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
@@ -7,4 +7,4 @@ RUN mkdir -p /var/run/sshd
 RUN useradd -d /home/<%= @username %> -m -s /bin/bash <%= @username %>
 RUN echo <%= "#{@username}:#{@password}" %> | chpasswd
 RUN echo '<%= @username %> ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-RUN curl -L http://www.opscode.com/chef/install.sh | bash
+

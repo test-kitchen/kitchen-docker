@@ -201,8 +201,9 @@ module Kitchen
           eos
         when 'arch'
           <<-eos
-            RUN pacman -Syu --noconfirm
-            RUN pacman -S --noconfirm openssh sudo curl
+            RUN pacman --noconfirm -Sy archlinux-keyring
+            RUN pacman-db-upgrade
+            RUN pacman --noconfirm -Sy openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
