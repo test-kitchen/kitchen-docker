@@ -487,7 +487,9 @@ example:
 
 ## Authors
 
-Created and maintained by [Sean Porter][author] (<portertech@gmail.com>)
+Created by [Sean Porter][author] (<portertech@gmail.com>).
+
+Maintained by [Noah Kantrowitz][https://github.com/coderanger].
 
 ## License
 
@@ -495,14 +497,14 @@ Apache 2.0 (see [LICENSE][license])
 
 
 [author]:                 https://github.com/portertech
-[issues]:                 https://github.com/portertech/kitchen-docker/issues
-[license]:                https://github.com/portertech/kitchen-docker/blob/master/LICENSE
-[repo]:                   https://github.com/portertech/kitchen-docker
+[issues]:                 https://github.com/test-kitchen/kitchen-docker/issues
+[license]:                https://github.com/test-kitchen/kitchen-docker/blob/master/LICENSE
+[repo]:                   https://github.com/test-kitchen/kitchen-docker
 [docker_installation]:    https://docs.docker.com/installation/#installation
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
 [test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
-[chef_omnibus_dl]:        http://www.opscode.com/chef/install/
+[chef_omnibus_dl]:        https://downloads.chef.io/chef-client/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
 [memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html

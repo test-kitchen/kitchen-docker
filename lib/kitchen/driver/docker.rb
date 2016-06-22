@@ -341,11 +341,11 @@ module Kitchen
 
       def parse_container_ssh_port(output)
         begin
-          host, port = output.split(':')
+          _host, port = output.split(':')
           port.to_i
         rescue
           raise ActionFailed,
-          'Could not parse Docker port output for container SSH port'
+            'Could not parse Docker port output for container SSH port'
         end
       end
 
