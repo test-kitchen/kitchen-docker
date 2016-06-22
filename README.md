@@ -230,22 +230,6 @@ Examples:
   - /srv
 ```
 
-### tmpfs
-
-Mount a tmpfs inside of the container without requiring privileged mode
-
-Examples:
-
-```yaml
-  tmpfs: /run:rw,noexec,nosuid,size=65536k
-```
-
-```yaml
-  tmpfs:
-  - /run/lock
-  - /tmp
-```
-
 ### volumes\_from
 
 Mount volumes managed by other containers.
@@ -450,6 +434,40 @@ Examples:
 
 ```yaml
   build_context: true
+```
+
+### build_options
+
+Extra command-line options to pass to `docker build` when creating the image.
+
+Examples:
+
+```yaml
+  build_options: --rm=false
+```
+
+```yaml
+  build_options:
+    rm: false
+    build-arg: something
+```
+
+### run_options
+
+Extra command-line options to pass to `docker run` when starting the container.
+
+Examples:
+
+```yaml
+  run_options: --ip=1.2.3.4
+```
+
+```yaml
+  run_options:
+    tmpfs:
+    - /run/lock
+    - /tmp
+    net: br3
 ```
 
 ## Development

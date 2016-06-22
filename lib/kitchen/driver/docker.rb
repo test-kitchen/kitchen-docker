@@ -20,6 +20,7 @@ require 'securerandom'
 require 'uri'
 require 'net/ssh'
 require 'tempfile'
+require 'shellwords'
 require File.join(File.dirname(__FILE__), 'docker', 'erb')
 
 module Kitchen
@@ -52,6 +53,8 @@ module Kitchen
       default_config :wait_for_sshd, true
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
+      default_config :build_options, nil
+      default_config :run_options,   nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -275,6 +278,8 @@ module Kitchen
       def build_image(state)
         cmd = "build"
         cmd << " --no-cache" unless config[:use_cache]
+        extra_build_options = config_to_options(config[:build_options])
+        cmd << " #{extra_build_options}" unless extra_build_options.empty?
         dockerfile_contents = dockerfile
         build_context = config[:build_context] ? '.' : '-'
         file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
@@ -307,7 +312,6 @@ module Kitchen
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
         Array(config[:devices]).each {|device| cmd << " --device #{device}"}
-        Array(config[:tmpfs]).each {|tmpfs| cmd << " --tmpfs #{tmpfs}"}
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
         cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
@@ -319,6 +323,8 @@ module Kitchen
         Array(config[:cap_add]).each {|cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
         Array(config[:cap_drop]).each {|cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
         Array(config[:security_opt]).each {|opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
+        extra_run_options = config_to_options(config[:run_options])
+        cmd << " #{extra_run_options}" unless extra_run_options.empty?
         cmd << " #{image_id} #{config[:run_command]}"
         cmd
       end
@@ -363,6 +369,26 @@ module Kitchen
         image_id = state[:image_id]
         docker_command("rmi #{image_id}")
       end
+
+      # Convert the config input for `:build_options` or `:run_options` in to a
+      # command line string for use with Docker.
+      #
+      # @since 2.5.0
+      # @param config [nil, String, Array, Hash] Config data to convert.
+      # @return [String]
+      def config_to_options(config)
+        case config
+        when nil
+          ''
+        when String
+          config
+        when Array
+          config.map {|c| config_to_options(c) }.join(' ')
+        when Hash
+          config.map {|k, v| Array(v).map {|c| "--#{k}=#{Shellwords.escape(c)}" }.join(' ') }.join(' ')
+        end
+      end
+
     end
   end
 end
