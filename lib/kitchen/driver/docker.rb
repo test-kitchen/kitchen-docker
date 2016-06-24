@@ -185,8 +185,11 @@ module Kitchen
             RUN dpkg-divert --local --rename --add /sbin/initctl
             RUN ln -sf /bin/true /sbin/initctl
           eos
-          packages = <<-eos
-            ENV DEBIAN_FRONTEND noninteractive
+
+          env = "ENV DEBIAN_FRONTEND noninteractive"
+          env << "\nENV http_proxy #{config[:http_proxy]}" if config[:http_proxy]
+          env << "\nENV https_proxy #{config[:https_proxy]}" if config[:https_proxy]
+          packages = env + <<-eos
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
