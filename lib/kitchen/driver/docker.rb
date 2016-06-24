@@ -200,12 +200,15 @@ module Kitchen
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
         when 'arch'
+          # See https://bugs.archlinux.org/task/47052 for why we
+          # blank out limits.conf.
           <<-eos
             RUN pacman --noconfirm -Sy archlinux-keyring
             RUN pacman-db-upgrade
             RUN pacman --noconfirm -Sy openssl openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
+            RUN echo >/etc/security/limits.conf
           eos
         when 'gentoo'
           <<-eos
@@ -236,10 +239,8 @@ module Kitchen
                 useradd -d #{homedir} -m -s /bin/bash #{username}; \
               fi
           RUN echo #{username}:#{password} | chpasswd
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-          RUN mkdir -p /etc/sudoers.d
-          RUN echo '#{username} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/#{username}
-          RUN chmod 0440 /etc/sudoers.d/#{username}
+          RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          RUN echo "Defaults !requiretty" >> /etc/sudoers
           RUN mkdir -p #{homedir}/.ssh
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
