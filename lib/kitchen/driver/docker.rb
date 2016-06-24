@@ -187,6 +187,7 @@ module Kitchen
           eos
           packages = <<-eos
             ENV DEBIAN_FRONTEND noninteractive
+            ENV container docker
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
