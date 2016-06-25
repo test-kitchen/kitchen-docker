@@ -1,3 +1,12 @@
+# Kitchen-Docker Changelog
+
+## 2.5.0
+
+* [#209](https://github.com/portertech/kitchen-docker/pulls/209) Fix usage with Kitchen rake tasks.
+* Add `run_options` and `build_options` configuration.
+* [#195](https://github.com/portertech/kitchen-docker/pulls/195) Fix Arch Linux support.
+* Fix shell escaping for build paths and SSH keys.
+
 ## 2.4.0
 
 * [#148](https://github.com/portertech/kitchen-docker/issues/148) Restored support for older versions of Ruby.
