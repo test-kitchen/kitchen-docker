@@ -16,7 +16,7 @@ cache:
   - /var/lib/docker
 
 script:
-- docker version
-- kitchen --version
-- rake spec
-- kitchen test -d always
+- bundle exec docker version
+- bundle exec kitchen --version
+- bundle exec rake spec
+- bundle exec kitchen test -d always
