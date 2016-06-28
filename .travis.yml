@@ -10,6 +10,11 @@ rvm:
 services:
 - docker
 
+cache:
+  bundler: true
+  directories:
+  - /var/lib/docker
+
 script:
 - docker version
 - kitchen --version
