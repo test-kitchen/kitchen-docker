@@ -1,8 +1,12 @@
-# Kitchen::Docker
+# Kitchen-Docker
+
+[![Build Status](https://img.shields.io/travis/test-kitchen/kitchen-docker.svg)](https://travis-ci.org/test-kitchen/kitchen-docker)
+[![Gem Version](https://img.shields.io/gem/v/kitchen-docker.svg)](https://rubygems.org/gems/kitchen-docker)
+[![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
+[![Gemnasium](https://img.shields.io/gemnasium/test-kitchen/kitchen-docker.svg)](https://gemnasium.com/test-kitchen/kitchen-docker)
+[![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A Test Kitchen Driver for Docker.
-
-[![Build Status](https://travis-ci.org/test-kitchen/kitchen-docker.svg?branch=master)](https://travis-ci.org/test-kitchen/kitchen-docker)
 
 ## Requirements
 
@@ -487,18 +491,23 @@ example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-## Authors
-
-Created by [Sean Porter][author] (<portertech@gmail.com>).
-
-Maintained by [Noah Kantrowitz][https://github.com/coderanger].
-
 ## License
 
-Apache 2.0 (see [LICENSE][license])
+Copyright 2013-2016, [Sean Porter](https://github.com/portertech)
+Copyright 2015-2016, [Noah Kantrowitz](https://github.com/coderanger)
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-[author]:                 https://github.com/portertech
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 [issues]:                 https://github.com/test-kitchen/kitchen-docker/issues
 [license]:                https://github.com/test-kitchen/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/test-kitchen/kitchen-docker
