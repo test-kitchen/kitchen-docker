@@ -17,6 +17,28 @@
 require 'rake'
 require 'rspec'
 require 'rspec/its'
+require 'simplecov'
+
+# Check for coverage stuffs
+formatters = []
+
+if ENV['CODECOV_TOKEN'] || ENV['TRAVIS']
+  require 'codecov'
+  formatters << SimpleCov::Formatter::Codecov
+end
+
+unless formatters.empty?
+  SimpleCov.formatters = formatters
+end
+
+SimpleCov.start do
+  # Don't get coverage on the test cases themselves.
+  add_filter '/spec/'
+  add_filter '/test/'
+  # Codecov doesn't automatically ignore vendored files.
+  add_filter '/vendor/'
+end
+
 require 'kitchen/driver/docker'
 
 RSpec.configure do |config|
