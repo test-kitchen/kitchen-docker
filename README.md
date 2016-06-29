@@ -2,6 +2,8 @@
 
 A Test Kitchen Driver for Docker.
 
+[![Build Status](https://travis-ci.org/test-kitchen/kitchen-docker.svg?branch=master)](https://travis-ci.org/test-kitchen/kitchen-docker)
+
 ## Requirements
 
 * [Docker][docker_installation] **(>= 1.5)**
