@@ -1,5 +1,11 @@
 # Kitchen-Docker Changelog
 
+## 2.6.0
+
+* Set container name with information from the run so you can identify them
+  later on.
+* Upgrade to new driver base class structure.
+
 ## 2.5.0
 
 * [#209](https://github.com/portertech/kitchen-docker/pulls/209) Fix usage with Kitchen rake tasks.
