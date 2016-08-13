@@ -78,10 +78,10 @@ module Kitchen
       default_config :instance_name do |driver|
         # Borrowed from kitchen-rackspace
         [
-          driver.instance.name.gsub(/\W/, '')[0..14],
-          (Etc.getlogin || 'nologin').gsub(/\W/, '')[0..14],
-          Socket.gethostname.gsub(/\W/, '')[0..22],
-          Array.new(7) { rand(36).to_s(36) }.join
+          driver.instance.name.gsub(/\W/, ''),
+          (Etc.getlogin || 'nologin').gsub(/\W/, ''),
+          Socket.gethostname.gsub(/\W/, '')[0..20],
+          Array.new(8) { rand(36).to_s(36) }.join
         ].join('-')
       end
 
