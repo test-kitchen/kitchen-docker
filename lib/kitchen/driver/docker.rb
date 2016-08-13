@@ -21,16 +21,18 @@ require 'uri'
 require 'net/ssh'
 require 'tempfile'
 require 'shellwords'
-require File.join(File.dirname(__FILE__), 'docker', 'erb')
+
+require 'kitchen/driver/base'
+
+require_relative './docker/erb'
 
 module Kitchen
-
   module Driver
-
     # Docker driver for Kitchen.
     #
     # @author Sean Porter <portertech@gmail.com>
-    class Docker < Kitchen::Driver::SSHBase
+    class Docker < Kitchen::Driver::Base
+      include ShellOut
 
       default_config :binary,        'docker'
       default_config :socket,        ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
@@ -43,7 +45,6 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
-      default_config :password,      'kitchen'
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
@@ -77,7 +78,7 @@ module Kitchen
       MUTEX_FOR_SSH_KEYS = Mutex.new
 
       def verify_dependencies
-        run_command("#{config[:binary]} >> #{dev_null} 2>&1", :quiet => true)
+        run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true, use_sudo: config[:use_sudo])
         rescue
           raise UserError,
           'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
@@ -106,12 +107,17 @@ module Kitchen
 
       def create(state)
         generate_keys
+        state[:username] = config[:username]
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
         state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         state[:port] = container_ssh_port(state)
-        wait_for_sshd(state[:hostname], nil, :port => state[:port]) if config[:wait_for_sshd]
+        if config[:wait_for_sshd]
+          instance.transport.connection(state) do |conn|
+            conn.wait_until_ready
+          end
+        end
       end
 
       def destroy(state)
@@ -139,7 +145,11 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        run_command("#{docker} #{cmd}", options.merge(:quiet => !logger.debug?))
+        run_command("#{docker} #{cmd}", options.merge({
+          quiet: !logger.debug?,
+          use_sudo: config[:use_sudo],
+          log_subject: Thor::Util.snake_case(self.class.to_s),
+        }))
       end
 
       def generate_keys
@@ -231,7 +241,6 @@ module Kitchen
         end
 
         username = config[:username]
-        password = config[:password]
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
@@ -239,7 +248,6 @@ module Kitchen
           RUN if ! getent passwd #{username}; then \
                 useradd -d #{homedir} -m -s /bin/bash #{username}; \
               fi
-          RUN echo #{username}:#{password} | chpasswd
           RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           RUN echo "Defaults !requiretty" >> /etc/sudoers
           RUN mkdir -p #{homedir}/.ssh
