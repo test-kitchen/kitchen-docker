@@ -56,6 +56,7 @@ module Kitchen
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
       default_config :build_options, nil
       default_config :run_options,   nil
+      default_config :ssh_host,      nil
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -121,7 +122,7 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:hostname] = config[:ssh_host] || (remote_socket? ? socket_uri.host : 'localhost')
         state[:port] = container_ssh_port(state)
         if config[:wait_for_sshd]
           instance.transport.connection(state) do |conn|
