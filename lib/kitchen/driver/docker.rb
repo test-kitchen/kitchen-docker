@@ -208,15 +208,16 @@ module Kitchen
           packages = <<-eos
             ENV DEBIAN_FRONTEND noninteractive
             ENV container docker
-            RUN apt-get update
-            RUN apt-get install -y sudo openssh-server curl lsb-release
+            RUN apt-get update -q \
+             && apt-get install -y sudo openssh-server curl lsb-release \
+             && rm -rf /var/lib/apt/lists/*
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos', 'fedora'
           <<-eos
             ENV container docker
-            RUN yum clean all
-            RUN yum install -y sudo openssh-server openssh-clients which curl
+            RUN yum install -y sudo openssh-server openssh-clients which curl \
+             && yum clean all
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
@@ -225,23 +226,23 @@ module Kitchen
           # blank out limits.conf.
           <<-eos
             RUN pacman --noconfirm -Sy archlinux-keyring
-            RUN pacman-db-upgrade
-            RUN pacman --noconfirm -Sy openssl openssh sudo curl
+            RUN pacman-db-upgrade \
+             && pacman --noconfirm -Sy openssl openssh sudo curl
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-            RUN echo >/etc/security/limits.conf
+            RUN touch /etc/security/limits.conf
           eos
         when 'gentoo'
           <<-eos
-            RUN emerge --sync
-            RUN emerge net-misc/openssh app-admin/sudo
+            RUN emerge --sync \
+             && emerge net-misc/openssh app-admin/sudo
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
         when 'gentoo-paludis'
           <<-eos
-            RUN cave sync
-            RUN cave resolve -zx net-misc/openssh app-admin/sudo
+            RUN cave sync \
+             && cave resolve -zx net-misc/openssh app-admin/sudo
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
@@ -260,12 +261,12 @@ module Kitchen
               fi
           RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           RUN echo "Defaults !requiretty" >> /etc/sudoers
-          RUN mkdir -p #{homedir}/.ssh
-          RUN chown -R #{username} #{homedir}/.ssh
-          RUN chmod 0700 #{homedir}/.ssh
-          RUN touch #{homedir}/.ssh/authorized_keys
-          RUN chown #{username} #{homedir}/.ssh/authorized_keys
-          RUN chmod 0600 #{homedir}/.ssh/authorized_keys
+          RUN mkdir -p #{homedir}/.ssh \
+           && chown -R #{username} #{homedir}/.ssh \
+           && chmod 0700 #{homedir}/.ssh \
+           && touch #{homedir}/.ssh/authorized_keys
+          RUN chown #{username} #{homedir}/.ssh/authorized_keys \
+           && chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
