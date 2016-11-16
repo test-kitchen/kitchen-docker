@@ -56,6 +56,8 @@ module Kitchen
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
       default_config :build_options, nil
       default_config :run_options,   nil
+      default_config :chef_omnibus_cache_volume, 'kitchen-docker-omnibus-cache'
+      default_config :cache_chef_omnibus_packages, true
 
       default_config :use_sudo do |driver|
         !driver.remote_socket?
@@ -117,6 +119,7 @@ module Kitchen
 
       def create(state)
         generate_keys
+        create_omnibus_cache_volume if cache_chef_omnibus_packages?
         state[:username] = config[:username]
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
@@ -333,6 +336,7 @@ module Kitchen
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
         Array(config[:links]).each {|link| cmd << " --link #{link}"}
         Array(config[:devices]).each {|device| cmd << " --device #{device}"}
+        cmd << " -v #{config[:chef_omnibus_cache_volume]}:#{omnibus_cache_directory}" if cache_chef_omnibus_packages?
         cmd << " --name #{config[:instance_name]}" if config[:instance_name]
         cmd << " -P" if config[:publish_all]
         cmd << " -h #{config[:hostname]}" if config[:hostname]
@@ -408,6 +412,19 @@ module Kitchen
         when Hash
           config.map {|k, v| Array(v).map {|c| "--#{k}=#{Shellwords.escape(c)}" }.join(' ') }.join(' ')
         end
+      end
+
+      # 'volume create', if the volume already exists, does nothing
+      def create_omnibus_cache_volume
+        docker_command("volume create --name #{config[:chef_omnibus_cache_volume]}")
+      end
+
+      def cache_chef_omnibus_packages?
+        config[:cache_chef_omnibus_packages] && !omnibus_cache_directory.nil?
+      end
+
+      def omnibus_cache_directory
+        instance.provisioner[:chef_omnibus_cache] if instance
       end
 
     end
