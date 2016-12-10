@@ -307,7 +307,7 @@ module Kitchen
         output = begin
           file.write(dockerfile)
           file.close
-          docker_command("#{cmd} -f #{Shellwords.escape(file.path)} #{build_context}", :input => dockerfile_contents)
+          docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}", :input => dockerfile_contents)
         ensure
           file.close unless file.closed?
           file.unlink
@@ -408,6 +408,10 @@ module Kitchen
         when Hash
           config.map {|k, v| Array(v).map {|c| "--#{k}=#{Shellwords.escape(c)}" }.join(' ') }.join(' ')
         end
+      end
+
+      def dockerfile_path(file)
+        config[:build_context] ? Pathname.new(file.path).relative_path_from(Pathname.pwd).to_s : file.path
       end
 
     end
