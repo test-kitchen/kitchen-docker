@@ -245,6 +245,14 @@ module Kitchen
             RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           eos
+        when 'alpine'
+          <<-eos
+            RUN echo "@edge http://dl-3.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+            RUN apk --update add openssh curl sudo bash shadow@edge
+            RUN echo > /etc/default/useradd
+            RUN ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
+            RUN ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
+          eos
         else
           raise ActionFailed,
           "Unknown platform '#{config[:platform]}'"
