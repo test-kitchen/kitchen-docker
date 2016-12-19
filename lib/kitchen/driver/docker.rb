@@ -57,6 +57,9 @@ module Kitchen
       default_config :build_options, nil
       default_config :run_options,   nil
 
+      expand_path_for :private_key
+      expand_path_for :public_key
+
       default_config :use_sudo do |driver|
         !driver.remote_socket?
       end
