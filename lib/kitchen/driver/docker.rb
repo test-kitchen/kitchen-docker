@@ -116,6 +116,7 @@ module Kitchen
       end
 
       def create(state)
+        pre_create_command
         generate_keys
         state[:username] = config[:username]
         state[:ssh_key] = config[:private_key]
@@ -283,6 +284,16 @@ module Kitchen
           ERB.new(template).result(context.get_binding)
         else
           build_dockerfile
+        end
+      end
+
+      def pre_create_command
+        if config[:pre_create_command]
+          system(config[:pre_create_command])
+          if $?.exitstatus.nonzero?
+            raise ActionFailed,
+              "pre_create_command '#{config[:pre_create_command]}' failed to execute (exit status #{$?.exitstatus})"
+          end
         end
       end
 

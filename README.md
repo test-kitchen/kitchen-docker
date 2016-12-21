@@ -476,6 +476,18 @@ Examples:
     net: br3
 ```
 
+### pre_create_command
+
+A shell command which is run locally before creating the container.
+Used to prepare the build environment (e.g. to generate files
+to be copied in the build process or used in converge stage).
+
+Examples:
+
+```yaml
+  pre_create_command: ./my_shell_script.sh
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
