@@ -100,6 +100,12 @@ Examples:
   socket: tcp://docker.example.com:4242
 ```
 
+If you use [Docker for Windows](https://docs.docker.com/docker-for-windows/)
+
+```yaml
+socket: npipe:////./pipe/docker_engine
+```
+
 If you use [Boot2Docker](https://github.com/boot2docker/boot2docker)
 or [docker-machine](https://docs.docker.com/machine/get-started/) set
 your `DOCKER_HOST` environment variable properly with `export
