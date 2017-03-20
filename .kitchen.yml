@@ -42,7 +42,7 @@ suites:
   driver:
     build_context: false
 - name: capabilities
-  excludes: [arch,unknown,centos-7,centos-6,dockerfile]
+  excludes: [arch,unknown,centos-7,centos-6,dockerfile,opensuse]
   driver:
     provision_command:
     - curl -L https://www.chef.io/chef/install.sh | bash
