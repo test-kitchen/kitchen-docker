@@ -16,6 +16,9 @@ platforms:
 - name: centos-6
 - name: centos-7
 - name: debian
+- name: opensuse
+  driver:
+    image: opensuse:42.2
 - name: arch
   driver:
     image: base/archlinux
