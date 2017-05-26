@@ -58,7 +58,11 @@ module Kitchen
       default_config :run_options,   nil
 
       default_config :use_sudo do |driver|
-        !driver.remote_socket?
+        if ENV.key?('KITCHEN_DOCKER_USE_SUDO')
+          !!(ENV['KITCHEN_DOCKER_USE_SUDO'] =~ /^(t(rue)?|y(es)?)?$/)
+        else
+          !driver.remote_socket?
+        end
       end
 
       default_config :image do |driver|
