@@ -483,6 +483,21 @@ Examples:
     net: br3
 ```
 
+### ssh_host
+
+Support for playing nicely with SSH transport's `ssh_gateway` option. If
+set, kitchen ssh will attempt to connect to the SSH daemon running on the
+specified host. This allows for running tests against remote docker engines
+without the need to open additional ports on the remote host. Usually you will
+want to set this to `localhost` when used in conjunction with SSH
+transport's `ssh_gateway` option.
+
+Examples:
+
+```yaml
+  ssh_host: localhost
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
