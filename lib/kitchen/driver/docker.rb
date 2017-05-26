@@ -347,6 +347,11 @@ module Kitchen
         cmd << " -c #{config[:cpu]}" if config[:cpu]
         cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
         cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
+        if config[:env]
+          config[:env].each do |var,value|
+            cmd << " -e #{var}=#{value}"
+          end
+        end
         cmd << " --privileged" if config[:privileged]
         Array(config[:cap_add]).each {|cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
         Array(config[:cap_drop]).each {|cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
