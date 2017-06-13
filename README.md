@@ -276,6 +276,24 @@ Examples:
   - 8.8.8.8
   - 8.8.4.4
 ```
+
+### dns\_search
+
+Adjusts `resolv.conf` to use the search domains specified. Otherwise use
+Dockers defaults.
+
+Examples:
+
+```yaml
+  dns_search: example.com
+```
+
+```yaml
+  dns_search:
+  - foo.example.com
+  - bar.example.com
+```
+
 ### http\_proxy
 
 Sets an http proxy for the suite container using the `http_proxy` environment variable.

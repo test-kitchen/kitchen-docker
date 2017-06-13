@@ -335,6 +335,7 @@ module Kitchen
         cmd = "run -d -p 22"
         Array(config[:forward]).each {|port| cmd << " -p #{port}"}
         Array(config[:dns]).each {|dns| cmd << " --dns #{dns}"}
+        Array(config[:dns_search]).each {|dns_search| cmd << " --dns-search #{dns_search}"}
         Array(config[:add_host]).each {|host, ip| cmd << " --add-host=#{host}:#{ip}"}
         Array(config[:volume]).each {|volume| cmd << " -v #{volume}"}
         Array(config[:volumes_from]).each {|container| cmd << " --volumes-from #{container}"}
