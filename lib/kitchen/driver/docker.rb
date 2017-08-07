@@ -87,6 +87,13 @@ module Kitchen
 
       MUTEX_FOR_SSH_KEYS = Mutex.new
 
+      def docker_version
+        docker_version = Hash(
+          'client' => docker_command("version -f '{{ .Client.Version }}'"),
+          'server' => docker_command("version -f '{{ .Server.Version }}'"),
+        )
+      end
+
       def verify_dependencies
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true, use_sudo: config[:use_sudo])
         rescue
@@ -310,11 +317,26 @@ module Kitchen
         cmd << " #{extra_build_options}" unless extra_build_options.empty?
         dockerfile_contents = dockerfile
         build_context = config[:build_context] ? '.' : '-'
-        file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+
+        # Docker CLI supports build from stdin but being able to use local/remote context (>= 17.05.0)
+        # https://github.com/docker/docker.github.io/issues/3538
+        # This is useful when you are running multiple concurrent builds (For example inside Jenkins parallel pipeline)
+        cli_version = docker_version['client'].strip
+        modern_docker = true ? ((/^(1[7-9]\.[0-9][5-9]|[2-9][0-9]\.[0-9][0-9]).+(-ce|ee)(-rc[0-9]+)?/ =~ cli_version) !=nil) : false
+
+        if modern_docker and config[:build_context]
+          # Create Dockerfile in system temp directory
+          file = Tempfile.new('Dockerfile-kitchen')
+          build_command = "#{cmd} #{build_context} -f- < #{Shellwords.escape(file.path)}"
+        else
+          file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          build_command = "#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}"
+        end
+
         output = begin
           file.write(dockerfile)
           file.close
-          docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}", :input => dockerfile_contents)
+          docker_command("#{build_command}", :input => dockerfile_contents)
         ensure
           file.close unless file.closed?
           file.unlink
