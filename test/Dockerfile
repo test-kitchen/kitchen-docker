@@ -15,3 +15,4 @@ RUN yum clean all && \
     chmod 0600 /home/<%= @username %>/.ssh/authorized_keys && \
     curl -L https://www.chef.io/chef/install.sh | bash && \
     echo '<%= IO.read(@public_key).strip %>' >> /home/<%= @username %>/.ssh/authorized_keys && \
+    true
