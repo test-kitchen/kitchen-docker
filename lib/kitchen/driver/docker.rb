@@ -44,6 +44,7 @@ module Kitchen
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :add_files,     []
       default_config :username,      'kitchen'
       default_config :tls,           false
       default_config :tls_verify,    false
@@ -275,9 +276,14 @@ module Kitchen
           RUN chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
         custom = ''
+        Array(config[:add_files]).each do |file|
+          custom << "ADD #{file}\n"
+        end
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
         end
+
+
         ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
         [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")

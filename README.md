@@ -161,6 +161,20 @@ working upstart.
 
 The default value is `true`.
 
+### add\_files
+
+Simple mapping to the Docker `ADD ...` command. This is a list of files that
+you want to add to your container _before_ the `provision_command`s are
+executed. This only works if `build_context` is set!
+
+Examples:
+
+```yaml
+    add_files:
+      - /tests/setup.sh /tmp/setup.sh
+      - /tests/ssl/ /tmp/ssl/
+```
+
 ### provision\_command
 
 Custom command(s) to be run when provisioning the base for the suite containers.
