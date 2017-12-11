@@ -483,6 +483,16 @@ Examples:
     net: br3
 ```
 
+### build_user
+
+User to run as during container build. This adds `USER <build_user>` to the dockerfile
+
+Examples:
+
+```yaml
+  build_user: root
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]

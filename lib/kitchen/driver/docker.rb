@@ -55,6 +55,7 @@ module Kitchen
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
       default_config :build_options, nil
+      default_config :build_user, nil
       default_config :run_options,   nil
 
       default_config :use_sudo do |driver|
@@ -183,6 +184,11 @@ module Kitchen
       def build_dockerfile
         from = "FROM #{config[:image]}"
 
+        user = ''
+        if config[:build_user]
+          user << "USER #{config[:build_user]}\n"
+        end
+
         env_variables = ''
         if config[:http_proxy]
           env_variables << "ENV http_proxy #{config[:http_proxy]}\n"
@@ -280,7 +286,7 @@ module Kitchen
         end
         ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
-        [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")
+        [from, user, env_variables, platform, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
