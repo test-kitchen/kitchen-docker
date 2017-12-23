@@ -483,6 +483,19 @@ Examples:
     net: br3
 ```
 
+### use_internal_docker_network
+
+If you want to use kitchen-docker from within another Docker container you'll
+need to set this to true. When set to true uses port 22 as the SSH port and
+the IP of the container that chef is going to run in as the hostname so that
+you can connect to it over SSH from within another Docker container.
+
+Examples:
+
+```yaml
+  use_internal_docker_network: true
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
