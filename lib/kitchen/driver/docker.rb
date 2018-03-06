@@ -254,7 +254,7 @@ module Kitchen
           eos
         when 'alpine'
           <<-eos
-            RUN apk add --no-cache busybox openssh shadow sudo bash
+            RUN apk add --no-cache busybox openssh sudo
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
             RUN [ -f "/etc/ssh/ssh_host_ecdsa_key" ] || ssh-keygen -A -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
@@ -269,10 +269,22 @@ module Kitchen
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
+        case platform
+        # alpine useradd throws warning, so use adduser instead
+        when 'alpine'
+          user = <<-eos
+            RUN if ! getent passwd #{username}; then \
+                  adduser -h #{homedir} -s /bin/sh -D #{username}; \
+                fi
+          eos
+        else
+          user = <<-eos
+            RUN if ! getent passwd #{username}; then \
+                  useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
+                fi
+          eos
+        end
         base = <<-eos
-          RUN if ! getent passwd #{username}; then \
-                useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
-              fi
           RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           RUN echo "Defaults !requiretty" >> /etc/sudoers
           RUN mkdir -p #{homedir}/.ssh
@@ -288,7 +300,7 @@ module Kitchen
         end
         ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
-        [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")
+        [from, env_variables, platform, user, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
