@@ -254,7 +254,7 @@ module Kitchen
           eos
         when 'alpine'
           <<-eos
-            RUN apk add --no-cache busybox openssh sudo
+            RUN apk add --no-cache busybox openssh sudo shadow
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
             RUN [ -f "/etc/ssh/ssh_host_ecdsa_key" ] || ssh-keygen -A -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
