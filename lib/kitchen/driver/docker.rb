@@ -274,7 +274,7 @@ module Kitchen
         when 'alpine'
           user = <<-eos
             RUN if ! getent passwd #{username}; then \
-                  adduser -g "kitchen user" -h #{homedir} -s /bin/ash #{username} && usermod -p * #{username}; \
+                  adduser -g "kitchen user" -h #{homedir} -s /bin/ash -D #{username} && usermod -p '*' #{username}; \
                 fi
           eos
         else
