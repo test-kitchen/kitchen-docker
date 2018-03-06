@@ -269,21 +269,21 @@ module Kitchen
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
-        # case config[:platform]
+        case config[:platform]
         # alpine useradd throws warning, so use adduser instead
-        # when 'alpine'
-        #   user = <<-eos
-        #     RUN if ! getent passwd #{username}; then \
-        #           adduser -h #{homedir} -s /bin/bash -D #{username}; \
-        #         fi
-        #   eos
-        # else
-        user = <<-eos
-          RUN if ! getent passwd #{username}; then \
-                useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
-              fi
-        eos
-        # end
+        when 'alpine'
+          user = <<-eos
+            RUN if ! getent passwd #{username}; then \
+                  adduser -g "kitchen user" -h #{homedir} -s /bin/bash -D #{username}; \
+                fi
+          eos
+        else
+          user = <<-eos
+            RUN if ! getent passwd #{username}; then \
+                  useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
+                fi
+          eos
+        end
 
         base = <<-eos
           RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -295,6 +295,7 @@ module Kitchen
           RUN chown #{username} #{homedir}/.ssh/authorized_keys
           RUN chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
+
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
