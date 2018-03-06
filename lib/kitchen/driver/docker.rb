@@ -269,7 +269,7 @@ module Kitchen
         public_key = IO.read(config[:public_key]).strip
         homedir = username == 'root' ? '/root' : "/home/#{username}"
 
-        case config[:platform]
+        # case config[:platform]
         # alpine useradd throws warning, so use adduser instead
         # when 'alpine'
         #   user = <<-eos
