@@ -201,6 +201,7 @@ module Kitchen
           env_variables << "ENV NO_PROXY #{config[:no_proxy]}\n"
         end
 
+	enforce_root = "USER 'root'"
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
@@ -284,7 +285,7 @@ module Kitchen
         end
         ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
         # Empty string to ensure the file ends with a newline.
-        [from, env_variables, platform, base, custom, ssh_key, ''].join("\n")
+        [from, enforce_root, env_variables, platform, base, custom, ssh_key, ''].join("\n")
       end
 
       def dockerfile
