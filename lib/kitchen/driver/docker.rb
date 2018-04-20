@@ -45,6 +45,7 @@ module Kitchen
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
+      default_config :homedir,       nil
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
@@ -259,7 +260,7 @@ module Kitchen
 
         username = config[:username]
         public_key = IO.read(config[:public_key]).strip
-        homedir = username == 'root' ? '/root' : "/home/#{username}"
+        homedir = config[:homedir] || ( username == 'root' ? '/root' : "/home/#{username}" )
 
         base = <<-eos
           RUN if ! getent passwd #{username}; then \
