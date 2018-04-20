@@ -46,6 +46,7 @@ module Kitchen
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
       default_config :username,      'kitchen'
       default_config :homedir,       nil
+      default_config :unprivileged,  false
       default_config :tls,           false
       default_config :tls_verify,    false
       default_config :tls_cacert,    nil
@@ -266,8 +267,6 @@ module Kitchen
           RUN if ! getent passwd #{username}; then \
                 useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
               fi
-          RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          RUN echo "Defaults !requiretty" >> /etc/sudoers
           RUN mkdir -p #{homedir}/.ssh
           RUN chown -R #{username} #{homedir}/.ssh
           RUN chmod 0700 #{homedir}/.ssh
@@ -275,6 +274,10 @@ module Kitchen
           RUN chown #{username} #{homedir}/.ssh/authorized_keys
           RUN chmod 0600 #{homedir}/.ssh/authorized_keys
         eos
+        if !config[:unprivileged]
+          base << "RUN echo \"#{username} ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers\n"
+          base << "RUN echo \"Defaults !requiretty\" >> /etc/sudoers\n"
+        end
         custom = ''
         Array(config[:provision_command]).each do |cmd|
           custom << "RUN #{cmd}\n"
