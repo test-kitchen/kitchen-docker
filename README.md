@@ -3,7 +3,6 @@
 [![Build Status](https://img.shields.io/travis/test-kitchen/kitchen-docker.svg)](https://travis-ci.org/test-kitchen/kitchen-docker)
 [![Gem Version](https://img.shields.io/gem/v/kitchen-docker.svg)](https://rubygems.org/gems/kitchen-docker)
 [![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
-[![Gemnasium](https://img.shields.io/gemnasium/test-kitchen/kitchen-docker.svg)](https://gemnasium.com/test-kitchen/kitchen-docker)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A Test Kitchen Driver for Docker.
