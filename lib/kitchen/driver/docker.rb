@@ -57,9 +57,7 @@ module Kitchen
       default_config :build_options, nil
       default_config :run_options,   nil
 
-      default_config :use_sudo do |driver|
-        !driver.remote_socket?
-      end
+      default_config :use_sudo, false
 
       default_config :image do |driver|
         driver.default_image
