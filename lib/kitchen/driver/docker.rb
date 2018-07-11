@@ -200,8 +200,7 @@ module Kitchen
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos
-            RUN dpkg-divert --local --rename --add /sbin/initctl
-            RUN ln -sf /bin/true /sbin/initctl
+            RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl
           eos
           packages = <<-eos
             ENV DEBIAN_FRONTEND noninteractive
