@@ -1,5 +1,11 @@
 # Kitchen-Docker Changelog
 
+## 2.7.0
+
+* Support for SUSE-based container images.
+* Improved support for build context shipping.
+* Changed `use_sudo` to default to `false` in keeping with modern Docker usage.
+
 ## 2.6.0
 
 * Set container name with information from the run so you can identify them
