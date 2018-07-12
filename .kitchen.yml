@@ -18,10 +18,10 @@ platforms:
 - name: opensuse-42.2
   driver:
     image: opensuse:42.2
-- name: arch
-  driver:
-    image: base/archlinux
-    provision_command: true
+# - name: arch
+#   driver:
+#     image: base/archlinux
+#     provision_command: true
 - name: unknown
   driver:
     image: ubuntu:16.04
