@@ -24,7 +24,7 @@ platforms:
     provision_command: true
 - name: unknown
   driver:
-    image: ubuntu:18.04
+    image: ubuntu:16.04
     platform: ubuntu
 - name: dockerfile
   driver:
