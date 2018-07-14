@@ -10,11 +10,6 @@ rvm:
 services:
 - docker
 
-cache:
-  bundler: true
-  directories:
-  - /var/lib/docker
-
 script:
 - bundle exec docker version
 - bundle exec kitchen --version
