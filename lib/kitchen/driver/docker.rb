@@ -56,6 +56,7 @@ module Kitchen
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
       default_config :build_options, nil
       default_config :run_options,   nil
+      default_config :use_internal_docker_network, false
 
       default_config :use_sudo, false
 
@@ -119,7 +120,12 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:hostname] = 'localhost'
+        if remote_socket?
+          state[:hostname] = socket_uri.host
+        elsif config[:use_internal_docker_network]
+          state[:hostname] = container_ip(state)
+        end
         state[:port] = container_ssh_port(state)
         if config[:wait_for_sshd]
           instance.transport.connection(state) do |conn|
@@ -376,11 +382,25 @@ module Kitchen
 
       def container_ssh_port(state)
         begin
+          if config[:use_internal_docker_network]
+            return 22
+          end
           output = docker_command("port #{state[:container_id]} 22/tcp")
           parse_container_ssh_port(output)
         rescue
           raise ActionFailed,
           'Docker reports container has no ssh port mapped'
+        end
+      end
+
+      def container_ip(state)
+        begin
+          cmd = "inspect --format '{{ .NetworkSettings.IPAddress }}'"
+          cmd << " #{state[:container_id]}"
+          docker_command(cmd).strip
+        rescue
+          raise ActionFailed,
+          'Error getting internal IP of Docker container'
         end
       end
 
