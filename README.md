@@ -435,6 +435,26 @@ devices:
   - /dev/vboxnetctl
 ```
 
+### username
+
+The username used to log in to the container. This parameter should only be
+changed if custom images are used.
+
+The default is `kitchen`
+
+### homedir
+
+The homedir of the login user.
+
+The default is `/home/#{username}`
+
+
+### unprivileged
+
+Don't allow the usage of `sudo` within the container. This is useful to test
+cookbooks that are designed to run without [root privileges](https://docs.chef.io/ctl_chef_client.html#run-as-non-root-user)
+
+
 ### build_context
 
 Transfer the cookbook directory (cwd) as build context. This is required for
