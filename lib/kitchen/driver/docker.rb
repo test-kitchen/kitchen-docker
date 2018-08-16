@@ -44,6 +44,8 @@ module Kitchen
       default_config :remove_images, false
       default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
                                      '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      # Used for SSH connections to containers
+      default_config :docker_host,   'localhost'
       default_config :username,      'kitchen'
       default_config :tls,           false
       default_config :tls_verify,    false
@@ -119,7 +121,7 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        state[:hostname] = remote_socket? ? socket_uri.host : config[:docker_host]
         state[:port] = container_ssh_port(state)
         if config[:wait_for_sshd]
           instance.transport.connection(state) do |conn|
