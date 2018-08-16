@@ -115,6 +115,10 @@ $MACHINE)"` then use the following:
 socket: tcp://192.168.59.103:2375
 ```
 
+### docker\_host
+
+Sets the hostname/IP used to connect to a container via SSH. Normally `localhost` (the default) is sufficient here,
+but when doing things like [mounted docker unix sockets into a container](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/) in lieu of Docker-in-Docker, this can be useful.
 
 ### image
 
