@@ -59,6 +59,10 @@ module Kitchen
 
       default_config :use_sudo, false
 
+      default_config :http_proxy,    ENV['http_proxy']
+      default_config :https_proxy,   ENV['https_proxy']
+      default_config :no_proxy,      ENV['no_proxy']
+
       default_config :image do |driver|
         driver.default_image
       end
