@@ -242,6 +242,10 @@ Examples:
   - /srv
 ```
 
+```yaml
+  volume: <%= ENV['PWD'] %>:/kitchen
+```
+
 ### volumes\_from
 
 Mount volumes managed by other containers.
