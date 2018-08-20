@@ -311,7 +311,13 @@ module Kitchen
         output = begin
           file.write(dockerfile)
           file.close
-          docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}", :input => dockerfile_contents)
+          attempts = 0
+          begin
+            docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}", :input => dockerfile_contents)
+          rescue
+            attempts += 1
+            retry unless attempts > 5
+          end
         ensure
           file.close unless file.closed?
           file.unlink
