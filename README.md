@@ -208,7 +208,7 @@ The default value is `false`.
 
 Sets the command used to run the suite container.
 
-The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid`.
+The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid -E /tmp/sshd.log`.
 
 Examples:
 
