@@ -160,6 +160,17 @@ working upstart.
 
 The default value is `true`.
 
+### pre\_create\_command
+
+An optional hook to run a command immediately prior to the containerized
+environment creation with the docker run command being executed.
+
+Examples:
+
+```yaml
+  pre_create_command: cp config/secrets.sample.yml config/secrets.yml
+```
+
 ### provision\_command
 
 Custom command(s) to be run when provisioning the base for the suite containers.
