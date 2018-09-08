@@ -482,6 +482,17 @@ Examples:
     net: br3
 ```
 
+### use\_container\_ip
+
+If you find that you need for the ssh connection that kitchen will make to be made to the built container's ip address ( some CI systems work like this ), set this to true.
+
+Examples:
+
+```yaml
+  use_conatiner_ip: true
+```
+
+
 ## Development
 
 * Source hosted at [GitHub][repo]

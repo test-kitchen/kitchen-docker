@@ -59,6 +59,8 @@ module Kitchen
 
       default_config :use_sudo, false
 
+      default_config :use_container_ip, false
+
       default_config :image do |driver|
         driver.default_image
       end
@@ -119,8 +121,13 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
-        state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
-        state[:port] = container_ssh_port(state)
+        state[:use_container_ip] = config[:use_container_ip]
+        if state[:use_container_ip]
+          state[:hostname] = container_ssh_ip_address(state)
+        else
+          state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
+        end
+        state[:port] = state[:use_container_ip] ? 22 : container_ssh_port(state)
         if config[:wait_for_sshd]
           instance.transport.connection(state) do |conn|
             conn.wait_until_ready
@@ -381,6 +388,15 @@ module Kitchen
         rescue
           raise ActionFailed,
           'Docker reports container has no ssh port mapped'
+        end
+      end
+
+      def container_ssh_ip_address(state)
+        begin
+          docker_command("inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  #{state[:container_id]}")
+        rescue
+          raise ActionFailed,
+          'Docker cannot report on the IpAddress'
         end
       end
 
