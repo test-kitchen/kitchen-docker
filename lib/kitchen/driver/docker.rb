@@ -160,7 +160,6 @@ module Kitchen
         docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
         docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
         docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
-        puts "#{docker} #{cmd}"
         run_command("#{docker} #{cmd}", options.merge({
           quiet: !logger.debug?,
           use_sudo: config[:use_sudo],
