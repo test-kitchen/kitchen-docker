@@ -126,7 +126,7 @@ module Kitchen
         else
           state[:hostname] = remote_socket? ? socket_uri.host : 'localhost'
         end
-        state[:port] = container_ssh_port(state)
+        state[:port] = state[:use_container_ip] ? 22 : container_ssh_port(state)
         if config[:wait_for_sshd]
           instance.transport.connection(state) do |conn|
             conn.wait_until_ready
