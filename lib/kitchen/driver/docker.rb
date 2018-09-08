@@ -121,6 +121,7 @@ module Kitchen
         state[:ssh_key] = config[:private_key]
         state[:image_id] = build_image(state) unless state[:image_id]
         state[:container_id] = run_container(state) unless state[:container_id]
+        state[:user_container_ip] = config[:use_container_ip]
         if state[:use_container_ip]
           state[:hostname] = container_ssh_ip_address(state)
         else
