@@ -270,6 +270,7 @@ module Kitchen
           RUN touch #{homedir}/.ssh/authorized_keys
           RUN chown #{username} #{homedir}/.ssh/authorized_keys
           RUN chmod 0600 #{homedir}/.ssh/authorized_keys
+          RUN mkdir -p /run/sshd
         eos
         custom = ''
         Array(config[:provision_command]).each do |cmd|
