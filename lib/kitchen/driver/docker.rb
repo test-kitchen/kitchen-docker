@@ -42,8 +42,13 @@ module Kitchen
       default_config :security_opt,  nil
       default_config :use_cache,     true
       default_config :remove_images, false
-      default_config :run_command,   '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes ' +
-                                     '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'
+      default_config :run_command, '/usr/sbin/sshd -D ' +
+                                   '-o UseDNS=no ' +
+                                   '-o UsePAM=no ' +
+                                   '-o PasswordAuthentication=yes ' +
+                                   '-o UsePrivilegeSeparation=no ' +
+                                   '-o PidFile=/tmp/sshd.pid ' +
+                                   '-o AllowAgentForwarding=yes'
       default_config :username,      'kitchen'
       default_config :tls,           false
       default_config :tls_verify,    false
