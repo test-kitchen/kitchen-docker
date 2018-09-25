@@ -197,6 +197,10 @@ module Kitchen
           env_variables << "ENV NO_PROXY #{config[:no_proxy]}\n"
         end
 
+        Array(config[:env]).each do |env|
+          env_variables << "ENV #{env}\n"
+        end
+
         platform = case config[:platform]
         when 'debian', 'ubuntu'
           disable_upstart = <<-eos

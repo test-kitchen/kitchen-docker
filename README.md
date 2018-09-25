@@ -182,6 +182,17 @@ driver_config:
   require_chef_omnibus: false
 ```
 
+### env
+
+Custom environment variables to apply when provisioning the base for the suite containers.
+
+Examples:
+
+```yaml
+  env:
+  - DEBIAN_FRONTEND=noninteractive
+```
+
 ### use\_cache
 
 This determines if the Docker cache is used when provisioning the base for suite
