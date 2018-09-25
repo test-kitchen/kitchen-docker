@@ -21,6 +21,7 @@ require 'uri'
 require 'net/ssh'
 require 'tempfile'
 require 'shellwords'
+require 'base64'
 
 require 'kitchen/driver/base'
 
