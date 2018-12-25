@@ -230,7 +230,7 @@ module Kitchen
           <<-eos
             RUN pacman --noconfirm -Sy archlinux-keyring
             RUN pacman-db-upgrade
-            RUN pacman --noconfirm -Sy openssl openssh sudo curl
+            RUN pacman --noconfirm -Syu openssl openssh sudo curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
             RUN echo >/etc/security/limits.conf
