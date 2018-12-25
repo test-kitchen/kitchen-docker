@@ -306,7 +306,7 @@ module Kitchen
         extra_build_options = config_to_options(config[:build_options])
         cmd << " #{extra_build_options}" unless extra_build_options.empty?
         dockerfile_contents = dockerfile
-        build_context = config[:build_context] ? '.' : '-'
+        build_context = config[:build_context]
         file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
         output = begin
           file.write(dockerfile)
