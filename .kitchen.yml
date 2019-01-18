@@ -23,6 +23,7 @@ platforms:
 - name: opensuse-42.3
   driver:
     image: opensuse:42.3
+- name: opensuse/leap-42
 # - name: arch
 #   driver:
 #     image: base/archlinux

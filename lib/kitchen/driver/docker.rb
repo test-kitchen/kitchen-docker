@@ -232,7 +232,7 @@ module Kitchen
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
-        when 'opensuse', 'sles'
+        when 'opensuse/leap', 'opensuse', 'sles'
           <<-eos
             ENV container docker
             RUN zypper install -y sudo openssh which curl
