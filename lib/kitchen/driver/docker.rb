@@ -216,7 +216,7 @@ module Kitchen
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
-        when 'rhel', 'centos', 'fedora', 'oraclelinux'
+        when 'rhel', 'centos', 'fedora', 'oraclelinux', 'amazonlinux'
           <<-eos
             ENV container docker
             RUN yum clean all

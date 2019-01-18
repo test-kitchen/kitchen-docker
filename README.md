@@ -129,8 +129,9 @@ Configuration section for more details).
 The platform of the chosen image. This is used to properly bootstrap the
 suite container for Test Kitchen. Kitchen Docker currently supports:
 
+* `arch`
 * `debian` or `ubuntu`
-* `rhel` or `centos`
+* `amazonlinux`, `rhel`, `centos`, `fedora` or `oraclelinux`
 * `gentoo` or `gentoo-paludis`
 * `opensuse` or `sles`
 
