@@ -1,5 +1,14 @@
 # Kitchen-Docker Changelog
 
+## 2.8.0 - Jan 18, 2019
+
+* Add new config option `use_internal_docker_network`, which allows running Docker within Docker. See readme for usage details.
+* Resolve errors while loading libraries on archlinux
+* Fix failures on Ubuntu 18.04
+* Check if image exists before attempting to remove it so we don't fail
+* Add oraclelinux platform support
+* Prevent `uninitialized constant Kitchen::Driver::Docker::Base64` error by requiring `base64`
+
 ## 2.7.0
 
 * Support for SUSE-based container images.
