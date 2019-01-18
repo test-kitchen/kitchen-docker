@@ -10,8 +10,10 @@ provisioner:
   name: dummy
 
 platforms:
-- name: ubuntu-14.04
+- name: amazonlinux-2
 - name: ubuntu-16.04
+- name: ubuntu-18.04
+- name: fedora-latest
 - name: centos-6
 - name: centos-7
 - name: oraclelinux-6
