@@ -44,8 +44,8 @@ Examples:
 ```yaml
 ---
 platforms:
-- name: ubuntu-12.04
-- name: centos-6.4
+- name: ubuntu-18.04
+- name: centos-7
 ```
 
 This will effectively generate a configuration similar to:
@@ -53,13 +53,13 @@ This will effectively generate a configuration similar to:
 ```yaml
 ---
 platforms:
-- name: ubuntu-12.04
+- name: ubuntu-18.04
   driver_config:
-    image: ubuntu:12.04
+    image: ubuntu:18.04
     platform: ubuntu
-- name: centos-6.4
+- name: centos-7
   driver_config:
-    image: centos:6.4
+    image: centos:7
     platform: centos
 ```
 
