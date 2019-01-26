@@ -61,6 +61,8 @@ module Kitchen
 
       default_config :use_sudo, false
 
+      default_config :package_name, nil
+
       default_config :image do |driver|
         driver.default_image
       end
@@ -144,6 +146,12 @@ module Kitchen
 
       def remote_socket?
         config[:socket] ? socket_uri.scheme == 'tcp' : false
+      end
+
+      def package(state)
+        return if state[:container_id].nil?
+        return if config[:package_name].nil?
+        docker_command("commit #{state[:container_id]} #{config[:package_name]}")
       end
 
       protected
