@@ -388,9 +388,9 @@ module Kitchen
 
       def container_ssh_port(state)
         begin
-          if config[:use_internal_docker_network]
-            return 22
-          end
+          #if config[:use_internal_docker_network]
+          #  return 22
+          #end
           output = docker_command("port #{state[:container_id]} 22/tcp")
           parse_container_ssh_port(output)
         rescue
