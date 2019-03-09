@@ -51,11 +51,11 @@ suites:
     cap_drop:
     - NET_ADMIN
 - name: inspec
+  excludes: [opensuse-42.2]
   driver:
     provision_command: true
   verifier:
     name: inspec
 - name: transport
-  excludes: [opensuse-42.2]
   transport:
     name: docker
