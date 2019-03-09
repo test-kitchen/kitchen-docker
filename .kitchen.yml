@@ -36,25 +36,26 @@ platforms:
     run_command: /sbin/init
 
 suites:
-- name: default
-  excludes: [arch]
-- name: context
-  excludes: [arch]
-  driver:
-    build_context: false
-- name: capabilities
-  excludes: [arch,unknown,centos-7,centos-6,oraclelinux-6,oraclelinux-7,dockerfile,opensuse-42.2]
-  driver:
-    provision_command:
-    - curl -L https://www.chef.io/chef/install.sh | bash
-    - apt-get install -y net-tools
-    cap_drop:
-    - NET_ADMIN
-- name: inspec
-  driver:
-    provision_command: true
-  verifier:
-    name: inspec
+#- name: default
+#  excludes: [arch]
+#- name: context
+#  excludes: [arch]
+#  driver:
+#    build_context: false
+#- name: capabilities
+#  excludes: [arch,unknown,centos-7,centos-6,oraclelinux-6,oraclelinux-7,dockerfile,opensuse-42.2]
+#  driver:
+#    provision_command:
+#    - curl -L https://www.chef.io/chef/install.sh | bash
+#    - apt-get install -y net-tools
+#    cap_drop:
+#    - NET_ADMIN
+#- name: inspec
+#  driver:
+#    provision_command: true
+#  verifier:
+#    name: inspec
 - name: transport
+  excludes: [opensuse-42.2]
   transport:
     name: docker
