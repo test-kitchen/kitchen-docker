@@ -495,6 +495,18 @@ Examples:
   use_internal_docker_network: true
 ```
 
+## Docker transport
+
+This plugin also provides a docker transport that uses docker native api instead
+of ssh to run commands and upload files to the containers.
+
+Examples:
+
+```yaml
+transport:
+  name: docker
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]
