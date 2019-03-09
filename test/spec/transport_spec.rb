@@ -60,16 +60,27 @@ describe Kitchen::Transport::Docker do
         expect(::Docker::Container).not_to receive(:get)
       end
 
-      it 'Runs a bash shell in the container to run the command' do
+      it 'Runs a sh shell in the container to run the command' do
         allow(::Docker::Container).to receive(:get).with('container_sha', {}, anything).and_return container
-        allow(container).to receive(:exec).with(['/bin/bash', '-c', 'ls -l /'], wait: 600, 'e' => { 'TERM' => 'xterm' }).and_return([nil, nil, 0])
+        expect(container).to receive(:exec).with(['/bin/sh', '-c', 'ls -l /'], wait: 600, 'e' => { 'TERM' => 'xterm' }).and_return([nil, nil, 0])
         connection.execute('ls -l /')
       end
 
+
       it 'Raise a TransportFailed execption if the command errors out' do
         allow(::Docker::Container).to receive(:get).with('container_sha', {}, anything).and_return container
-        allow(container).to receive(:exec).with(['/bin/bash', '-c', 'ls -l /non_existing_folder'], wait: 600, 'e' => { 'TERM' => 'xterm' }).and_return([nil, nil, 255])
+        expect(container).to receive(:exec).with(['/bin/sh', '-c', 'ls -l /non_existing_folder'], wait: 600, 'e' => { 'TERM' => 'xterm' }).and_return([nil, nil, 255])
         expect { connection.execute('ls -l /non_existing_folder') }.to raise_error(::Kitchen::Transport::TransportFailed)
+      end
+    end
+
+    context '#execute shell override' do
+      let(:state) { {:container_id => 'container_sha' } }
+      let(:config) { {:shell => '/bin/bash'} }
+      it 'Runs a bash shell when the default value is overriten' do
+        allow(::Docker::Container).to receive(:get).with('container_sha', {}, anything).and_return container
+        allow(container).to receive(:exec).with(['/bin/bash', '-c', 'ls -l /'], wait: 600, 'e' => { 'TERM' => 'xterm' }).and_return([nil, nil, 0])
+        connection.execute('ls -l /')
       end
     end
 
@@ -101,7 +112,7 @@ describe Kitchen::Transport::Docker do
       let(:state) { {:container_id => 'container_sha' } }
       it 'Returns a nice docker login command' do
         expect(Kitchen::LoginCommand).to receive(:new)
-          .with('docker', ['exec', '-e', "COLUMNS=#{`tput cols`}", '-e', "LINES=#{`tput lines`}", '-it', 'container_sha', '/bin/bash', '-login', '-i'])
+          .with('docker', ['exec', '-e', "COLUMNS=#{`tput cols`}", '-e', "LINES=#{`tput lines`}", '-it', 'container_sha', '/bin/sh', '-login', '-i'])
           .and_call_original
         cmd = connection.login_command
         expect(cmd).to be_an_instance_of(::Kitchen::LoginCommand)

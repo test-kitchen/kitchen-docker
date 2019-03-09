@@ -505,6 +505,8 @@ Examples:
 ```yaml
 transport:
   name: docker
+  shell: /bin/bash
+  socket: tcp://docker.example.com:4242
 ```
 
 ## Development

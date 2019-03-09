@@ -32,6 +32,9 @@ module Kitchen
 
       plugin_version Kitchen::VERSION
 
+      default_config :socket, ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock'
+      default_config :shell , '/bin/sh'
+
       def connection(state, &block)
         options = config.to_hash.merge(state)
         Kitchen::Transport::Docker::Connection.new(options, &block)
@@ -39,26 +42,26 @@ module Kitchen
 
       class Connection < Kitchen::Transport::Base::Connection
         def initialize(opts)
-          @container_id = opts[:container_id]
+          @opts = opts
           super
         end
 
         def docker_connection
-          @docker_connection ||= ::Docker::Connection.new(ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock', {})
+          @docker_connection ||= ::Docker::Connection.new(@opts[:socket], {})
         end
 
         def execute(command)
           return if command.nil?
 
-          @runner = ::Docker::Container.get(@container_id, {}, docker_connection)
-          o = @runner.exec(['/bin/bash', '-c', command], wait: 600, 'e' => { 'TERM' => 'xterm' }) { |_stream, chunk| print chunk.to_s }
+          @runner = ::Docker::Container.get(@opts[:container_id], {}, docker_connection)
+          o = @runner.exec([@opts[:shell], '-c', command], wait: 600, 'e' => { 'TERM' => 'xterm' }) { |_stream, chunk| print chunk.to_s }
           @exit_code = o[2]
 
           raise Transport::DockerExecFailed.new("Docker Exec (#{@exit_code}) for command: [#{command}]", @exit_code) if @exit_code != 0
         end
 
         def upload(locals, remote)
-          @runner = ::Docker::Container.get(@container_id, {}, docker_connection)
+          @runner = ::Docker::Container.get(@opts[:container_id], {}, docker_connection)
           Array(locals).each do |local|
             full_remote = File.join(remote, File.basename(local))
             # Workarround for archive_in bug https://github.com/swipely/docker-api/issues/359
@@ -75,7 +78,7 @@ module Kitchen
         def login_command
           cols = `tput cols`
           lines = `tput lines`
-          args = ['exec', '-e', "COLUMNS=#{cols}", '-e', "LINES=#{lines}", '-it', @container_id, '/bin/bash', '-login', '-i']
+          args = ['exec', '-e', "COLUMNS=#{cols}", '-e', "LINES=#{lines}", '-it', @opts[:container_id], @opts[:shell], '-login', '-i']
           LoginCommand.new('docker', args)
         end
       end
