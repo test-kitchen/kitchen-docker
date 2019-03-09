@@ -55,3 +55,6 @@ suites:
     provision_command: true
   verifier:
     name: inspec
+- name: transport
+  transport:
+    name: docker
