@@ -40,6 +40,7 @@ SimpleCov.start do
 end
 
 require 'kitchen/driver/docker'
+require 'kitchen/transport/docker'
 
 RSpec.configure do |config|
   # Basic configuraiton

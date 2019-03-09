@@ -21,6 +21,10 @@ require 'docker'
 
 module Kitchen
   module Transport
+
+    # Wrapped exception for any internally raised errors.
+    class DockerExecFailed < TransportFailed; end
+
     # Docker transport for Kitchen. This transport uses the docker api to
     # copy and run commands in the running container.
     class Docker < Kitchen::Transport::Base
@@ -40,7 +44,7 @@ module Kitchen
         end
 
         def docker_connection
-          @docker_connection ||= ::Docker::Connection.new('unix:///var/run/docker.sock', {})
+          @docker_connection ||= ::Docker::Connection.new(ENV['DOCKER_HOST'] || 'unix:///var/run/docker.sock', {})
         end
 
         def execute(command)
