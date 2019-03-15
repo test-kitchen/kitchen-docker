@@ -19,6 +19,7 @@ platforms:
 - name: oraclelinux-6
 - name: oraclelinux-7
 - name: debian-8
+- name: debian-9
 - name: opensuse-42.3
   driver:
     image: opensuse:42.3
@@ -45,7 +46,7 @@ suites:
   driver:
     build_context: false
 - name: capabilities
-  excludes: [arch,fedora-latest,unknown,centos-7,centos-6,oraclelinux-6,oraclelinux-7,dockerfile,opensuse-42.3, amazonlinux-2]
+  includes: [debian-8,debian-9,ubuntu-16.04,ubuntu-18.04]
   driver:
     provision_command:
     - curl -L https://www.chef.io/chef/install.sh | bash
