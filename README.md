@@ -133,7 +133,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 * `debian` or `ubuntu`
 * `amazonlinux`, `rhel`, `centos`, `fedora` or `oraclelinux`
 * `gentoo` or `gentoo-paludis`
-* `opensuse/leap`, `opensuse` or `sles`
+* `opensuse/tumbleweed`, `opensuse/leap`, `opensuse` or `sles`
 
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
