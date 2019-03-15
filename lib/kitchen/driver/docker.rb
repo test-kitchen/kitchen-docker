@@ -91,7 +91,7 @@ module Kitchen
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true, use_sudo: config[:use_sudo])
         rescue
           raise UserError,
-          'You must first install the Docker CLI tool http://www.docker.io/gettingstarted/'
+          'You must first install the Docker CLI tool https://www.docker.com/get-started'
       end
 
       def dev_null
@@ -232,7 +232,7 @@ module Kitchen
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
-        when 'opensuse', 'sles'
+        when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
           <<-eos
             ENV container docker
             RUN zypper install -y sudo openssh which curl
