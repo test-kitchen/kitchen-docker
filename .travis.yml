@@ -1,11 +1,12 @@
-sudo: required
-dist: trusty
+dist: xenial
 language: ruby
+cache: bundler
 
 rvm:
-- "2.3.1"
-- "2.4.3"
-- "2.5.1"
+- 2.3.8
+- 2.4.5
+- 2.5.4
+- 2.6.2
 
 services:
 - docker
