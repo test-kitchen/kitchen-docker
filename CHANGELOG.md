@@ -1,5 +1,10 @@
 # Kitchen-Docker Changelog
 
+## 2.9.0 - Mar 15, 2019
+
+* Add automatic OS detection for amazonlinux, opensuse/leap, and opensuse/tumbleweed
+* On Fedora containers uses dnf to setup the OS not yum
+
 ## 2.8.0 - Jan 18, 2019
 
 * Add new config option `use_internal_docker_network`, which allows running Docker within Docker. See readme for usage details.
