@@ -216,11 +216,19 @@ module Kitchen
             RUN apt-get install -y sudo openssh-server curl lsb-release
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
-        when 'rhel', 'centos', 'fedora', 'oraclelinux', 'amazonlinux'
+        when 'rhel', 'centos', 'oraclelinux', 'amazonlinux'
           <<-eos
             ENV container docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          eos
+        when 'fedora'
+          <<-eos
+            ENV container docker
+            RUN dnf clean all
+            RUN dnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           eos
