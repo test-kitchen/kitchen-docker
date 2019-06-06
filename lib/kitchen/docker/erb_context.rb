@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 #
 # Copyright (C) 2014, Sean Porter
 #
@@ -17,10 +16,8 @@
 require 'erb'
 
 module Kitchen
-
-  module Driver
-
-    class DockerERBContext
+  module Docker
+    class ERBContext
       def initialize(config={})
         config.each do |key, value|
           instance_variable_set('@' + key.to_s, value)

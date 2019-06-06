@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 #
 # Copyright (C) 2014, Sean Porter
 #
@@ -15,9 +14,7 @@
 # limitations under the License.
 
 module Kitchen
-
-  module Driver
-
+  module Docker
     # Version string for Docker Kitchen driver
     DOCKER_VERSION = "2.9.0"
   end
