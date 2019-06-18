@@ -16,6 +16,8 @@ require 'kitchen'
 require 'kitchen/docker/container/linux'
 require 'kitchen/docker/container/windows'
 
+require 'kitchen/docker/helpers/inspec_helper'
+
 module Kitchen
   module Transport
     class Docker < Kitchen::Transport::Base
@@ -63,10 +65,14 @@ module Kitchen
       def connection(state, &block)
         options = config.to_hash.merge(state)
         options[:platform] = instance.platform.name
+
         Kitchen::Transport::Docker::Connection.new(options, &block)
       end
 
       class Connection < Kitchen::Transport::Docker::Connection
+        # Include the InSpec patches to be able to execute tests on Windows containers
+        include Kitchen::Docker::Helpers::InspecHelper
+
         def execute(command)
           return if command.nil?
 
