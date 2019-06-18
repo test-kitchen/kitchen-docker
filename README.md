@@ -123,10 +123,27 @@ Examples:
   socket: tcp://docker.example.com:4242
 ```
 
-If you use [Docker for Windows](https://docs.docker.com/docker-for-windows/):
-
+If you are using the InSpec verifier on Windows, using named pipes for the Docker engine will not work with the Docker transport.
+Set the socket option with the TCP socket address of the Docker engine as shown below:
 ```yaml
-socket: npipe:////./pipe/docker_engine
+socket: tcp://localhost:2375
+```
+
+The Docker engine must be configured to listen on a TCP port (default port is 2375). This can be configured by editing the configuration file
+(usually located in `C:\ProgramData\docker\config\daemon.json`) and adding the hosts value:
+```
+"hosts": ["tcp://0.0.0.0:2375"]
+```
+
+Example configuration is shown below:
+```
+{
+  "registry-mirrors": [],
+  "insecure-registries": [],
+  "debug": true,
+  "experimental": false,
+  "hosts": ["tcp://0.0.0.0:2375"]
+}
 ```
 
 If you use [Boot2Docker](https://github.com/boot2docker/boot2docker)
