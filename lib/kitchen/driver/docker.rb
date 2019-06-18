@@ -41,6 +41,7 @@ module Kitchen
       default_config :cap_drop,      nil
       default_config :disable_upstart, true
       default_config :env_variables, nil
+      default_config :interactive,   false
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :privileged,    false
       default_config :public_key,    File.join(Dir.pwd, '.kitchen', 'docker_id_rsa.pub')
@@ -53,6 +54,7 @@ module Kitchen
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :tls_verify,    false
+      default_config :tty,           false
       default_config :use_cache,     true
       default_config :use_internal_docker_network, false
       default_config :use_sudo, false
@@ -82,8 +84,13 @@ module Kitchen
 
       default_config :run_command do |driver|
         if driver.windows_os?
-          # TODO: Is there a better run command to keep the Windows container alive?
-          'ping -t localhost'
+          # Launch arbitrary process to keep the Windows container alive
+          # If running in interactive mode, launch powershell.exe instead
+          if driver[:interactive]
+            'powershell.exe'
+          else
+            'ping -t localhost'
+          end
         else
           '/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes '\
           '-o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid'

@@ -38,6 +38,8 @@ module Kitchen
 
         def build_run_command(image_id, transport_port = nil)
           cmd = 'run -d'
+          cmd << ' -i' if config[:interactive]
+          cmd << ' -t' if config[:tty]
           cmd << build_env_variable_args(config[:env_variables]) if config[:env_variables]
           cmd << " -p #{transport_port}" unless transport_port.nil?
           Array(config[:forward]).each { |port| cmd << " -p #{port}" }
