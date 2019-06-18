@@ -14,6 +14,10 @@ platforms:
 - name: ubuntu-16.04
 - name: ubuntu-18.04
 - name: fedora-latest
+  driver:
+    provision_command:
+    - yum install libxcrypt-compat.x86_64 -y
+    - curl -L https://www.chef.io/chef/install.sh | bash
 - name: centos-6
 - name: centos-7
 - name: oraclelinux-6
