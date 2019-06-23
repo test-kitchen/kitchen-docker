@@ -6,6 +6,9 @@ driver:
   name: docker
   provision_command: curl -L https://www.chef.io/chef/install.sh | bash
 
+transport:
+  name: docker
+
 provisioner:
   name: dummy
 
