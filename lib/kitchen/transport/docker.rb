@@ -18,6 +18,9 @@ require 'kitchen/docker/container/windows'
 
 require 'kitchen/docker/helpers/inspec_helper'
 
+require_relative '../../docker/version.rb'
+require_relative '../../train/docker.rb'
+
 module Kitchen
   module Transport
     class Docker < Kitchen::Transport::Base
@@ -65,6 +68,12 @@ module Kitchen
       def connection(state, &block)
         options = config.to_hash.merge(state)
         options[:platform] = instance.platform.name
+
+        # Set value for DOCKER_HOST environment variable for the docker-api gem
+        # This allows Windows systems to use the TCP socket for the InSpec verifier
+        # See the lib/docker.rb file here: https://github.com/swipely/docker-api/blob/master/lib/docker.rb
+        # default_socket_url is set to a Unix socket and env_url requires an environment variable to be set
+        ENV['DOCKER_HOST'] = options[:socket] if !options[:socket].nil? && ENV['DOCKER_HOST'].nil?
 
         Kitchen::Transport::Docker::Connection.new(options, &block)
       end
