@@ -18,3 +18,4 @@ tmp
 .kitchen/
 .kitchen.local.yml
 Dockerfile*
+.DS_Store

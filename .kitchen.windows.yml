@@ -1,0 +1,33 @@
+<% # Make sure the local copy of the driver is loaded %>
+<% lib = File.expand_path('../lib', __FILE__) %>
+<% $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib) %>
+---
+driver:
+  name: docker
+  provision_command: 
+    - powershell -ExecutionPolicy Bypass -NoLogo -Command . { iwr -useb https://omnitruck.chef.io/install.ps1 } ^| iex; install
+    - powershell -Command $path=$env:Path + ';c:\opscode\chef\embedded\bin'; Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\' -Name Path -Value $path
+
+transport:
+  name: docker
+  socket: tcp://localhost:2375
+
+provisioner:
+  name: dummy
+
+platforms:
+- name: windows
+  driver_config:
+    image: mcr.microsoft.com/windows/servercore:1803
+    platform: windows
+
+suites:
+- name: default
+- name: context
+  driver:
+    build_context: false
+- name: inspec
+  driver:
+    provision_command: echo 1
+  verifier:
+    name: inspec

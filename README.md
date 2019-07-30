@@ -5,7 +5,7 @@
 [![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-A Test Kitchen Driver for Docker.
+A Test Kitchen Driver and Transport for Docker.
 
 ## Requirements
 
@@ -15,13 +15,15 @@ A Test Kitchen Driver for Docker.
 
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
-Example `.kitchen.local.yml`:
+Example (Linux) `.kitchen.local.yml`:
 
 ```yaml
 ---
 driver:
   name: docker
-
+  env_variables:
+    TEST_KEY: TEST_VALUE
+    
 platforms:
 - name: ubuntu
   run_list:
@@ -32,6 +34,30 @@ platforms:
     platform: rhel
   run_list:
   - recipe[yum]
+
+transport:
+  name: docker
+```
+
+Example (Windows) `.kitchen.local.yml`:
+
+```yaml
+---
+driver:
+  name: docker
+
+platforms:
+- name: windows
+  driver_config:
+    image: mcr.microsoft.com/windows/servercore:1607
+    platform: windows
+  run_list:
+  - recipe[chef_client]
+
+transport:
+  name: docker
+  env_variables:
+    TEST_KEY: TEST_VALUE
 ```
 
 ## Default Configuration
@@ -83,11 +109,9 @@ Examples:
 
 ### socket
 
-The Docker daemon socket to use. By default, Docker will listen on
-`unix:///var/run/docker.sock`, and no configuration here is required. If
-Docker is binding to another host/port or Unix socket, you will need to set
-this option. If a TCP socket is set, its host will be used for SSH access
-to suite containers.
+The Docker daemon socket to use. By default, Docker will listen on `unix:///var/run/docker.sock` (On Windows, `npipe:////./pipe/docker_engine`), 
+and no configuration here is required. If Docker is binding to another host/port or Unix socket, you will need to set this option. 
+If a TCP socket is set, its host will be used for SSH access to suite containers.
 
 Examples:
 
@@ -99,10 +123,27 @@ Examples:
   socket: tcp://docker.example.com:4242
 ```
 
-If you use [Docker for Windows](https://docs.docker.com/docker-for-windows/)
-
+If you are using the InSpec verifier on Windows, using named pipes for the Docker engine will not work with the Docker transport.
+Set the socket option with the TCP socket address of the Docker engine as shown below:
 ```yaml
-socket: npipe:////./pipe/docker_engine
+socket: tcp://localhost:2375
+```
+
+The Docker engine must be configured to listen on a TCP port (default port is 2375). This can be configured by editing the configuration file
+(usually located in `C:\ProgramData\docker\config\daemon.json`) and adding the hosts value:
+```
+"hosts": ["tcp://0.0.0.0:2375"]
+```
+
+Example configuration is shown below:
+```
+{
+  "registry-mirrors": [],
+  "insecure-registries": [],
+  "debug": true,
+  "experimental": false,
+  "hosts": ["tcp://0.0.0.0:2375"]
+}
 ```
 
 If you use [Boot2Docker](https://github.com/boot2docker/boot2docker)
@@ -114,7 +155,6 @@ $MACHINE)"` then use the following:
 ```yaml
 socket: tcp://192.168.59.103:2375
 ```
-
 
 ### image
 
@@ -134,6 +174,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 * `amazonlinux`, `rhel`, `centos`, `fedora` or `oraclelinux`
 * `gentoo` or `gentoo-paludis`
 * `opensuse/tumbleweed`, `opensuse/leap`, `opensuse` or `sles`
+* `windows`
 
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
@@ -181,6 +222,17 @@ Examples:
 driver_config:
   provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
   require_chef_omnibus: false
+```
+### env_variables
+
+Adds environment variables to Docker container
+
+Examples:
+
+```yaml
+  env_variables:
+    TEST_KEY_1: TEST_VALUE
+    SOME_VAR: SOME_VALUE
 ```
 
 ### use\_cache
