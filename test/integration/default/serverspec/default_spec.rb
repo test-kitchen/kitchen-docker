@@ -15,7 +15,7 @@
 #
 
 require 'serverspec'
-set :backend, :exec
+require 'spec_helper'
 
 # Just make sure the image launched and is reachable.
 describe command('true') do

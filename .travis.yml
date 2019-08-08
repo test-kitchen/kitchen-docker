@@ -1,18 +1,52 @@
-dist: xenial
-language: ruby
-cache: bundler
-
-rvm:
-- 2.3.8
-- 2.4.5
-- 2.5.4
-- 2.6.2
+matrix:
+  include:
+    - os: linux
+      rvm: 2.4.5
+      dist: xenial
+      language: ruby
+      cache: bundler
+      script:
+        - bundle exec docker version
+        - bundle exec kitchen --version
+        - bundle exec rake spec
+        - bundle exec kitchen test -d always
+    - os: linux
+      rvm: 2.5.4
+      dist: xenial
+      language: ruby
+      cache: bundler
+      script:
+        - bundle exec docker version
+        - bundle exec kitchen --version
+        - bundle exec rake spec
+        - bundle exec kitchen test -d always
+    - os: linux
+      rvm: 2.6.2
+      dist: xenial
+      language: ruby
+      cache: bundler
+      script:
+        - bundle exec docker version
+        - bundle exec kitchen --version
+        - bundle exec rake spec
+        - bundle exec kitchen test -d always
+    - os: windows
+      language: bash
+      install:
+        - choco install mingw
+        - choco install msys2
+        - ridk.cmd exec pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain
+      script:
+        - taskkill -IM "gpg-agent.exe" -F
+        - powershell -ExecutionPolicy Bypass -NoLogo -File docker.ps1
+        - export KITCHEN_YAML=.kitchen.windows.yml
+        - ruby -v
+        - gem install bundler
+        - bundle install
+        - bundle exec docker version
+        - bundle exec kitchen --version
+        - bundle exec rake spec
+        - bundle exec kitchen test -d always
 
 services:
 - docker
-
-script:
-- bundle exec docker version
-- bundle exec kitchen --version
-- bundle exec rake spec
-- bundle exec kitchen test -d always
