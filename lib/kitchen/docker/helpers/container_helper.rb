@@ -72,7 +72,7 @@ module Kitchen
           path = replace_env_variables(state, path)
           cmd = "mkdir -p #{path}"
 
-          if state[:platform] == 'windows'
+          if state[:platform].include?('windows')
             psh = "-Command if(-not (Test-Path \'#{path}\')) { New-Item -Path \'#{path}\' -Force }"
             cmd = build_powershell_command(psh)
           end
@@ -99,7 +99,7 @@ module Kitchen
           # Retrieves all environment variables from inside container
           vars = {}
 
-          if state[:platform] == 'windows'
+          if state[:platform].include?('windows')
             cmd = build_powershell_command('-Command [System.Environment]::GetEnvironmentVariables() ^| ConvertTo-Json')
             cmd = build_exec_command(state, cmd)
             stdout = docker_command(cmd, suppress_output: !logger.debug?).strip

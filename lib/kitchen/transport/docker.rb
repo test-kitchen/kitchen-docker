@@ -98,7 +98,7 @@ module Kitchen
         end
 
         def container
-          @container ||= if @options[:platform] == 'windows'
+          @container ||= if @options[:platform].include?('windows')
                            Kitchen::Docker::Container::Windows.new(@options)
                          else
                            Kitchen::Docker::Container::Linux.new(@options)
