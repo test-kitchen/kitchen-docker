@@ -18,6 +18,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'test-kitchen', '>= 1.0.0'
+  spec.add_dependency 'kitchen-inspec', '~> 1.1'
+  spec.add_dependency 'kitchen-docker', '~> 1.34.2'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
@@ -35,6 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'codecov', '~> 0.0', '>= 0.0.2'
 
   # Integration testing gems.
-  spec.add_development_dependency 'kitchen-inspec', '~> 1.1'
   spec.add_development_dependency 'train', '~> 2.1'
 end
