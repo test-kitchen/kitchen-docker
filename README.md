@@ -164,6 +164,19 @@ images using the [Docker Index][docker_index].
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
 
+### isolation
+
+The isolation technology for the container. This is not set by default and will use the default container isolation settings.
+
+For example, the following driver configuration options can be used to specify the container isolation technology for Windows containers:
+```yaml
+# Hyper-V
+isolation: hyperv
+
+# Process
+isolation: process
+```
+
 ### platform
 
 The platform of the chosen image. This is used to properly bootstrap the
