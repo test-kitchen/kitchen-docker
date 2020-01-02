@@ -13,7 +13,6 @@ Gem::Specification.new do |spec|
   spec.license       = 'Apache 2.0'
 
   spec.files         = `git ls-files`.split($/)
-  spec.executables   = []
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
@@ -36,5 +35,5 @@ Gem::Specification.new do |spec|
 
   # Integration testing gems.
   spec.add_development_dependency 'kitchen-inspec', '~> 1.1'
-  spec.add_development_dependency 'train', '~> 2.1'
+  spec.add_development_dependency 'train', '>= 2.1', '< 4.0' # validate 4.x when it's released
 end
