@@ -13,10 +13,10 @@
 
 require 'kitchen'
 
-require 'kitchen/docker/container/linux'
-require 'kitchen/docker/container/windows'
+require_relative '../docker/container/linux'
+require_relative '../docker/container/windows'
 
-require 'kitchen/docker/helpers/inspec_helper'
+require_relative '../docker/helpers/inspec_helper'
 
 require_relative '../../docker/version.rb'
 require_relative '../../train/docker.rb'

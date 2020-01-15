@@ -20,10 +20,10 @@ require 'net/ssh'
 
 require 'kitchen/driver/base'
 
-require 'kitchen/docker/container/linux'
-require 'kitchen/docker/container/windows'
-require 'kitchen/docker/helpers/cli_helper'
-require 'kitchen/docker/helpers/container_helper'
+require_relative '../docker/container/linux'
+require_relative '../docker/container/windows'
+require_relative '../docker/helpers/cli_helper'
+require_relative '../docker/helpers/container_helper'
 
 module Kitchen
   module Driver

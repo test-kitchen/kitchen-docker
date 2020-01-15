@@ -13,7 +13,7 @@
 
 require 'securerandom'
 
-require 'kitchen/docker/container'
+require_relative '../container'
 
 module Kitchen
   module Docker
