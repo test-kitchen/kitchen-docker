@@ -19,8 +19,8 @@ require 'uri'
 
 require 'kitchen'
 require 'kitchen/configurable'
-require 'kitchen/docker/erb_context'
-require 'kitchen/docker/helpers/cli_helper'
+require_relative '../erb_context'
+require_relative 'cli_helper'
 
 module Kitchen
   module Docker

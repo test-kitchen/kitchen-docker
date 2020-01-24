@@ -13,8 +13,8 @@
 
 require 'kitchen'
 require 'kitchen/configurable'
-require 'kitchen/docker/helpers/cli_helper'
-require 'kitchen/docker/helpers/container_helper'
+require_relative 'cli_helper'
+require_relative 'container_helper'
 
 module Kitchen
   module Docker

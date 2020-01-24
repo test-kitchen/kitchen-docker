@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen/docker/helpers/cli_helper'
-require 'kitchen/docker/helpers/container_helper'
-require 'kitchen/docker/helpers/file_helper'
-require 'kitchen/docker/helpers/image_helper'
+require_relative 'helpers/cli_helper'
+require_relative 'helpers/container_helper'
+require_relative 'helpers/file_helper'
+require_relative 'helpers/image_helper'
 
 module Kitchen
   module Docker

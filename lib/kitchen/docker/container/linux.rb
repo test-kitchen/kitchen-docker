@@ -16,7 +16,7 @@ require 'openssl'
 require 'securerandom'
 require 'shellwords'
 
-require 'kitchen/docker/container'
+require_relative '../container'
 
 module Kitchen
   module Docker
