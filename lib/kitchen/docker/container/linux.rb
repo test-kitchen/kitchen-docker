@@ -29,16 +29,14 @@ module Kitchen
         end
 
         def create(state)
-          super
-
           debug('Creating Linux container')
           generate_keys
 
           state[:ssh_key] = @config[:private_key]
           state[:image_id] = build_image(state, dockerfile) unless state[:image_id]
           state[:container_id] = run_container(state, 22) unless state[:container_id]
-          state[:hostname] = 'localhost'
           state[:port] = container_ssh_port(state)
+          super
         end
 
         def execute(command)
