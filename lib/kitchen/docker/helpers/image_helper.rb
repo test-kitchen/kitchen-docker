@@ -35,7 +35,7 @@ module Kitchen
 
         def remove_image(state)
           image_id = state[:image_id]
-          docker_command("rmi #{image_id}")
+          run_command("docker ps -a | grep -q #{image_id} && echo 'Can not delete such image; It is being used by running container/s' || docker rmi #{image_id}")
         end
 
         def build_image(state, dockerfile)
