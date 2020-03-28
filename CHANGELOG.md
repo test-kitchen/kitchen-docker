@@ -1,5 +1,11 @@
 # Kitchen-Docker Changelog
 
+## 2.10.0 - Mar 28, 2020
+
+* Switched from require to require_relative to slightly improve load time performance
+* Allow for train gem 3.x
+* Refactor driver to include Windows support (includes new transport for all supported platforms)
+
 ## 2.9.0 - Mar 15, 2019
 
 * Add automatic OS detection for amazonlinux, opensuse/leap, and opensuse/tumbleweed
