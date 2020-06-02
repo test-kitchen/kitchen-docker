@@ -7,6 +7,8 @@
 
 A Test Kitchen Driver and Transport for Docker.
 
+***MAINTAINERS WANTED***: This Test-Kitchen driver is currently without a maintainer and has many known issues. If you're interested in maintaining this driver for the long run including expanding the CI testing please reach out on [Chef Community Slack: #test-kitchen](https://chefcommunity.slack.com/archives/C2B6G1WCQ). Until such a time that this driver is maintained we highly recommend the [kitchen-dokken](https://github.com/test-kitchen/kitchen-dokken) for Chef Infra testing with Docker containers.
+
 ## Requirements
 
 * [Docker][docker_installation] **(>= 1.5)**
