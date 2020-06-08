@@ -34,6 +34,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'codecov', '~> 0.0', '>= 0.0.2'
 
   # Integration testing gems.
-  spec.add_development_dependency 'kitchen-inspec', '~> 1.1'
+  spec.add_development_dependency 'kitchen-inspec', '~> 2.0'
   spec.add_development_dependency 'train', '>= 2.1', '< 4.0' # validate 4.x when it's released
 end
