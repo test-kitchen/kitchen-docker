@@ -30,6 +30,7 @@ module Kitchen
           state[:username] = @config[:username]
           state[:image_id] = build_image(state, dockerfile) unless state[:image_id]
           state[:container_id] = run_container(state) unless state[:container_id]
+          state[:hostname] = hostname(state)
         end
 
         def execute(command)
