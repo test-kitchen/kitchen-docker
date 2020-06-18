@@ -41,6 +41,7 @@ module Kitchen
       default_config :cap_drop,      nil
       default_config :disable_upstart, true
       default_config :env_variables, nil
+      default_config :isolation,     nil
       default_config :interactive,   false
       default_config :private_key,   File.join(Dir.pwd, '.kitchen', 'docker_id_rsa')
       default_config :privileged,    false
