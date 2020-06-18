@@ -37,13 +37,27 @@ module Kitchen
         end
 
         state[:username] = @config[:username]
-        state[:hostname] = 'localhost'
+      end
+
+      def destroy(state)
+        info("[Docker] Destroying Docker container #{state[:container_id]}") if state[:container_id]
+        remove_container(state) if container_exists?(state)
+
+        if @config[:remove_images] && state[:image_id]
+          remove_image(state) if image_exists?(state)
+        end
+      end
+
+      def hostname(state)
+        hostname = 'localhost'
 
         if remote_socket?
-          state[:hostname] = socket_uri.host
-        elsif config[:use_internal_docker_network]
-          state[:hostname] = container_ip_address(state)
+          hostname = socket_uri.host
+        elsif @config[:use_internal_docker_network]
+          hostname = container_ip_address(state)
         end
+
+        hostname
       end
 
       def upload(locals, remote)
@@ -55,15 +69,6 @@ module Kitchen
         end
 
         files
-      end
-
-      def destroy(state)
-        info("[Docker] Destroying Docker container #{state[:container_id]}") if state[:container_id]
-        remove_container(state) if container_exists?(state)
-
-        if @config[:remove_images] && state[:image_id]
-          remove_image(state) if image_exists?(state)
-        end
       end
     end
   end
