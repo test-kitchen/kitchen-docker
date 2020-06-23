@@ -56,7 +56,7 @@ module Kitchen
 
         def debian_platform
           disable_upstart = <<-CODE
-            RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl 
+            RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl \
                 && ln -sf /bin/true /sbin/initctl
           CODE
           packages = <<-CODE
