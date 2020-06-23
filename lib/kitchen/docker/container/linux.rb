@@ -17,6 +17,7 @@ require 'securerandom'
 require 'shellwords'
 
 require_relative '../container'
+require_relative '../helpers/dockerfile_helper'
 
 module Kitchen
   module Docker
