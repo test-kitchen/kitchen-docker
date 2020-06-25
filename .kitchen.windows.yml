@@ -18,7 +18,7 @@ provisioner:
 platforms:
 - name: windows
   driver_config:
-    image: mcr.microsoft.com/windows/servercore:1803
+    image: mcr.microsoft.com/windows/servercore:1809
     platform: windows
 
 suites:
