@@ -17,11 +17,14 @@ require 'securerandom'
 require 'shellwords'
 
 require_relative '../container'
+require_relative '../helpers/dockerfile_helper'
 
 module Kitchen
   module Docker
     class Container
       class Linux < Kitchen::Docker::Container
+        include Kitchen::Docker::Helpers::DockerfileHelper
+
         MUTEX_FOR_SSH_KEYS = Mutex.new
 
         def initialize(config)
@@ -107,88 +110,11 @@ module Kitchen
           return dockerfile_template if @config[:dockerfile]
 
           from = "FROM #{@config[:image]}"
-
-          platform = case @config[:platform]
-                     when 'debian', 'ubuntu'
-                       disable_upstart = <<-CODE
-                         RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl
-                       CODE
-                       packages = <<-CODE
-                         ENV DEBIAN_FRONTEND noninteractive
-                         ENV container docker
-                         RUN apt-get update
-                         RUN apt-get install -y sudo openssh-server curl lsb-release
-                       CODE
-                       @config[:disable_upstart] ? disable_upstart + packages : packages
-                     when 'rhel', 'centos', 'oraclelinux', 'amazonlinux'
-                       <<-CODE
-                         ENV container docker
-                         RUN yum clean all
-                         RUN yum install -y sudo openssh-server openssh-clients which curl
-                         RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-                         RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
-                       CODE
-                     when 'fedora'
-                       <<-CODE
-                         ENV container docker
-                         RUN dnf clean all
-                         RUN dnf install -y sudo openssh-server openssh-clients which curl
-                         RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-                         RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
-                       CODE
-                     when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
-                       <<-CODE
-                         ENV container docker
-                         RUN zypper install -y sudo openssh which curl
-                         RUN /usr/sbin/sshd-gen-keys-start
-                       CODE
-                     when 'arch'
-                       # See https://bugs.archlinux.org/task/47052 for why we
-                       # blank out limits.conf.
-                       <<-CODE
-                         RUN pacman --noconfirm -Sy archlinux-keyring
-                         RUN pacman-db-upgrade
-                         RUN pacman --noconfirm -Syu openssl openssh sudo curl
-                         RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-                         RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-                         RUN echo >/etc/security/limits.conf
-                       CODE
-                     when 'gentoo'
-                       <<-CODE
-                         RUN emerge --sync
-                         RUN emerge net-misc/openssh app-admin/sudo
-                         RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-                         RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-                       CODE
-                     when 'gentoo-paludis'
-                       <<-CODE
-                         RUN cave sync
-                         RUN cave resolve -zx net-misc/openssh app-admin/sudo
-                         RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-                         RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-                       CODE
-                     else
-                       raise ActionFailed, "Unknown platform '#{@config[:platform]}'"
-                     end
-
+          platform = dockerfile_platform
           username = @config[:username]
           public_key = IO.read(@config[:public_key]).strip
           homedir = username == 'root' ? '/root' : "/home/#{username}"
-
-          base = <<-CODE
-            RUN if ! getent passwd #{username}; then \
-                  useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
-                fi
-            RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-            RUN echo "Defaults !requiretty" >> /etc/sudoers
-            RUN mkdir -p #{homedir}/.ssh
-            RUN chown -R #{username} #{homedir}/.ssh
-            RUN chmod 0700 #{homedir}/.ssh
-            RUN touch #{homedir}/.ssh/authorized_keys
-            RUN chown #{username} #{homedir}/.ssh/authorized_keys
-            RUN chmod 0600 #{homedir}/.ssh/authorized_keys
-            RUN mkdir -p /run/sshd
-          CODE
+          base = dockerfile_base_linux(username, homedir)
 
           custom = ''
           Array(@config[:provision_command]).each do |cmd|

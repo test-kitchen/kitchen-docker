@@ -33,15 +33,20 @@ matrix:
     - os: windows
       language: bash
       install:
+        - choco uninstall ruby
+        - choco install ruby --version=2.6.5.1
+        - export PATH=$(echo "$PATH" | sed -e 's/:\/c\/tools\/ruby27\/bin//')
+        - export PATH=$PATH:/c/tools/ruby26/bin
         - choco install mingw
         - choco install msys2
-        - ridk.cmd exec pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain
+        - ridk.cmd exec pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-libxslt
       script:
-        - taskkill -IM "gpg-agent.exe" -F
+        - if [[ $(tasklist | grep "gpg-agent") ]]; then taskkill -IM "gpg-agent.exe" -F; else echo "Process gpg-agent not found. Skipping."; fi        
         - powershell -ExecutionPolicy Bypass -NoLogo -File docker.ps1
         - export KITCHEN_YAML=.kitchen.windows.yml
         - ruby -v
         - gem install bundler
+        - bundle config build.nokogiri --use-system-libraries
         - bundle install
         - bundle exec docker version
         - bundle exec kitchen --version

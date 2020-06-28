@@ -17,5 +17,5 @@ test/version_tmp
 tmp
 .kitchen/
 .kitchen.local.yml
-Dockerfile*
+Dockerfile
 .DS_Store
