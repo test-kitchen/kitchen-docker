@@ -1,6 +1,3 @@
-# -*- encoding: utf-8 -*-
-#
-# Copyright (C) 2014, Sean Porter
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-module Kitchen
+begin
+  require 'docker'
 
-  module Driver
-
-    # Version string for Docker Kitchen driver
-    DOCKER_VERSION = "2.8.0"
+  # Override API_VERSION constant in docker-api gem to use version 1.24 of the Docker API
+  # This override is for the docker-api gem to communicate to the Docker engine on Windows
+  module Docker
+    VERSION = '0.0.0'
+    API_VERSION = '1.24'
   end
+rescue LoadError => e
+  logger.debug("[Docker] docker-api gem not found for InSpec verifier. #{e}")
 end

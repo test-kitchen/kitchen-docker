@@ -5,7 +5,9 @@
 [![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-A Test Kitchen Driver for Docker.
+A Test Kitchen Driver and Transport for Docker.
+
+***MAINTAINERS WANTED***: This Test-Kitchen driver is currently without a maintainer and has many known issues. If you're interested in maintaining this driver for the long run including expanding the CI testing please reach out on [Chef Community Slack: #test-kitchen](https://chefcommunity.slack.com/archives/C2B6G1WCQ). Until such a time that this driver is maintained we highly recommend the [kitchen-dokken](https://github.com/test-kitchen/kitchen-dokken) for Chef Infra testing with Docker containers.
 
 ## Requirements
 
@@ -15,13 +17,15 @@ A Test Kitchen Driver for Docker.
 
 Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
 
-Example `.kitchen.local.yml`:
+Example (Linux) `.kitchen.local.yml`:
 
 ```yaml
 ---
 driver:
   name: docker
-
+  env_variables:
+    TEST_KEY: TEST_VALUE
+    
 platforms:
 - name: ubuntu
   run_list:
@@ -32,6 +36,30 @@ platforms:
     platform: rhel
   run_list:
   - recipe[yum]
+
+transport:
+  name: docker
+```
+
+Example (Windows) `.kitchen.local.yml`:
+
+```yaml
+---
+driver:
+  name: docker
+
+platforms:
+- name: windows
+  driver_config:
+    image: mcr.microsoft.com/windows/servercore:1607
+    platform: windows
+  run_list:
+  - recipe[chef_client]
+
+transport:
+  name: docker
+  env_variables:
+    TEST_KEY: TEST_VALUE
 ```
 
 ## Default Configuration
@@ -44,8 +72,8 @@ Examples:
 ```yaml
 ---
 platforms:
-- name: ubuntu-12.04
-- name: centos-6.4
+- name: ubuntu-18.04
+- name: centos-7
 ```
 
 This will effectively generate a configuration similar to:
@@ -53,13 +81,13 @@ This will effectively generate a configuration similar to:
 ```yaml
 ---
 platforms:
-- name: ubuntu-12.04
+- name: ubuntu-18.04
   driver_config:
-    image: ubuntu:12.04
+    image: ubuntu:18.04
     platform: ubuntu
-- name: centos-6.4
+- name: centos-7
   driver_config:
-    image: centos:6.4
+    image: centos:7
     platform: centos
 ```
 
@@ -83,11 +111,9 @@ Examples:
 
 ### socket
 
-The Docker daemon socket to use. By default, Docker will listen on
-`unix:///var/run/docker.sock`, and no configuration here is required. If
-Docker is binding to another host/port or Unix socket, you will need to set
-this option. If a TCP socket is set, its host will be used for SSH access
-to suite containers.
+The Docker daemon socket to use. By default, Docker will listen on `unix:///var/run/docker.sock` (On Windows, `npipe:////./pipe/docker_engine`), 
+and no configuration here is required. If Docker is binding to another host/port or Unix socket, you will need to set this option. 
+If a TCP socket is set, its host will be used for SSH access to suite containers.
 
 Examples:
 
@@ -99,10 +125,27 @@ Examples:
   socket: tcp://docker.example.com:4242
 ```
 
-If you use [Docker for Windows](https://docs.docker.com/docker-for-windows/)
-
+If you are using the InSpec verifier on Windows, using named pipes for the Docker engine will not work with the Docker transport.
+Set the socket option with the TCP socket address of the Docker engine as shown below:
 ```yaml
-socket: npipe:////./pipe/docker_engine
+socket: tcp://localhost:2375
+```
+
+The Docker engine must be configured to listen on a TCP port (default port is 2375). This can be configured by editing the configuration file
+(usually located in `C:\ProgramData\docker\config\daemon.json`) and adding the hosts value:
+```
+"hosts": ["tcp://0.0.0.0:2375"]
+```
+
+Example configuration is shown below:
+```
+{
+  "registry-mirrors": [],
+  "insecure-registries": [],
+  "debug": true,
+  "experimental": false,
+  "hosts": ["tcp://0.0.0.0:2375"]
+}
 ```
 
 If you use [Boot2Docker](https://github.com/boot2docker/boot2docker)
@@ -115,7 +158,6 @@ $MACHINE)"` then use the following:
 socket: tcp://192.168.59.103:2375
 ```
 
-
 ### image
 
 The Docker image to use as the base for the suite containers. You can find
@@ -124,15 +166,30 @@ images using the [Docker Index][docker_index].
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
 
+### isolation
+
+The isolation technology for the container. This is not set by default and will use the default container isolation settings.
+
+For example, the following driver configuration options can be used to specify the container isolation technology for Windows containers:
+```yaml
+# Hyper-V
+isolation: hyperv
+
+# Process
+isolation: process
+```
+
 ### platform
 
 The platform of the chosen image. This is used to properly bootstrap the
 suite container for Test Kitchen. Kitchen Docker currently supports:
 
+* `arch`
 * `debian` or `ubuntu`
-* `rhel` or `centos`
+* `amazonlinux`, `rhel`, `centos`, `fedora` or `oraclelinux`
 * `gentoo` or `gentoo-paludis`
-* `opensuse` or `sles`
+* `opensuse/tumbleweed`, `opensuse/leap`, `opensuse` or `sles`
+* `windows`
 
 The default will be computed, using the platform name (see the Default
 Configuration section for more details).
@@ -180,6 +237,17 @@ Examples:
 driver_config:
   provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
   require_chef_omnibus: false
+```
+### env_variables
+
+Adds environment variables to Docker container
+
+Examples:
+
+```yaml
+  env_variables:
+    TEST_KEY_1: TEST_VALUE
+    SOME_VAR: SOME_VALUE
 ```
 
 ### use\_cache
