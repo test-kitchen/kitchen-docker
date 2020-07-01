@@ -25,7 +25,7 @@ driver:
   name: docker
   env_variables:
     TEST_KEY: TEST_VALUE
-    
+
 platforms:
 - name: ubuntu
   run_list:
@@ -111,8 +111,8 @@ Examples:
 
 ### socket
 
-The Docker daemon socket to use. By default, Docker will listen on `unix:///var/run/docker.sock` (On Windows, `npipe:////./pipe/docker_engine`), 
-and no configuration here is required. If Docker is binding to another host/port or Unix socket, you will need to set this option. 
+The Docker daemon socket to use. By default, Docker will listen on `unix:///var/run/docker.sock` (On Windows, `npipe:////./pipe/docker_engine`),
+and no configuration here is required. If Docker is binding to another host/port or Unix socket, you will need to set this option.
 If a TCP socket is set, its host will be used for SSH access to suite containers.
 
 Examples:
@@ -325,6 +325,23 @@ Examples:
   - repos
   - logging
   - rvm
+```
+
+### mount
+
+Attach a filesystem mount to the container (**NOTE:** supported only in docker
+17.05 and newer).
+
+Examples:
+
+```yaml
+  mount: type=volume,source=my-volume,destination=/path/in/container
+```
+
+```yaml
+  mount:
+  - type=volume,source=my-volume,destination=/path/in/container
+  - type=tmpfs,tmpfs-size=512M,destination=/path/to/tmpdir
 ```
 
 ### dns
