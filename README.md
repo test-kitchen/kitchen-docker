@@ -344,6 +344,22 @@ Examples:
   - type=tmpfs,tmpfs-size=512M,destination=/path/to/tmpdir
 ```
 
+### tmpfs
+
+Adds a tmpfs volume(s) to the suite container.
+
+Examples:
+
+```yaml
+  tmpfs: /tmp
+```
+
+```yaml
+  tmpfs:
+  - /tmp:exec
+  - /run
+```
+
 ### dns
 
 Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
