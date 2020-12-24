@@ -50,7 +50,8 @@ module Kitchen
                      file.write(dockerfile)
                      file.close
                      docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}",
-                                    input: dockerfile_contents)
+                                    input: dockerfile_contents,
+                                    environment: { DOCKER_BUILDKIT: '0' })
                    ensure
                      file.close unless file.closed?
                      file.unlink
