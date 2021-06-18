@@ -635,7 +635,7 @@ limitations under the License.
 [docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
 [docker_default_image]:   https://index.docker.io/_/base/
-[test_kitchen_docs]:      http://kitchen.ci/docs/getting-started/
+[test_kitchen_docs]:      https://kitchen.ci/docs/getting-started/introduction/
 [chef_omnibus_dl]:        https://downloads.chef.io/chef-client/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
 [memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
