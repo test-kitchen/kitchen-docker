@@ -34,7 +34,7 @@ module Kitchen
             gentoo_paludis_platform
           when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
             opensuse_platform
-          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux'
+          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux', 'almalinux', 'rockylinux'
             rhel_platform
           else
             raise ActionFailed, "Unknown platform '#{config[:platform]}'"
