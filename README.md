@@ -186,7 +186,7 @@ suite container for Test Kitchen. Kitchen Docker currently supports:
 
 * `arch`
 * `debian` or `ubuntu`
-* `amazonlinux`, `rhel`, `centos`, `fedora` or `oraclelinux`
+* `amazonlinux`, `rhel`, `centos`, `fedora`, `oraclelinux`, `almalinux` or `rockylinux`
 * `gentoo` or `gentoo-paludis`
 * `opensuse/tumbleweed`, `opensuse/leap`, `opensuse` or `sles`
 * `windows`
