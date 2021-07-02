@@ -1,5 +1,20 @@
 # Kitchen-Docker Changelog
 
+## 2.11.0 - July 2, 2021
+
+* Update the development dependency on kitchen-inspec to 2.x
+* Retrieve hostname state data after container is launched to avoid failures when `use_internal_docker_network` is set
+* Add a new option for setting container isolation. See the readme for additional details
+* Support GPUs in containers with a new `gpus` option that takes the same arguments that would be passed to `docker run --gpus`
+* suse platform: use system script for ssh key initialization
+* Add support for the `--mount` docker CLI option. See the readme for additional details
+* Use sudo.d files instead of directly editing the sudoers file
+* Allow passing `--tmpfs` entries to the docker run command. See the readme for additional details
+* Use less verbose and quicker setup on Gentoo
+* Lowercase the instance-name to avoid issues since docker does not allow instance with capital cases
+* Fix the error "Could not parse Docker build output for image ID" by improving the output line matching
+* Add support for `almalinux` & `rockylinux`
+
 ## 2.10.0 - Mar 28, 2020
 
 * Switched from require to require_relative to slightly improve load time performance
