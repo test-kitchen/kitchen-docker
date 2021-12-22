@@ -19,7 +19,7 @@ platforms:
 - name: fedora-latest
   driver:
     provision_command:
-    - yum install libxcrypt-compat.x86_64 -y
+    - yum install libxcrypt-compat -y
     - curl -L https://www.chef.io/chef/install.sh | bash
 - name: centos-7
 - name: centos-8
