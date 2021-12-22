@@ -31,10 +31,6 @@ platforms:
 #- name: opensuse-42.3
 #  driver:
 #    image: opensuse/leap:42.3
-- name: unknown
-  driver:
-    image: ubuntu:16.04
-    platform: ubuntu
 - name: dockerfile
   driver:
     username: dockerfile
