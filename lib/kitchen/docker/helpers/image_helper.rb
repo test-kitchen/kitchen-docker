@@ -26,7 +26,11 @@ module Kitchen
 
         def parse_image_id(output)
           output.each_line do |line|
-            if line =~ /image id|build successful|successfully built|writing image/i
+            if line =~ /writing image sha256:[[:xdigit:]]{64} done/i
+              img_id = line[/writing image (sha256:[[:xdigit:]]{64}) done/i,1]
+              return img_id
+            end
+            if line =~ /image id|build successful|successfully built/i
               img_id = line.split(/\s+/).last
               return img_id
             end
@@ -52,7 +56,7 @@ module Kitchen
                      file.close
                      docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}",
                                     input: dockerfile_contents,
-                                    environment: { DOCKER_BUILDKIT: '0' })
+                                    environment: { BUILDKIT_PROGRESS: 'plain' })
                    ensure
                      file.close unless file.closed?
                      file.unlink
