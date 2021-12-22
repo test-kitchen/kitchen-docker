@@ -1,4 +1,4 @@
-FROM centos:6
+FROM centos:7
 RUN yum clean all
 RUN yum install -y sudo openssh-server openssh-clients which curl htop
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key

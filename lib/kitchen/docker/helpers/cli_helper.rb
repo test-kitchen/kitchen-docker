@@ -36,6 +36,26 @@ module Kitchen
           run_command("#{docker} #{cmd}", docker_shell_opts(options))
         end
 
+        # Copied from kitchen because we need stderr
+        def run_command(cmd, options = {})
+          if options.fetch(:use_sudo, false)
+            cmd = "#{options.fetch(:sudo_command, "sudo -E")} #{cmd}"
+          end
+          subject = "[#{options.fetch(:log_subject, "local")} command]"
+
+          debug("#{subject} BEGIN (#{cmd})")
+          sh = Mixlib::ShellOut.new(cmd, shell_opts(options))
+          sh.run_command
+          debug("#{subject} END #{Util.duration(sh.execution_time)}")
+          sh.error!
+          sh.stdout + sh.stderr
+        rescue Mixlib::ShellOut::ShellCommandFailed => ex
+          raise ShellCommandFailed, ex.message
+        rescue Exception => error # rubocop:disable Lint/RescueException
+          error.extend(Kitchen::Error)
+          raise
+        end
+
         def build_run_command(image_id, transport_port = nil)
           cmd = 'run -d'
           cmd << ' -i' if config[:interactive]
@@ -64,6 +84,7 @@ module Kitchen
           Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
           Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
           Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
+          cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_run_options = config_to_options(config[:run_options])
           cmd << " #{extra_run_options}" unless extra_run_options.empty?
           cmd << " #{image_id} #{config[:run_command]}"

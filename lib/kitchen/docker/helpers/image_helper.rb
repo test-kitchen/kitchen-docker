@@ -26,7 +26,11 @@ module Kitchen
 
         def parse_image_id(output)
           output.each_line do |line|
-            if line =~ /image id|build successful|successfully built|writing image/i
+            if line =~ /writing image sha256:[[:xdigit:]]{64} done/i
+              img_id = line[/writing image (sha256:[[:xdigit:]]{64}) done/i,1]
+              return img_id
+            end
+            if line =~ /image id|build successful|successfully built/i
               img_id = line.split(/\s+/).last
               return img_id
             end
@@ -42,17 +46,19 @@ module Kitchen
         def build_image(state, dockerfile)
           cmd = 'build'
           cmd << ' --no-cache' unless config[:use_cache]
+          cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
-          build_context = config[:build_context] ? '.' : '-'
           file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
+          build_context = config[:build_context] ? '.' : '-'
           output = begin
                      file.write(dockerfile)
                      file.close
-                     docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}",
+                     docker_command("#{cmd} #{build_context}",
                                     input: dockerfile_contents,
-                                    environment: { DOCKER_BUILDKIT: '0' })
+                                    environment: { BUILDKIT_PROGRESS: 'plain' })
                    ensure
                      file.close unless file.closed?
                      file.unlink
