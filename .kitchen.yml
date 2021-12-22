@@ -58,6 +58,13 @@ suites:
     - apt-get install -y net-tools
     cap_drop:
     - NET_ADMIN
+- name: arm64
+  excludes: [debian-9]
+  driver:
+    docker_platform: linux/arm64
+- name: amd64
+  driver:
+    docker_platform: linux/amd64
 - name: inspec
   driver:
     provision_command: true
