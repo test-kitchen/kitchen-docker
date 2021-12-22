@@ -50,12 +50,13 @@ module Kitchen
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
-          build_context = config[:build_context] ? '.' : '-'
           file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
+          build_context = config[:build_context] ? '.' : '-'
           output = begin
                      file.write(dockerfile)
                      file.close
-                     docker_command("#{cmd} -f #{Shellwords.escape(dockerfile_path(file))} #{build_context}",
+                     docker_command("#{cmd} #{build_context}",
                                     input: dockerfile_contents,
                                     environment: { BUILDKIT_PROGRESS: 'plain' })
                    ensure
