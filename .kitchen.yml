@@ -26,11 +26,10 @@ platforms:
 - name: oraclelinux-7
 - name: rockylinux-8
 - name: debian-9
-# Removing opensuse CI tests temporarily due to an issue with the Chef install script not providing
-# the correct platform name for opensuse resulting in consistent failures for this platform
-#- name: opensuse-42.3
-#  driver:
-#    image: opensuse/leap:42.3
+- name: debian-10
+- name: opensuse-15
+  driver:
+    image: opensuse/leap:15
 - name: dockerfile
   driver:
     username: dockerfile
@@ -46,7 +45,7 @@ suites:
   driver:
     build_context: false
 - name: capabilities
-  includes: [debian-8,debian-9,ubuntu-16.04,ubuntu-18.04]
+  includes: [debian-9,debian-10,ubuntu-18.04,ubuntu-20.04]
   driver:
     provision_command:
     - curl -L https://www.chef.io/chef/install.sh | bash
