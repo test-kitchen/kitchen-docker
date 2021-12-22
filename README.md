@@ -596,6 +596,20 @@ Examples:
   use_internal_docker_network: true
 ```
 
+### docker_platform
+
+Configure the CPU platform (architecture) used by docker to build the image.
+
+Examples:
+
+```yaml
+  docker_platform: linux/arm64
+```
+
+```yaml
+  docker_platform: linux/amd64
+```
+
 ## Development
 
 * Source hosted at [GitHub][repo]

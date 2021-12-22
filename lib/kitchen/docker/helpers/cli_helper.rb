@@ -84,6 +84,7 @@ module Kitchen
           Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
           Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
           Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
+          cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_run_options = config_to_options(config[:run_options])
           cmd << " #{extra_run_options}" unless extra_run_options.empty?
           cmd << " #{image_id} #{config[:run_command]}"

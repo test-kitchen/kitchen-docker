@@ -46,6 +46,7 @@ module Kitchen
         def build_image(state, dockerfile)
           cmd = 'build'
           cmd << ' --no-cache' unless config[:use_cache]
+          cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
