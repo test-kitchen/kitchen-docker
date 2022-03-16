@@ -36,6 +36,10 @@ module Kitchen
             opensuse_platform
           when 'rhel', 'centos', 'oraclelinux', 'amazonlinux', 'almalinux', 'rockylinux'
             rhel_platform
+          when 'centosstream'
+            centosstream_platform
+          when 'photon'
+            photonos_platform
           else
             raise ActionFailed, "Unknown platform '#{config[:platform]}'"
           end
@@ -111,6 +115,26 @@ module Kitchen
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
             RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          CODE
+        end
+
+        def centosstream_platform
+          <<-CODE
+            ENV container docker
+            RUN yum clean all
+            RUN yum install -y sudo openssh-server openssh-clients which
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          CODE
+        end
+
+        def photonos_platform
+          <<-CODE
+            ENV container docker
+            RUN tdnf clean all
+            RUN tdnf install -y sudo openssh-server openssh-clients which curl
+            RUN [ -f "/etc/ssh/ssh_host_ecdsa_key" ] || ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
+            RUN [ -f "/etc/ssh/ssh_host_ed25519_key" ] || ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ''
           CODE
         end
 
