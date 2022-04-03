@@ -22,7 +22,6 @@ platforms:
     - yum install libxcrypt-compat -y
     - curl -L https://www.chef.io/chef/install.sh | bash
 - name: centos-7
-- name: centos-8
 - name: oraclelinux-7
 - name: rockylinux-8
 - name: debian-9
@@ -39,13 +38,13 @@ platforms:
 
 suites:
 - name: default
-  excludes: [arch]
+  excludes: [arch, debian-9]
 - name: context
-  excludes: [arch]
+  excludes: [arch, debian-9]
   driver:
     build_context: false
 - name: capabilities
-  includes: [debian-9,debian-10,ubuntu-18.04,ubuntu-20.04]
+  includes: [debian-10,ubuntu-18.04,ubuntu-20.04]
   driver:
     provision_command:
     - curl -L https://www.chef.io/chef/install.sh | bash

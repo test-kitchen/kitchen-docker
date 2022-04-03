@@ -26,8 +26,8 @@ module Kitchen
 
         def parse_image_id(output)
           output.each_line do |line|
-            if line =~ /writing image sha256:[[:xdigit:]]{64} done/i
-              img_id = line[/writing image (sha256:[[:xdigit:]]{64}) done/i,1]
+            if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
+              img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i,1]
               return img_id
             end
             if line =~ /image id|build successful|successfully built/i
