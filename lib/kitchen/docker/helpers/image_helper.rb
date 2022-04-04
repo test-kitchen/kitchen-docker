@@ -44,7 +44,7 @@ module Kitchen
           docker_command("rmi #{image_id}")
         end
 
-        def build_image(state, dockerfile)
+        def build_image(_state, dockerfile)
           cmd = "build"
           cmd << " --no-cache" unless config[:use_cache]
           cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
@@ -69,7 +69,9 @@ module Kitchen
         end
 
         def image_exists?(state)
-          state[:image_id] && !!docker_command("inspect --type=image #{state[:image_id]}") rescue false
+          state[:image_id] && !!docker_command("inspect --type=image #{state[:image_id]}")
+        rescue
+          false
         end
       end
     end

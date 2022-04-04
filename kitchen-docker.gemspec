@@ -1,3 +1,4 @@
+require "English"
 lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "kitchen/docker/docker_version"
@@ -12,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/test-kitchen/kitchen-docker"
   spec.license       = "Apache 2.0"
 
-  spec.files         = `git ls-files`.split($/)
+  spec.files         = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 

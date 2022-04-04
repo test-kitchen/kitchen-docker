@@ -58,7 +58,9 @@ module Kitchen
         end
 
         def container_exists?(state)
-          state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
+          state[:container_id] && !!docker_command("top #{state[:container_id]}")
+        rescue
+          false
         end
 
         def container_exec(state, command)
