@@ -1,0 +1,105 @@
+---
+name: Lint & Unit
+
+'on':
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@master
+      - name: Lint YAML
+        uses: koozz/yamllint-action@main
+
+  chefstyle:
+    env:
+      BUNDLE_WITHOUT: integration
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['2.7']
+    name: Chefstyle on Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - uses: r7kamura/rubocop-problem-matchers-action@v1
+      - run: bundle exec chefstyle
+
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['2.7', '3.0', '3.1']
+    name: Unit test on Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake spec
+#
+# bundle exec kitchen test -d always
+
+  integration-linux:
+    name: Integration test on Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['2.7', '3.0', '3.1']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+  integration-windows:
+    name: Integration test on Windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [default, context, capabilities, arm64, amd64, inspec]
+        os:
+          - amazonlinux-2
+          - ubuntu-18.04
+          - ubuntu-20.04
+          - fedora-latest
+          - centos-7
+          - centos-8
+          - oraclelinux-7
+          - rockylinux-8
+          - debian-9
+          - debian-10
+          - opensuse-15
+          - dockerfile     
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - run: bundle exec test ${{ matrix.suite }}-${{ matrix.os }}
+
+
+
+
+
+
+
+
+
+
+
+
+
