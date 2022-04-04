@@ -91,16 +91,3 @@ jobs:
           ruby-version: '3.1'
           bundler-cache: true
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
-
-
-
-
-
-
-
-
-
-
-
-
-
