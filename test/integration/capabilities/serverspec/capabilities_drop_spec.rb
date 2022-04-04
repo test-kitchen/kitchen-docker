@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-require 'serverspec'
+require "serverspec"
 set :backend, :exec
 
-describe command('/sbin/ifconfig eth0 multicast') do
+describe command("/sbin/ifconfig eth0 multicast") do
   its(:exit_status) { is_expected.to_not eq 0 }
-  its(:stderr) { is_expected.to match /Operation not permitted/ }
+  its(:stderr) { is_expected.to match(/Operation not permitted/) }
 end

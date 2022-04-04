@@ -13,7 +13,7 @@
 
 # This helper should be removed when the kitchen-inspec gem has been updated to include these runner options
 begin
-  require 'kitchen/verifier/inspec'
+  require "kitchen/verifier/inspec"
 
   # Add runner options for Docker transport for kitchen-inspec gem
   module Kitchen
@@ -23,11 +23,11 @@ begin
           Kitchen::Verifier::Inspec.class_eval do
             def runner_options_for_docker(config_data)
               opts = {
-                'backend' => 'docker',
-                'logger' => logger,
-                'host' => config_data[:container_id],
+                "backend" => "docker",
+                "logger" => logger,
+                "host" => config_data[:container_id],
               }
-              logger.debug "Connect to Container: #{opts['host']}"
+              logger.debug "Connect to Container: #{opts["host"]}"
               opts
             end
           end

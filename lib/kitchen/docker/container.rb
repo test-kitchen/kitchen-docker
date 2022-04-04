@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require_relative 'helpers/cli_helper'
-require_relative 'helpers/container_helper'
-require_relative 'helpers/file_helper'
-require_relative 'helpers/image_helper'
+require_relative "helpers/cli_helper"
+require_relative "helpers/container_helper"
+require_relative "helpers/file_helper"
+require_relative "helpers/image_helper"
 
 module Kitchen
   module Docker
@@ -33,7 +33,7 @@ module Kitchen
           info("Container ID #{state[:container_id]} already exists.")
         elsif !container_exists?(state) && state[:container_id]
           raise ActionFailed, "Container ID #{state[:container_id]} was found in the kitchen state data, "\
-                              'but the container does not exist.'
+                              "but the container does not exist."
         end
 
         state[:username] = @config[:username]
@@ -49,7 +49,7 @@ module Kitchen
       end
 
       def hostname(state)
-        hostname = 'localhost'
+        hostname = "localhost"
 
         if remote_socket?
           hostname = socket_uri.host

@@ -11,13 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'base64'
-require 'openssl'
-require 'securerandom'
-require 'shellwords'
+require "base64" unless defined?(Base64)
+require "openssl" unless defined?(OpenSSL)
+require "securerandom" unless defined?(SecureRandom)
+require "shellwords" unless defined?(Shellwords)
 
-require_relative '../container'
-require_relative '../helpers/dockerfile_helper'
+require_relative "../container"
+require_relative "../helpers/dockerfile_helper"
 
 module Kitchen
   module Docker
@@ -34,7 +34,7 @@ module Kitchen
         def create(state)
           super
 
-          debug('Creating Linux container')
+          debug("Creating Linux container")
           generate_keys
 
           state[:ssh_key] = @config[:private_key]
@@ -58,7 +58,7 @@ module Kitchen
           debug("Uploading temp file #{temp_file} to #{remote_path} on container")
           upload(temp_file, remote_path)
 
-          debug('Deleting temp file from local filesystem')
+          debug("Deleting temp file from local filesystem")
           ::File.delete(temp_file)
 
           # Replace any environment variables used in the path and execute script file
@@ -76,13 +76,13 @@ module Kitchen
           MUTEX_FOR_SSH_KEYS.synchronize do
             if !File.exist?(@config[:public_key]) || !File.exist?(@config[:private_key])
               private_key = OpenSSL::PKey::RSA.new(2048)
-              blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", '')
+              blobbed_key = Base64.encode64(private_key.to_blob).gsub("\n", "")
               public_key = "ssh-rsa #{blobbed_key} kitchen_docker_key"
-              File.open(@config[:private_key], 'w') do |file|
+              File.open(@config[:private_key], "w") do |file|
                 file.write(private_key)
                 file.chmod(0600)
               end
-              File.open(@config[:public_key], 'w') do |file|
+              File.open(@config[:public_key], "w") do |file|
                 file.write(public_key)
                 file.chmod(0600)
               end
@@ -91,7 +91,7 @@ module Kitchen
         end
 
         def parse_container_ssh_port(output)
-          _host, port = output.split(':')
+          _host, port = output.split(":")
           port.to_i
         rescue => e
           raise ActionFailed, "Could not parse Docker port output for container SSH port. #{e}"
@@ -113,10 +113,10 @@ module Kitchen
           platform = dockerfile_platform
           username = @config[:username]
           public_key = IO.read(@config[:public_key]).strip
-          homedir = username == 'root' ? '/root' : "/home/#{username}"
+          homedir = username == "root" ? "/root" : "/home/#{username}"
           base = dockerfile_base_linux(username, homedir)
 
-          custom = ''
+          custom = ""
           Array(@config[:provision_command]).each do |cmd|
             custom << "RUN #{cmd}\n"
           end
@@ -124,10 +124,10 @@ module Kitchen
           ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
 
           # Empty string to ensure the file ends with a newline.
-          output = [from, dockerfile_proxy_config, platform, base, custom, ssh_key, ''].join("\n")
-          debug('--- Start Dockerfile ---')
+          output = [from, dockerfile_proxy_config, platform, base, custom, ssh_key, ""].join("\n")
+          debug("--- Start Dockerfile ---")
           debug(output.strip)
-          debug('--- End Dockerfile ---')
+          debug("--- End Dockerfile ---")
           output
         end
       end

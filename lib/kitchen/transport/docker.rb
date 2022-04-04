@@ -11,15 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
+require "kitchen"
 
-require_relative '../docker/container/linux'
-require_relative '../docker/container/windows'
+require_relative "../docker/container/linux"
+require_relative "../docker/container/windows"
 
-require_relative '../docker/helpers/inspec_helper'
+require_relative "../docker/helpers/inspec_helper"
 
-require_relative '../../docker/version.rb'
-require_relative '../../train/docker.rb'
+require_relative "../../docker/version"
+require_relative "../../train/docker"
 
 module Kitchen
   module Transport
@@ -29,7 +29,7 @@ module Kitchen
       kitchen_transport_api_version 1
       plugin_version Kitchen::VERSION
 
-      default_config :binary,        'docker'
+      default_config :binary,        "docker"
       default_config :env_variables, nil
       default_config :interactive,   false
       default_config :privileged,    false
@@ -42,16 +42,16 @@ module Kitchen
       default_config :working_dir,   nil
 
       default_config :socket do |transport|
-        socket = 'unix:///var/run/docker.sock'
-        socket = 'npipe:////./pipe/docker_engine' if transport.windows_os?
-        ENV['DOCKER_HOST'] || socket
+        socket = "unix:///var/run/docker.sock"
+        socket = "npipe:////./pipe/docker_engine" if transport.windows_os?
+        ENV["DOCKER_HOST"] || socket
       end
 
       default_config :temp_dir do |transport|
         if transport.windows_os?
-          '$env:TEMP'
+          "$env:TEMP"
         else
-          '/tmp'
+          "/tmp"
         end
       end
 
@@ -61,7 +61,7 @@ module Kitchen
         if transport.windows_os?
           nil
         else
-          'kitchen'
+          "kitchen"
         end
       end
 
@@ -73,7 +73,7 @@ module Kitchen
         # This allows Windows systems to use the TCP socket for the InSpec verifier
         # See the lib/docker.rb file here: https://github.com/swipely/docker-api/blob/master/lib/docker.rb
         # default_socket_url is set to a Unix socket and env_url requires an environment variable to be set
-        ENV['DOCKER_HOST'] = options[:socket] if !options[:socket].nil? && ENV['DOCKER_HOST'].nil?
+        ENV["DOCKER_HOST"] = options[:socket] if !options[:socket].nil? && ENV["DOCKER_HOST"].nil?
 
         Kitchen::Transport::Docker::Connection.new(options, &block)
       end
@@ -98,7 +98,7 @@ module Kitchen
         end
 
         def container
-          @container ||= if @options[:platform].include?('windows')
+          @container ||= if @options[:platform].include?("windows")
                            Kitchen::Docker::Container::Windows.new(@options)
                          else
                            Kitchen::Docker::Container::Linux.new(@options)

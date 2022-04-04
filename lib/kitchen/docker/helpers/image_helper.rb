@@ -36,7 +36,7 @@ module Kitchen
               return img_id
             end
           end
-          raise ActionFailed, 'Could not parse Docker build output for image ID'
+          raise ActionFailed, "Could not parse Docker build output for image ID"
         end
 
         def remove_image(state)
@@ -45,21 +45,21 @@ module Kitchen
         end
 
         def build_image(state, dockerfile)
-          cmd = 'build'
-          cmd << ' --no-cache' unless config[:use_cache]
+          cmd = "build"
+          cmd << " --no-cache" unless config[:use_cache]
           cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
           file = Tempfile.new('Dockerfile-kitchen', Pathname.pwd + config[:build_tempdir])
           cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
-          build_context = config[:build_context] ? '.' : '-'
+          build_context = config[:build_context] ? "." : "-"
           output = begin
                      file.write(dockerfile)
                      file.close
                      docker_command("#{cmd} #{build_context}",
                                     input: dockerfile_contents,
-                                    environment: { BUILDKIT_PROGRESS: 'plain' })
+                                    environment: { BUILDKIT_PROGRESS: "plain" })
                    ensure
                      file.close unless file.closed?
                      file.unlink

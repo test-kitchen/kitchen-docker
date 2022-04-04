@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'erb'
+require "erb" unless defined?(Erb)
 
 module Kitchen
   module Docker
     class ERBContext
-      def initialize(config={})
+      def initialize(config = {})
         config.each do |key, value|
-          instance_variable_set('@' + key.to_s, value)
+          instance_variable_set("@" + key.to_s, value)
         end
       end
 

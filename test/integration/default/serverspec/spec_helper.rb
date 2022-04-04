@@ -12,10 +12,10 @@
 # limitations under the License.
 #
 
-case RbConfig::CONFIG['host_os']
+case RbConfig::CONFIG["host_os"]
 when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
   set :backend, :cmd
-  set :os, :family => 'windows'
+  set :os, family: "windows"
 else
   set :backend, :exec
 end

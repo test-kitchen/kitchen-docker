@@ -11,16 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'erb'
-require 'json'
-require 'shellwords'
-require 'tempfile'
-require 'uri'
+require "erb" unless defined?(Erb)
+require "json" unless defined?(JSON)
+require "shellwords" unless defined?(Shellwords)
+require "tempfile" unless defined?(Tempfile)
+require "uri" unless defined?(URI)
 
-require 'kitchen'
-require 'kitchen/configurable'
-require_relative '../erb_context'
-require_relative 'cli_helper'
+require "kitchen"
+require "kitchen/configurable"
+require_relative "../erb_context"
+require_relative "cli_helper"
 
 module Kitchen
   module Docker
@@ -33,7 +33,7 @@ module Kitchen
           container_id = output.chomp
 
           unless [12, 64].include?(container_id.size)
-            raise ActionFailed, 'Could not parse Docker run output for container ID'
+            raise ActionFailed, "Could not parse Docker run output for container ID"
           end
 
           container_id
@@ -46,7 +46,7 @@ module Kitchen
         end
 
         def remote_socket?
-          config[:socket] ? socket_uri.scheme == 'tcp' : false
+          config[:socket] ? socket_uri.scheme == "tcp" : false
         end
 
         def socket_uri
@@ -72,7 +72,7 @@ module Kitchen
           path = replace_env_variables(state, path)
           cmd = "mkdir -p #{path}"
 
-          if state[:platform].include?('windows')
+          if state[:platform].include?("windows")
             psh = "-Command if(-not (Test-Path \'#{path}\')) { New-Item -Path \'#{path}\' -Force }"
             cmd = build_powershell_command(psh)
           end
@@ -99,27 +99,27 @@ module Kitchen
           # Retrieves all environment variables from inside container
           vars = {}
 
-          if state[:platform].include?('windows')
-            cmd = build_powershell_command('-Command [System.Environment]::GetEnvironmentVariables() ^| ConvertTo-Json')
+          if state[:platform].include?("windows")
+            cmd = build_powershell_command("-Command [System.Environment]::GetEnvironmentVariables() ^| ConvertTo-Json")
             cmd = build_exec_command(state, cmd)
             stdout = docker_command(cmd, suppress_output: !logger.debug?).strip
             vars = ::JSON.parse(stdout)
           else
-            cmd = build_exec_command(state, 'printenv')
+            cmd = build_exec_command(state, "printenv")
             stdout = docker_command(cmd, suppress_output: !logger.debug?).strip
-            stdout.split("\n").each { |line| vars[line.split('=')[0]] = line.split('=')[1] }
+            stdout.split("\n").each { |line| vars[line.split("=")[0]] = line.split("=")[1] }
           end
 
           vars
         end
 
         def replace_env_variables(state, str)
-          if str.include?('$env:')
+          if str.include?("$env:")
             key = str[/\$env:(.*?)(\\|$)/, 1]
             value = container_env_variables(state)[key].to_s.strip
             str = str.gsub("$env:#{key}", value)
-          elsif str.include?('$')
-            key = str[/\$(.*?)(\/|$)/, 1]
+          elsif str.include?("$")
+            key = str[%r{\$(.*?)(/|$)}, 1]
             value = container_env_variables(state)[key].to_s.strip
             str = str.gsub("$#{key}", value)
           end
@@ -138,7 +138,7 @@ module Kitchen
           cmd << " #{state[:container_id]}"
           docker_command(cmd).strip
         rescue
-          raise ActionFailed, 'Error getting internal IP of Docker container'
+          raise ActionFailed, "Error getting internal IP of Docker container"
         end
 
         def remove_container(state)
@@ -148,7 +148,7 @@ module Kitchen
         end
 
         def dockerfile_proxy_config
-          env_variables = ''
+          env_variables = ""
           if config[:http_proxy]
             env_variables << "ENV http_proxy #{config[:http_proxy]}\n"
             env_variables << "ENV HTTP_PROXY #{config[:http_proxy]}\n"
