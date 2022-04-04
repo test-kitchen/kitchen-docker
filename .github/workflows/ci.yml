@@ -17,8 +17,6 @@ jobs:
         uses: koozz/yamllint-action@main
 
   chefstyle:
-    env:
-      BUNDLE_WITHOUT: integration
     runs-on: ubuntu-latest
     strategy:
       matrix:
