@@ -1,5 +1,11 @@
 # Kitchen-Docker Changelog
 
+## 2.13.0 - June 10, 2022
+
+- Added CentOSStream and PhotonOS - [@garethgreenaway](https://github.com/garethgreenaway)
+- Fixed image parser when output includes a duration timestamp - [@RulerOf](https://github.com/RulerOf)
+- Updated the test suites - [@RulerOf](https://github.com/RulerOf)
+
 ## 2.12.0 - December 22, 2021
 
 - Support Docker BuildKit - [@RulerOf](https://github.com/RulerOf)
