@@ -143,6 +143,8 @@ module Kitchen
             RUN if ! getent passwd #{username}; then \
                   useradd -d #{homedir} -m -s /bin/bash -p '*' #{username}; \
                 fi
+            RUN mkdir -p /etc/sudoers.d
+            RUN chmod 0750 /etc/sudoers.d
             RUN echo "#{username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/#{username}
             RUN echo "Defaults !requiretty" >> /etc/sudoers.d/#{username}
             RUN mkdir -p #{homedir}/.ssh
