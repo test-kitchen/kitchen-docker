@@ -34,10 +34,12 @@ module Kitchen
             gentoo_paludis_platform
           when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
             opensuse_platform
-          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux', 'almalinux', 'rockylinux'
+          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux', 'rockylinux'
             rhel_platform
           when 'centosstream'
             centosstream_platform
+          when 'almalinux'
+            almalinux_platform
           when 'photon'
             photonos_platform
           else
@@ -119,6 +121,16 @@ module Kitchen
         end
 
         def centosstream_platform
+          <<-CODE
+            ENV container docker
+            RUN yum clean all
+            RUN yum install -y sudo openssh-server openssh-clients which
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          CODE
+        end
+
+        def almalinux_platform
           <<-CODE
             ENV container docker
             RUN yum clean all
