@@ -41,7 +41,7 @@ module Kitchen
           when 'almalinux'
             almalinux_platform
           when 'rockylinux'
-            rockyinux_platform
+            rockylinux_platform
           when 'photon'
             photonos_platform
           else
