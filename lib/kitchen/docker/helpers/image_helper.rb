@@ -25,7 +25,7 @@ module Kitchen
         include Kitchen::Docker::Helpers::ContainerHelper
 
         def parse_image_id(output)
-          output.each_line do |line|
+          output.split("\n").reverse_each do |line|
             if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
               img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i,1]
               return img_id
