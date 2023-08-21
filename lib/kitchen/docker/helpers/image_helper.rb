@@ -13,6 +13,7 @@
 
 require 'kitchen'
 require 'kitchen/configurable'
+require 'pathname'
 require_relative 'cli_helper'
 require_relative 'container_helper'
 
@@ -50,7 +51,7 @@ module Kitchen
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
-          file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          file = Tempfile.new('Dockerfile-kitchen', Pathname.pwd + config[:build_tempdir])
           cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
           build_context = config[:build_context] ? '.' : '-'
           output = begin

@@ -37,6 +37,7 @@ module Kitchen
 
       default_config :binary,        'docker'
       default_config :build_options, nil
+      default_config :build_tempdir, Dir.pwd
       default_config :cap_add,       nil
       default_config :cap_drop,      nil
       default_config :disable_upstart, true
