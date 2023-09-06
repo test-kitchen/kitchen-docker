@@ -105,7 +105,7 @@ module Kitchen
         def opensuse_platform
           <<-CODE
             ENV container docker
-            RUN zypper install -y sudo openssh which curl
+            RUN zypper install -y sudo openssh which curl gawk
             RUN /usr/sbin/sshd-gen-keys-start
           CODE
         end
