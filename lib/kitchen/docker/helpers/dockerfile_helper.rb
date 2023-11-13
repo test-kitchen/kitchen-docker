@@ -11,38 +11,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "kitchen"
-require "kitchen/configurable"
+require 'kitchen'
+require 'kitchen/configurable'
 
 module Kitchen
   module Docker
     module Helpers
-      module DockerfileHelper
+      module DockerfileHelper     
         include Configurable
 
         def dockerfile_platform
           case config[:platform]
-          when "arch"
+          when 'arch'
             arch_platform
-          when "debian", "ubuntu"
+          when 'debian', 'ubuntu'
             debian_platform
-          when "fedora"
+          when 'fedora'
             fedora_platform
-          when "gentoo"
+          when 'gentoo'
             gentoo_platform
-          when "gentoo-paludis"
+          when 'gentoo-paludis'
             gentoo_paludis_platform
-          when "opensuse/tumbleweed", "opensuse/leap", "opensuse", "sles"
+          when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
             opensuse_platform
-          when "rhel", "centos", "oraclelinux", "amazonlinux"
+          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux'
             rhel_platform
-          when "centosstream"
+          when 'centosstream'
             centosstream_platform
-          when "almalinux"
+          when 'almalinux'
             almalinux_platform
-          when "rockylinux"
+          when 'rockylinux'
             rockylinux_platform
-          when "photon"
+          when 'photon'
             photonos_platform
           else
             raise ActionFailed, "Unknown platform '#{config[:platform]}'"
@@ -133,6 +133,16 @@ module Kitchen
         end
 
         def almalinux_platform
+          <<-CODE
+            ENV container docker
+            RUN yum clean all
+            RUN yum install -y sudo openssh-server openssh-clients which
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          CODE
+        end
+
+        def rockylinux_platform
           <<-CODE
             ENV container docker
             RUN yum clean all
