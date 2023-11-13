@@ -1,5 +1,12 @@
 # Kitchen-Docker Changelog
 
+## 2.14.0 - November 13, 2023
+
+- Make sure the /etc/sudoers.d directory exists by @garethgreenaway in [#397](https://github.com/test-kitchen/kitchen-docker/pull/397)
+- Breaking almalinux platform out by @garethgreenaway [#398](https://github.com/test-kitchen/kitchen-docker/pull/398)
+- fix: parse_image_id: Process "docker build" output in reverse line order by @terminalmage in [#400](https://github.com/test-kitchen/kitchen-docker/pull/400)
+- Allow build temporary Dockerfile in configured custom_dir by @Val in [294](https://github.com/test-kitchen/kitchen-docker/pull/294)
+
 ## 2.13.0 - June 10, 2022
 
 - Added CentOSStream and PhotonOS - [@garethgreenaway](https://github.com/garethgreenaway)
