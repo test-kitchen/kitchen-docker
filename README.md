@@ -585,7 +585,7 @@ Examples:
 
 ### build_tempdir
 
-Relative (to `build_context`) temporary directory path for builded Dockerfile.
+Relative (to `build_context`) temporary directory path for built Dockerfile.
 
 Example:
 
