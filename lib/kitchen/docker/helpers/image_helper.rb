@@ -11,11 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'kitchen/configurable'
-require 'pathname'
-require_relative 'cli_helper'
-require_relative 'container_helper'
+require "kitchen"
+require "kitchen/configurable"
+require "pathname" unless defined?(Pathname)
+require_relative "cli_helper"
+require_relative "container_helper"
 
 module Kitchen
   module Docker
@@ -28,7 +28,7 @@ module Kitchen
         def parse_image_id(output)
           output.split("\n").reverse_each do |line|
             if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
-              img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i,1]
+              img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i, 1]
               return img_id
             end
             if line =~ /image id|build successful|successfully built/i
@@ -51,7 +51,7 @@ module Kitchen
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
-          file = Tempfile.new('Dockerfile-kitchen', Pathname.pwd + config[:build_tempdir])
+          file = Tempfile.new("Dockerfile-kitchen", Pathname.pwd + config[:build_tempdir])
           cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
           build_context = config[:build_context] ? "." : "-"
           output = begin

@@ -22,27 +22,27 @@ module Kitchen
 
         def dockerfile_platform
           case config[:platform]
-          when 'arch'
+          when "arch"
             arch_platform
-          when 'debian', 'ubuntu'
+          when "debian", "ubuntu"
             debian_platform
-          when 'fedora'
+          when "fedora"
             fedora_platform
-          when 'gentoo'
+          when "gentoo"
             gentoo_platform
-          when 'gentoo-paludis'
+          when "gentoo-paludis"
             gentoo_paludis_platform
-          when 'opensuse/tumbleweed', 'opensuse/leap', 'opensuse', 'sles'
+          when "opensuse/tumbleweed", "opensuse/leap", "opensuse", "sles"
             opensuse_platform
-          when 'rhel', 'centos', 'oraclelinux', 'amazonlinux'
+          when "rhel", "centos", "oraclelinux", "amazonlinux"
             rhel_platform
-          when 'centosstream'
+          when "centosstream"
             centosstream_platform
-          when 'almalinux'
+          when "almalinux"
             almalinux_platform
-          when 'rockylinux'
+          when "rockylinux"
             rockylinux_platform
-          when 'photon'
+          when "photon"
             photonos_platform
           else
             raise ActionFailed, "Unknown platform '#{config[:platform]}'"
