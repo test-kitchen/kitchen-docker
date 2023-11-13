@@ -1,5 +1,7 @@
 # Kitchen-Docker Changelog
 
+Future CHANGELOG notes will be in GitHub release notes
+
 ## 2.14.0 - November 13, 2023
 
 - Make sure the /etc/sudoers.d directory exists by @garethgreenaway in [#397](https://github.com/test-kitchen/kitchen-docker/pull/397)
