@@ -1,7 +1,7 @@
 ---
 name: Lint & Unit
 
-'on':
+"on":
   pull_request:
   push:
     branches:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
       - name: Lint YAML
         uses: koozz/yamllint-action@main
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['2.7']
+        ruby: ["2.7"]
     name: Chefstyle on Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['2.7', '3.0', '3.1']
+        ruby: ["2.7", "3.0", "3.1"]
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -52,7 +52,7 @@ jobs:
     needs: unit
     strategy:
       matrix:
-        ruby: ['2.7', '3.0', '3.1']
+        ruby: ["2.7", "3.0", "3.1"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -60,6 +60,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+      - run: bundle exec rake spec
 
   integration-windows:
     name: Integration test on Windows
@@ -86,6 +87,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: "3.1"
           bundler-cache: true
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
