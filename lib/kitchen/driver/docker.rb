@@ -66,9 +66,7 @@ module Kitchen
         !driver.remote_socket?
       end
 
-      default_config :image do |driver|
-        driver.default_image
-      end
+      default_config :image, &:default_image
 
       default_config :instance_name do |driver|
         # Borrowed from kitchen-rackspace
@@ -80,9 +78,7 @@ module Kitchen
         ].join("-").downcase
       end
 
-      default_config :platform do |driver|
-        driver.default_platform
-      end
+      default_config :platform, &:default_platform
 
       default_config :run_command do |driver|
         if driver.windows_os?
@@ -133,9 +129,7 @@ module Kitchen
 
       def wait_for_transport(state)
         if config[:wait_for_transport]
-          instance.transport.connection(state) do |conn|
-            conn.wait_until_ready
-          end
+          instance.transport.connection(state, &:wait_until_ready)
         end
       end
 
