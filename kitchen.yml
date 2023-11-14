@@ -24,8 +24,8 @@ platforms:
   - name: centos-7
   - name: oraclelinux-7
   - name: rockylinux-8
-  - name: debian-9
-  - name: debian-10
+  - name: debian-11
+  - name: debian-12
   - name: opensuse-15
     driver:
       image: opensuse/leap:15
@@ -38,9 +38,7 @@ platforms:
 
 suites:
   - name: default
-    excludes: [arch, debian-9]
-  - name: context
-    excludes: [arch, debian-9]
+  - name: no_build_context
     driver:
       build_context: false
   - name: capabilities
@@ -52,7 +50,6 @@ suites:
       cap_drop:
         - NET_ADMIN
   - name: arm64
-    excludes: [debian-9]
     driver:
       docker_platform: linux/arm64
   - name: amd64

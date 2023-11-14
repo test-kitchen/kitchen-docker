@@ -22,7 +22,7 @@ require 'simplecov'
 # Check for coverage stuffs
 formatters = []
 
-if ENV['CODECOV_TOKEN'] || ENV['TRAVIS']
+if ENV['CODECOV_TOKEN'] || ENV['CI']
   require 'codecov'
   formatters << SimpleCov::Formatter::Codecov
 end

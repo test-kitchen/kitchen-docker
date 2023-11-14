@@ -25,6 +25,7 @@ require_relative 'cli_helper'
 module Kitchen
   module Docker
     module Helpers
+      # rubocop:disable Metrics/ModuleLength, Style/Documentation
       module ContainerHelper
         include Configurable
         include Kitchen::Docker::Helpers::CliHelper
@@ -95,6 +96,7 @@ module Kitchen
           raise "Failed to copy file #{local_file} to container. #{e}"
         end
 
+        # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         def container_env_variables(state)
           # Retrieves all environment variables from inside container
           vars = {}
@@ -112,6 +114,7 @@ module Kitchen
 
           vars
         end
+        # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
         def replace_env_variables(state, str)
           if str.include?('$env:')
@@ -167,6 +170,7 @@ module Kitchen
           env_variables
         end
       end
+      # rubocop:enable Metrics/ModuleLength, Style/Documentation
     end
   end
 end
