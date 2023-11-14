@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Lint YAML
-        uses: koozz/yamllint-action@main
+      - name: Run yaml Lint
+        uses: actionshub/yamllint@main
 
   chefstyle:
     runs-on: ubuntu-latest
