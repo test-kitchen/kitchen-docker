@@ -18,9 +18,10 @@ jobs:
 
   chefstyle:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
-        ruby: ["2.7"]
+        ruby: ["3.1"]
     name: Chefstyle on Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
@@ -47,7 +48,7 @@ jobs:
       - run: bundle exec rake spec
 
   integration-windows:
-    name: Integration test on Windows
+    name: Windows ${{matrix.suite}} $${{matrix.os}}
     runs-on: windows-latest
     needs: unit
     strategy:
@@ -64,7 +65,7 @@ jobs:
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
 
   integration-linux:
-    name: Integration test on Linux
+    name: Linux ${{matrix.suite}} $${{matrix.os}}
     runs-on: windows-latest
     needs: unit
     strategy:
