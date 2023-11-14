@@ -42,7 +42,7 @@ suites:
     driver:
       build_context: false
   - name: capabilities
-    includes: [debian-10, ubuntu-18.04, ubuntu-20.04]
+    includes: [debian-11, ubuntu-18.04, ubuntu-20.04]
     driver:
       provision_command:
         - curl -L https://www.chef.io/chef/install.sh | bash

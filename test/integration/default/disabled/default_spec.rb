@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
-require 'serverspec'
-set :backend, :exec
+# Disable now busser-serever is gone.
+# require 'serverspec'
+# require 'spec_helper'
 
-describe command('/sbin/ifconfig eth0 multicast') do
-  its(:exit_status) { is_expected.to_not eq 0 }
-  its(:stderr) { is_expected.to match /Operation not permitted/ }
-end
+# # Just make sure the image launched and is reachable.
+# describe command('true') do
+#   its(:exit_status) { is_expected.to eq 0 }
+# end

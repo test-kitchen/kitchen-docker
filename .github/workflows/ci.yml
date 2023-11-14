@@ -75,17 +75,16 @@ jobs:
       matrix:
         suite:
           - default
-          - no_build_context
+          - no-build-context
           - arm64
           - amd64
           - inspec
         os:
           - amazonlinux-2
-          - ubuntu-18.04
-          - ubuntu-20.04
+          - ubuntu-1804
+          - ubuntu-2004
           - fedora-latest
           - centos-7
-          - centos-8
           - oraclelinux-7
           - rockylinux-8
           - debian-11
@@ -98,6 +97,8 @@ jobs:
         with:
           ruby-version: "3.1"
           bundler-cache: true
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
@@ -111,7 +112,7 @@ jobs:
       matrix:
         suite:
           - capabilities
-        os: [debian-11, ubuntu-18.04, ubuntu-20.04]
+        os: [debian-11, ubuntu-1804, ubuntu-2004]
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
