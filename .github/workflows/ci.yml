@@ -62,6 +62,8 @@ jobs:
         with:
           ruby-version: "3.1"
           bundler-cache: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
 
   integration-linux:
@@ -91,4 +93,6 @@ jobs:
         with:
           ruby-version: "3.1"
           bundler-cache: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
