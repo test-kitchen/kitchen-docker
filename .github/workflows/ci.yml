@@ -1,0 +1,94 @@
+---
+name: Lint & Unit
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Run yaml Lint
+        uses: actionshub/yamllint@main
+
+  chefstyle:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        ruby: ["3.1"]
+    name: Chefstyle on Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - uses: r7kamura/rubocop-problem-matchers-action@v1
+      - run: bundle exec chefstyle
+
+  unit:
+    name: Unit test on Ruby ${{ matrix.ruby }}
+    needs: [yamllint, chefstyle]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ["2.7", "3.0", "3.1"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake spec
+
+  integration-windows:
+    name: Windows ${{matrix.suite}} $${{matrix.os}}
+    runs-on: windows-latest
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [default]
+        os: [ubuntu-20.04]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
+
+  integration-linux:
+    name: Linux ${{matrix.suite}} $${{matrix.os}}
+    runs-on: windows-latest
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [default, context, capabilities, arm64, amd64, inspec]
+        os:
+          - amazonlinux-2
+          - ubuntu-18.04
+          - ubuntu-20.04
+          - fedora-latest
+          - centos-7
+          - centos-8
+          - oraclelinux-7
+          - rockylinux-8
+          - debian-9
+          - debian-10
+          - opensuse-15
+          - dockerfile
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}

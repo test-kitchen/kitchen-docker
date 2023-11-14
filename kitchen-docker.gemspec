@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'fuubar', '~> 2.0'
   spec.add_development_dependency 'simplecov', '~> 0.9'
   spec.add_development_dependency 'codecov', '~> 0.0', '>= 0.0.2'
+  spec.add_development_dependency 'chefstyle'
 
   # Integration testing gems.
   spec.add_development_dependency 'kitchen-inspec', '~> 2.0'
