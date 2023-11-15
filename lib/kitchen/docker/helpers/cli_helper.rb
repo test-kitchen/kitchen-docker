@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'kitchen/configurable'
-require 'kitchen/logging'
-require 'kitchen/shell_out'
+require "kitchen"
+require "kitchen/configurable"
+require "kitchen/logging"
+require "kitchen/shell_out"
 
 module Kitchen
   module Docker
@@ -26,11 +26,11 @@ module Kitchen
         include ShellOut
 
         # rubocop:disable Metrics/AbcSize
-        def docker_command(cmd, options={})
+        def docker_command(cmd, options = {})
           docker = config[:binary].dup
           docker << " -H #{config[:socket]}" if config[:socket]
-          docker << ' --tls' if config[:tls]
-          docker << ' --tlsverify' if config[:tls_verify]
+          docker << " --tls" if config[:tls]
+          docker << " --tlsverify" if config[:tls_verify]
           docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
           docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
           docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
@@ -63,9 +63,9 @@ module Kitchen
 
         # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/AbcSize
         def build_run_command(image_id, transport_port = nil)
-          cmd = 'run -d'
-          cmd << ' -i' if config[:interactive]
-          cmd << ' -t' if config[:tty]
+          cmd = "run -d"
+          cmd << " -i" if config[:interactive]
+          cmd << " -t" if config[:tty]
           cmd << build_env_variable_args(config[:env_variables]) if config[:env_variables]
           cmd << " -p #{transport_port}" unless transport_port.nil?
           Array(config[:forward]).each { |port| cmd << " -p #{port}" }
@@ -75,21 +75,21 @@ module Kitchen
           Array(config[:volumes_from]).each { |container| cmd << " --volumes-from #{container}" }
           Array(config[:links]).each { |link| cmd << " --link #{link}" }
           Array(config[:devices]).each { |device| cmd << " --device #{device}" }
-          Array(config[:mount]).each {|mount| cmd << " --mount #{mount}"}
-          Array(config[:tmpfs]).each {|tmpfs| cmd << " --tmpfs #{tmpfs}"}
+          Array(config[:mount]).each { |mount| cmd << " --mount #{mount}" }
+          Array(config[:tmpfs]).each { |tmpfs| cmd << " --tmpfs #{tmpfs}" }
           cmd << " --name #{config[:instance_name]}" if config[:instance_name]
-          cmd << ' -P' if config[:publish_all]
+          cmd << " -P" if config[:publish_all]
           cmd << " -h #{config[:hostname]}" if config[:hostname]
           cmd << " -m #{config[:memory]}" if config[:memory]
           cmd << " -c #{config[:cpu]}" if config[:cpu]
           cmd << " --gpus #{config[:gpus]}" if config[:gpus]
           cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
           cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
-          cmd << ' --privileged' if config[:privileged]
+          cmd << " --privileged" if config[:privileged]
           cmd << " --isolation #{config[:isolation]}" if config[:isolation]
-          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}"} if config[:cap_add]
-          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}"} if config[:cap_drop]
-          Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{opt}"} if config[:security_opt]
+          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}" } if config[:cap_drop]
+          Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{opt}" } if config[:security_opt]
           cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_run_options = config_to_options(config[:run_options])
           cmd << " #{extra_run_options}" unless extra_run_options.empty?
@@ -101,12 +101,12 @@ module Kitchen
 
         # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
         def build_exec_command(state, command)
-          cmd = 'exec'
-          cmd << ' -d' if config[:detach]
+          cmd = "exec"
+          cmd << " -d" if config[:detach]
           cmd << build_env_variable_args(config[:env_variables]) if config[:env_variables]
-          cmd << ' --privileged' if config[:privileged]
-          cmd << ' -t' if config[:tty]
-          cmd << ' -i' if config[:interactive]
+          cmd << " --privileged" if config[:privileged]
+          cmd << " -t" if config[:tty]
+          cmd << " -i" if config[:interactive]
           cmd << " -u #{config[:username]}" if config[:username]
           cmd << " -w #{config[:working_dir]}" if config[:working_dir]
           cmd << " #{state[:container_id]}"
@@ -117,23 +117,23 @@ module Kitchen
         # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
 
         def build_copy_command(local_file, remote_file, opts = {})
-          cmd = 'cp'
-          cmd << ' -a' if opts[:archive]
+          cmd = "cp"
+          cmd << " -a" if opts[:archive]
           cmd << " #{local_file} #{remote_file}"
           cmd
         end
 
         def build_powershell_command(args)
-          cmd = 'powershell -ExecutionPolicy Bypass -NoLogo '
+          cmd = "powershell -ExecutionPolicy Bypass -NoLogo "
           cmd << args
           logger.debug("build_powershell_command: #{cmd}")
           cmd
         end
 
         def build_env_variable_args(vars)
-          raise ActionFailed, 'Environment variables are not of a Hash type' unless vars.is_a?(Hash)
+          raise ActionFailed, "Environment variables are not of a Hash type" unless vars.is_a?(Hash)
 
-          args = ''
+          args = ""
           vars.each do |k, v|
             args << " -e #{k.to_s.strip}=\"#{v.to_s.strip}\""
           end
@@ -142,11 +142,11 @@ module Kitchen
         end
 
         def dev_null
-          case RbConfig::CONFIG['host_os']
+          case RbConfig::CONFIG["host_os"]
           when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-            'NUL'
+            "NUL"
           else
-            '/dev/null'
+            "/dev/null"
           end
         end
 
@@ -167,13 +167,13 @@ module Kitchen
         def config_to_options(config)
           case config
           when nil
-            ''
+            ""
           when String
             config
           when Array
-            config.map { |c| config_to_options(c) }.join(' ')
+            config.map { |c| config_to_options(c) }.join(" ")
           when Hash
-            config.map { |k, v| Array(v).map { |c| "--#{k}=#{Shellwords.escape(c)}" }.join(' ') }.join(' ')
+            config.map { |k, v| Array(v).map { |c| "--#{k}=#{Shellwords.escape(c)}" }.join(" ") }.join(" ")
           end
         end
         # rubocop:enable Metrics/CyclomaticComplexity

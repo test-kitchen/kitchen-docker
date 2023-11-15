@@ -15,12 +15,12 @@
 #
 
 # Just make sure the image launched and is reachable.
-if os[:family] == 'windows'
-  describe command('echo 1') do
+if os[:family] == "windows"
+  describe command("echo 1") do
     its(:exit_status) { is_expected.to eq 0 }
   end
 else
-  describe command('true') do
+  describe command("true") do
     its(:exit_status) { is_expected.to eq 0 }
   end
 end

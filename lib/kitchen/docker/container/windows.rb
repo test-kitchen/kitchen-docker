@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'securerandom'
+require "securerandom" unless defined?(SecureRandom)
 
-require_relative '../container'
+require_relative "../container"
 
 module Kitchen
   module Docker
@@ -26,7 +26,7 @@ module Kitchen
         def create(state)
           super
 
-          debug('Creating Windows container')
+          debug("Creating Windows container")
           state[:username] = @config[:username]
           state[:image_id] = build_image(state, dockerfile) unless state[:image_id]
           state[:container_id] = run_container(state) unless state[:container_id]
@@ -35,19 +35,19 @@ module Kitchen
 
         def execute(command)
           # Create temp script file and upload files to container
-          debug('Executing command on Windows container')
+          debug("Executing command on Windows container")
           filename = "docker-#{::SecureRandom.uuid}.ps1"
           temp_file = ".\\.kitchen\\temp\\#{filename}"
           create_temp_file(temp_file, command)
 
-          remote_path = @config[:temp_dir].tr('/', '\\')
+          remote_path = @config[:temp_dir].tr("/", "\\")
           debug("Creating directory #{remote_path} on container")
           create_dir_on_container(@config, remote_path)
 
           debug("Uploading temp file #{temp_file} to #{remote_path} on container")
           upload(temp_file, remote_path)
 
-          debug('Deleting temp file from local filesystem')
+          debug("Deleting temp file from local filesystem")
           ::File.delete(temp_file)
 
           # Replace any environment variables used in the path and execute script file
@@ -63,20 +63,20 @@ module Kitchen
         protected
 
         def dockerfile
-          raise ActionFailed, "Unknown platform '#{@config[:platform]}'" unless @config[:platform] == 'windows'
+          raise ActionFailed, "Unknown platform '#{@config[:platform]}'" unless @config[:platform] == "windows"
           return dockerfile_template if @config[:dockerfile]
 
           from = "FROM #{@config[:image]}"
 
-          custom = ''
+          custom = ""
           Array(@config[:provision_command]).each do |cmd|
             custom << "RUN #{cmd}\n"
           end
 
-          output = [from, dockerfile_proxy_config, custom, ''].join("\n")
-          debug('--- Start Dockerfile ---')
+          output = [from, dockerfile_proxy_config, custom, ""].join("\n")
+          debug("--- Start Dockerfile ---")
           debug(output.strip)
-          debug('--- End Dockerfile ---')
+          debug("--- End Dockerfile ---")
           output
         end
       end
