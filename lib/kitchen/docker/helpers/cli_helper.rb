@@ -19,11 +19,13 @@ require 'kitchen/shell_out'
 module Kitchen
   module Docker
     module Helpers
+      # rubocop:disable Metrics/ModuleLength, Style/Documentation
       module CliHelper
         include Configurable
         include Logging
         include ShellOut
 
+        # rubocop:disable Metrics/AbcSize
         def docker_command(cmd, options={})
           docker = config[:binary].dup
           docker << " -H #{config[:socket]}" if config[:socket]
@@ -35,8 +37,10 @@ module Kitchen
           logger.debug("docker_command: #{docker} #{cmd} shell_opts: #{docker_shell_opts(options)}")
           run_command("#{docker} #{cmd}", docker_shell_opts(options))
         end
+        # rubocop:enable Metrics/AbcSize
 
         # Copied from kitchen because we need stderr
+        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
         def run_command(cmd, options = {})
           if options.fetch(:use_sudo, false)
             cmd = "#{options.fetch(:sudo_command, "sudo -E")} #{cmd}"
@@ -55,7 +59,9 @@ module Kitchen
           error.extend(Kitchen::Error)
           raise
         end
+        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
+        # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/AbcSize
         def build_run_command(image_id, transport_port = nil)
           cmd = 'run -d'
           cmd << ' -i' if config[:interactive]
@@ -91,7 +97,9 @@ module Kitchen
           logger.debug("build_run_command: #{cmd}")
           cmd
         end
+        # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/AbcSize
 
+        # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
         def build_exec_command(state, command)
           cmd = 'exec'
           cmd << ' -d' if config[:detach]
@@ -106,6 +114,7 @@ module Kitchen
           logger.debug("build_exec_command: #{cmd}")
           cmd
         end
+        # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
 
         def build_copy_command(local_file, remote_file, opts = {})
           cmd = 'cp'
@@ -154,6 +163,7 @@ module Kitchen
         # @since 2.5.0
         # @param config [nil, String, Array, Hash] Config data to convert.
         # @return [String]
+        # rubocop:disable Metrics/CyclomaticComplexity
         def config_to_options(config)
           case config
           when nil
@@ -166,7 +176,9 @@ module Kitchen
             config.map { |k, v| Array(v).map { |c| "--#{k}=#{Shellwords.escape(c)}" }.join(' ') }.join(' ')
           end
         end
+        # rubocop:enable Metrics/CyclomaticComplexity
       end
+      # rubocop:enable Metrics/ModuleLength, Style/Documentation
     end
   end
 end

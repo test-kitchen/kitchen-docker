@@ -1,6 +1,4 @@
 #
-# Copyright 2016, Noah Kantrowitz
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,10 +12,10 @@
 # limitations under the License.
 #
 
-require 'serverspec'
-require 'spec_helper'
-
-# Just make sure the image launched and is reachable.
-describe command('true') do
-  its(:exit_status) { is_expected.to eq 0 }
-end
+# case RbConfig::CONFIG['host_os']
+# when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+#   set :backend, :cmd
+#   set :os, :family => 'windows'
+# else
+#   set :backend, :exec
+# end

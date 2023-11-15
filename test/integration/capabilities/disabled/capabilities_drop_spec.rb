@@ -1,4 +1,6 @@
 #
+# Copyright 2016, Noah Kantrowitz
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,10 +14,11 @@
 # limitations under the License.
 #
 
-case RbConfig::CONFIG['host_os']
-when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-  set :backend, :cmd
-  set :os, :family => 'windows'
-else
-  set :backend, :exec
-end
+# Disable now busser-serever is gone.
+# require 'serverspec'
+# set :backend, :exec
+
+# describe command('/sbin/ifconfig eth0 multicast') do
+#   its(:exit_status) { is_expected.to_not eq 0 }
+#   its(:stderr) { is_expected.to match /Operation not permitted/ }
+# end
