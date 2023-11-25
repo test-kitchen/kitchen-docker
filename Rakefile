@@ -13,7 +13,7 @@ task default: [:quality]
 
 # Create the spec task.
 require "rspec/core/rake_task"
-RSpec::Core::RakeTask.new(:spec, :tag) do |t, args|
+RSpec::Core::RakeTask.new(:test, :tag) do |t, args|
   t.rspec_opts = [].tap do |a|
     a << "--color"
     a << "--format #{ENV["CI"] ? "documentation" : "Fuubar"}"
