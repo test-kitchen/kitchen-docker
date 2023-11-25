@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'fileutils'
+require "fileutils" unless defined?(FileUtils)
 
 module Kitchen
   module Docker
@@ -19,14 +19,14 @@ module Kitchen
       module FileHelper
         def create_temp_file(file, contents)
           debug("[Docker] Creating temp file #{file}")
-          debug('[Docker] --- Start Temp File Contents ---')
+          debug("[Docker] --- Start Temp File Contents ---")
           debug(contents)
-          debug('[Docker] --- End Temp File Contents ---')
+          debug("[Docker] --- End Temp File Contents ---")
 
           begin
             path = ::File.dirname(file)
             ::FileUtils.mkdir_p(path) unless ::Dir.exist?(path)
-            file = ::File.open(file, 'w')
+            file = ::File.open(file, "w")
             file.write(contents)
           rescue IOError => e
             raise "Failed to write temp file. Error Details: #{e}"

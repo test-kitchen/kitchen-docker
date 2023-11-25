@@ -14,12 +14,12 @@
 # Monkey patched Docker train transport to support running the InSpec verifier on Windows
 begin
   # Requires train gem with a minimum version of 2.1.0
-  require 'train'
+  require "train"
 
   module Train::Transports
     # Patched train transport with Windows support for InSpec verifier
     class Docker < Train.plugin(1)
-      name 'docker'
+      name "docker"
 
       include_options Train::Extras::CommandWrapper
       option :host, required: true
@@ -71,10 +71,10 @@ begin
         super(conf)
         @id = options[:host]
         @container = ::Docker::Container.get(@id) ||
-                    fail("Can't find Docker container #{@id}")
+          raise("Can't find Docker container #{@id}")
         @cmd_wrapper = nil
         @cmd_wrapper = CommandWrapper.load(self, @options)
-        self
+        self # rubocop:disable Lint/Void TODO: Remove in future pass
       end
 
       def uri
@@ -101,10 +101,11 @@ begin
 
       def platform_specific_cmd(cmd)
         return cmd if @container.info.nil?
-        if @container.info['Platform'] == 'windows'
-          return ['cmd.exe', '/c', cmd]
+
+        if @container.info["Platform"] == "windows"
+          ["cmd.exe", "/c", cmd]
         else
-          return ['/bin/sh', '-c', cmd]
+          ["/bin/sh", "-c", cmd]
         end
       end
 
