@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.1.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.0.0...v3.1.0) (2023-11-27)
+
+
+### Features
+
+* Update workflows ([#410](https://github.com/test-kitchen/kitchen-docker/issues/410)) ([01acb1e](https://github.com/test-kitchen/kitchen-docker/commit/01acb1e00e45d02f71f70f68903c39d320d962df))
+
 ## 2.14.0 - November 13, 2023
 
 - Make sure the /etc/sudoers.d directory exists by @garethgreenaway in [#397](https://github.com/test-kitchen/kitchen-docker/pull/397)
