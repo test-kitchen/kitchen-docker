@@ -12,11 +12,12 @@ group :development do
   gem 'rspec', '~> 3.2'
   gem 'rspec-its', '~> 1.2'
   gem 'fuubar', '~> 2.0'
-  # gem 'simplecov', '~> 0.9'
-  gem 'codecov', '~> 0.0', '>= 0.0.2'
-  gem 'chefstyle', '~> 2.2', '>= 2.2.3'
 
   # Integration testing gems.
   gem 'kitchen-inspec', '~> 2.0'
   gem 'train', '>= 2.1', '< 4.0' # validate 4.x when it's released
+end
+
+group :chefstyle do
+  gem 'chefstyle', '~> 2.2', '>= 2.2.3'
 end
