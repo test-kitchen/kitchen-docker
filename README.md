@@ -127,18 +127,21 @@ Examples:
 
 If you are using the InSpec verifier on Windows, using named pipes for the Docker engine will not work with the Docker transport.
 Set the socket option with the TCP socket address of the Docker engine as shown below:
+
 ```yaml
 socket: tcp://localhost:2375
 ```
 
 The Docker engine must be configured to listen on a TCP port (default port is 2375). This can be configured by editing the configuration file
 (usually located in `C:\ProgramData\docker\config\daemon.json`) and adding the hosts value:
-```
+
+```json
 "hosts": ["tcp://0.0.0.0:2375"]
 ```
 
 Example configuration is shown below:
-```
+
+```json
 {
   "registry-mirrors": [],
   "insecure-registries": [],
@@ -171,6 +174,7 @@ Configuration section for more details).
 The isolation technology for the container. This is not set by default and will use the default container isolation settings.
 
 For example, the following driver configuration options can be used to specify the container isolation technology for Windows containers:
+
 ```yaml
 # Hyper-V
 isolation: hyperv
@@ -238,6 +242,7 @@ driver_config:
   provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
   require_chef_omnibus: false
 ```
+
 ### env_variables
 
 Adds environment variables to Docker container
@@ -376,6 +381,7 @@ Examples:
   - 8.8.8.8
   - 8.8.4.4
 ```
+
 ### http\_proxy
 
 Sets an http proxy for the suite container using the `http_proxy` environment variable.
@@ -385,6 +391,7 @@ Examples:
 ```yaml
   http_proxy: http://proxy.host.com:8080
 ```
+
 ### https\_proxy
 
 Sets an https proxy for the suite container using the `https_proxy` environment variable.
@@ -394,6 +401,7 @@ Examples:
 ```yaml
   https_proxy: http://proxy.host.com:8080
 ```
+
 ### forward
 
 Set suite container port(s) to forward to the host machine. You may specify
@@ -525,11 +533,11 @@ Share a host device with the container. Host device must be an absolute path.
 
 Examples:
 
-```
+```yaml
 devices: /dev/vboxdrv
 ```
 
-```
+```yaml
 devices:
   - /dev/vboxdrv
   - /dev/vboxnetctl
@@ -637,6 +645,7 @@ example:
 
 ## License
 
+```text
 Copyright 2013-2016, [Sean Porter](https://github.com/portertech)
 Copyright 2015-2016, [Noah Kantrowitz](https://github.com/coderanger)
 
@@ -651,14 +660,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
 
 [issues]:                 https://github.com/test-kitchen/kitchen-docker/issues
-[license]:                https://github.com/test-kitchen/kitchen-docker/blob/master/LICENSE
 [repo]:                   https://github.com/test-kitchen/kitchen-docker
 [docker_installation]:    https://docs.docker.com/installation/#installation
-[docker_upstart_issue]:   https://github.com/dotcloud/docker/issues/223
 [docker_index]:           https://index.docker.io/
-[docker_default_image]:   https://index.docker.io/_/base/
 [test_kitchen_docs]:      https://kitchen.ci/docs/getting-started/introduction/
 [chef_omnibus_dl]:        https://downloads.chef.io/chef-client/
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html

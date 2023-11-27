@@ -3,54 +3,15 @@ name: Lint & Unit
 
 "on":
   pull_request:
-  push:
-    branches:
-      - main
 
 jobs:
-  yamllint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Run yaml Lint
-        uses: actionshub/yamllint@main
-
-  chefstyle:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      matrix:
-        ruby: ["3.1"]
-    name: Chefstyle on Ruby ${{ matrix.ruby }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
-      - uses: r7kamura/rubocop-problem-matchers-action@v1
-      - run: bundle exec chefstyle
-
-  unit:
-    name: Unit test on Ruby ${{ matrix.ruby }}
-    needs: [yamllint, chefstyle]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ruby: ["2.7", "3.0", "3.1"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
-      - run: bundle exec rake spec
+  lint-unit:
+    uses: test-kitchen/.github/.github/workflows/lint-unit.yml@v0.1.1
 
   integration-windows:
     name: Windows ${{matrix.suite}} ${{matrix.os}}
     runs-on: windows-latest
-    needs: unit
+    needs: lint-unit
     strategy:
       fail-fast: false
       matrix:
@@ -69,7 +30,7 @@ jobs:
   integration-linux:
     name: Linux ${{matrix.suite}} ${{matrix.os}}
     runs-on: ubuntu-latest
-    needs: unit
+    needs: lint-unit
     strategy:
       fail-fast: false
       matrix:
@@ -106,7 +67,7 @@ jobs:
   integration-capabilities:
     name: Linux ${{matrix.suite}} ${{matrix.os}}
     runs-on: ubuntu-latest
-    needs: unit
+    needs: lint-unit
     strategy:
       fail-fast: false
       matrix:
