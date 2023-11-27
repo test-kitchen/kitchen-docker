@@ -13,7 +13,7 @@ jobs:
         id: release
         with:
           release-type: ruby
-          package-name: workflow-testing-gem
+          package-name: kitchen-docker
           version-file: lib/kitchen/driver/docker_version.rb
           token: ${{ secrets.PORTER_GITHUB_TOKEN }}
 
