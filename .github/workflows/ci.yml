@@ -6,7 +6,7 @@ name: Lint & Unit
 
 jobs:
   lint-unit:
-    uses: test-kitchen/.github/.github/workflows/lint-unit.yml@v0.1.1
+    uses: test-kitchen/.github/.github/workflows/lint-unit.yml@v0.1.2
 
   integration-windows:
     name: Windows ${{matrix.suite}} ${{matrix.os}}
