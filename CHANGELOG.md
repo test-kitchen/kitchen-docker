@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.2.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.1.0...v3.2.0) (2023-11-27)
+
+
+### Features
+
+* Tell the user when we can't remove the image if it's in use ([#406](https://github.com/test-kitchen/kitchen-docker/issues/406)) ([bcb7c2b](https://github.com/test-kitchen/kitchen-docker/commit/bcb7c2bc5144ec63c6bde7b8947de33d5484e718))
+
 ## [3.1.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.0.0...v3.1.0) (2023-11-27)
 
 
