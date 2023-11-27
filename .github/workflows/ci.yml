@@ -53,7 +53,7 @@ jobs:
           - opensuse-15
           - dockerfile
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.1"
@@ -75,7 +75,7 @@ jobs:
           - capabilities
         os: [debian-11, ubuntu-1804, ubuntu-2004]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.1"
