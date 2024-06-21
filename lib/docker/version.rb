@@ -11,15 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-begin
-  require "docker"
-
-  # Override API_VERSION constant in docker-api gem to use version 1.24 of the Docker API
-  # This override is for the docker-api gem to communicate to the Docker engine on Windows
-  module Docker
-    VERSION = "0.0.0".freeze
-    API_VERSION = "1.24".freeze
-  end
-rescue LoadError => e
-  logger.debug("[Docker] docker-api gem not found for InSpec verifier. #{e}")
-end
+# begin
+#   require "docker"
+#
+#   # Override API_VERSION constant in docker-api gem to use version 1.24 of the Docker API
+#   # This override is for the docker-api gem to communicate to the Docker engine on Windows
+#   module Docker
+#     VERSION = "0.0.0".freeze
+#     API_VERSION = "1.24".freeze
+#   end
+# rescue LoadError => e
+#   logger.debug("[Docker] docker-api gem not found for InSpec verifier. #{e}")
+# end
