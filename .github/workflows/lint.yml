@@ -26,7 +26,7 @@ jobs:
           bundler-cache: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
+      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} -l debug
 
   integration-linux:
     name: Linux ${{matrix.suite}} ${{matrix.os}}
@@ -62,7 +62,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
+      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} -l debug
 
   integration-capabilities:
     name: Linux ${{matrix.suite}} ${{matrix.os}}
@@ -83,4 +83,4 @@ jobs:
           bundler-cache: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
+      - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} -l debug

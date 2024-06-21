@@ -13,7 +13,7 @@ provisioner:
   name: dummy
 
 platforms:
-  - name: amazonlinux-2023
+  - name: amazonlinux-2
   - name: ubuntu-22.04
   - name: ubuntu-24.04
   - name: fedora-latest
