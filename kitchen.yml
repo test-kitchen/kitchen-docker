@@ -13,18 +13,16 @@ provisioner:
   name: dummy
 
 platforms:
-  - name: amazonlinux-2
-  - name: ubuntu-18.04
-  - name: ubuntu-20.04
+  - name: amazonlinux-2023
+  - name: ubuntu-22.04
+  - name: ubuntu-24.04
   - name: fedora-latest
     driver:
       provision_command:
         - yum install libxcrypt-compat -y
         - curl -L https://www.chef.io/chef/install.sh | bash
-  - name: centos-7
-  - name: oraclelinux-7
-  - name: rockylinux-8
-  - name: debian-11
+  - name: almalinux-9
+  - name: rockylinux-9
   - name: debian-12
   - name: opensuse-15
     driver:
