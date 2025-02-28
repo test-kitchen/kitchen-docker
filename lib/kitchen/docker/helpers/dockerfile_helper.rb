@@ -57,7 +57,6 @@ module Kitchen
             RUN pacman-db-upgrade
             RUN pacman --noconfirm -Syu openssl openssh sudo curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
             RUN echo >/etc/security/limits.conf
           CODE
         end
@@ -82,7 +81,6 @@ module Kitchen
             RUN dnf clean all
             RUN dnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
@@ -91,7 +89,6 @@ module Kitchen
             RUN emerge-webrsync
             RUN emerge --quiet --noreplace net-misc/openssh app-admin/sudo
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           CODE
         end
 
@@ -100,7 +97,6 @@ module Kitchen
             RUN cave sync
             RUN cave resolve -zx net-misc/openssh app-admin/sudo
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           CODE
         end
 
@@ -118,7 +114,6 @@ module Kitchen
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
@@ -128,7 +123,6 @@ module Kitchen
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
@@ -138,7 +132,6 @@ module Kitchen
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
@@ -148,7 +141,6 @@ module Kitchen
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
