@@ -12,7 +12,7 @@ group :test do
   gem 'bundler'
   gem 'rake'
   gem 'rspec', '~> 3.2'
-  gem 'rspec-its', '~> 1.2'
+  gem 'rspec-its', '~> 2.0'
 end
 
 group :chefstyle do
