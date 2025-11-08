@@ -67,8 +67,8 @@ module Kitchen
                 && ln -sf /bin/true /sbin/initctl
           CODE
           packages = <<-CODE
-            ENV DEBIAN_FRONTEND noninteractive
-            ENV container docker
+            ENV DEBIAN_FRONTEND=noninteractive
+            ENV container=docker
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           CODE
@@ -77,7 +77,7 @@ module Kitchen
 
         def fedora_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN dnf clean all
             RUN dnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -102,7 +102,7 @@ module Kitchen
 
         def opensuse_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN zypper install -y sudo openssh which curl gawk
             RUN /usr/sbin/sshd-gen-keys-start
           CODE
@@ -110,7 +110,7 @@ module Kitchen
 
         def rhel_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -119,7 +119,7 @@ module Kitchen
 
         def centosstream_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -128,7 +128,7 @@ module Kitchen
 
         def almalinux_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -137,7 +137,7 @@ module Kitchen
 
         def rockylinux_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
@@ -146,7 +146,7 @@ module Kitchen
 
         def photonos_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN tdnf clean all
             RUN tdnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_ecdsa_key" ] || ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
