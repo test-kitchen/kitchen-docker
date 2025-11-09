@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
-  # Integration testing gems.
   gem 'kitchen-inspec', '~> 2.0'
   gem 'train', '>= 2.1', '< 4.0' # validate 4.x when it's released
 end

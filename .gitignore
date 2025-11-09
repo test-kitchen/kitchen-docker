@@ -19,3 +19,4 @@ tmp
 .kitchen.local.yml
 Dockerfile
 .DS_Store
+vendor/
