@@ -1,6 +1,6 @@
-FROM centos:7
-RUN yum clean all
-RUN yum install -y sudo openssh-server openssh-clients which curl htop
+FROM almalinux:9
+RUN dnf clean all
+RUN dnf install -y sudo openssh-server openssh-clients which curl htop
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
 RUN mkdir -p /var/run/sshd
 RUN useradd -d /home/<%= @username %> -m -s /bin/bash <%= @username %>
