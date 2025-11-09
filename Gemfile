@@ -1,19 +1,19 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 gemspec
 
 group :development do
-  gem "kitchen-inspec", "~> 2.0"
-  gem "train", ">= 2.1", "< 4.0" # validate 4.x when it's released
+  gem 'kitchen-inspec', '~> 2.0'
+  gem 'train', '>= 2.1', '< 4.0' # validate 4.x when it's released
 end
 
 group :test do
-  gem "bundler"
-  gem "rake"
-  gem "rspec", "~> 3.2"
-  gem "rspec-its", "~> 2.0"
+  gem 'bundler'
+  gem 'rake'
+  gem 'rspec', '~> 3.2'
+  gem 'rspec-its', '~> 2.0'
 end
 
-group :chefstyle do
-  gem "cookstyle"
+group :cookstyle do
+  gem 'cookstyle'
 end
