@@ -14,6 +14,6 @@ group :test do
   gem 'rspec-its', '~> 2.0'
 end
 
-group :cookstyle do
+group :chefstyle do
   gem 'cookstyle'
 end
