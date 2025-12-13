@@ -292,12 +292,12 @@ Examples:
 ### memory
 
 Sets the memory limit for the suite container in bytes. Otherwise use Dockers
-default. You can read more about `memory.limit_in_bytes` [here][memory_limit].
+default. You can read more about `memory.limit_in_bytes` in the [Resource Management Guide][memory_limit].
 
 ### cpu
 
 Sets the CPU shares (relative weight) for the suite container. Otherwise use
-Dockers defaults. You can read more about cpu.shares [here][cpu_shares].
+Dockers defaults. You can read more about cpu.shares in the [Resource Management Guide][cpu_shares].
 
 ### volume
 
