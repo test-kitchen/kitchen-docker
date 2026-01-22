@@ -2,6 +2,18 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.2.1](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.0...v3.2.1) (2026-01-22)
+
+
+### Bug Fixes
+
+* bump tk dep &lt;5 ([#446](https://github.com/test-kitchen/kitchen-docker/issues/446)) ([f27d137](https://github.com/test-kitchen/kitchen-docker/commit/f27d1374c1efd35769563683c5782849162c4f0c))
+* Ignore vendor directory ([#439](https://github.com/test-kitchen/kitchen-docker/issues/439)) ([1c1c6a2](https://github.com/test-kitchen/kitchen-docker/commit/1c1c6a282ba52c2bf48b2ae0b181bc2fb3cf8bab))
+* Remove obsolete Arch Linux limits.conf workaround ([#438](https://github.com/test-kitchen/kitchen-docker/issues/438)) ([ed14bc6](https://github.com/test-kitchen/kitchen-docker/commit/ed14bc6e1f95a0d444471c5aed837d9a0c1d852b))
+* Remove use of DSA keys due to openssh deprecation ([#427](https://github.com/test-kitchen/kitchen-docker/issues/427)) ([f42bd6c](https://github.com/test-kitchen/kitchen-docker/commit/f42bd6c2930becd1524551b8f412ab934a80a326))
+* Support docker build output for Docker Desktop v4.31 ([#423](https://github.com/test-kitchen/kitchen-docker/issues/423)) ([511e4ad](https://github.com/test-kitchen/kitchen-docker/commit/511e4ad36856b9e2eccceb56603586e6cebd296a))
+* Use newer syntax for ENV variables ([#424](https://github.com/test-kitchen/kitchen-docker/issues/424)) ([2007a0d](https://github.com/test-kitchen/kitchen-docker/commit/2007a0dcc6461537412dd46084144beb89731d1a))
+
 ## [3.2.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.1.0...v3.2.0) (2023-11-27)
 
 
