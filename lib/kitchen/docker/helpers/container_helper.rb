@@ -41,11 +41,16 @@ module Kitchen
         # @return [String] the container id
         # @raise [Kitchen::ActionFailed] if no id could be parsed
         def parse_container_id(output)
-          container_id = output.chomp
-
-          unless [12, 64].include?(container_id.size)
-            raise ActionFailed, "Could not parse Docker run output for container ID"
+          # Docker prints the container ID to stdout, but on some hosts (notably
+          # rootless Docker) warnings such as "WARNING: IPv4 forwarding is disabled"
+          # are emitted on stderr and can be interleaved into the captured output.
+          # Rather than assuming the whole blob is the ID, scan the lines and return
+          # the last bare 12- or 64-character hex token.
+          container_id = output.to_s.split("\n").map(&:strip).reverse.find do |line|
+            line.match?(/\A[0-9a-f]{12}(?:[0-9a-f]{52})?\z/)
           end
+
+          raise ActionFailed, "Could not parse Docker run output for container ID" unless container_id
 
           container_id
         end
