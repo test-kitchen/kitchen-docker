@@ -14,17 +14,21 @@ provisioner:
 
 platforms:
   - name: amazonlinux-2
-  - name: ubuntu-18.04
   - name: ubuntu-20.04
+  - name: ubuntu-22.04
+  - name: ubuntu-24.04
   - name: fedora-latest
     driver:
       provision_command:
         - yum install libxcrypt-compat -y
         - curl -L https://www.chef.io/chef/install.sh | bash
-  - name: centos-7
+  - name: centos-stream-9
+    driver:
+      image: dokken/centos-stream-9
   - name: oraclelinux-7
-  - name: rockylinux-8
-  - name: debian-11
+  - name: oraclelinux-8
+  - name: oraclelinux-9
+  - name: rockylinux-9
   - name: debian-12
   - name: opensuse-15
     driver:
@@ -42,7 +46,7 @@ suites:
     driver:
       build_context: false
   - name: capabilities
-    includes: [debian-11, ubuntu-18.04, ubuntu-20.04]
+    includes: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
     driver:
       provision_command:
         - curl -L https://www.chef.io/chef/install.sh | bash
