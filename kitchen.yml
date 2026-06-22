@@ -52,14 +52,11 @@ platforms:
 
 suites:
   - name: default
-    run_list:
-      - recipe[cinc_test::default]
     verifier:
       inspec_tests:
         - test/integration/cinc/inspec
   - name: docker-test
-    run_list:
-      - recipe[docker_test::default]
+    named_run_list: docker_test
     attributes:
       docker_test:
         revision: <%= `git rev-parse HEAD` %>
