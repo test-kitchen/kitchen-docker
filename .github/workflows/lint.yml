@@ -25,6 +25,8 @@ jobs:
           bundler-cache: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+        with:
+          driver: docker
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
 
   integration-linux:
@@ -60,7 +62,6 @@ jobs:
           - debian-13
           - opensuse-16
           - dockerfile
-        ruby: ["3.3"]
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
@@ -83,9 +84,9 @@ jobs:
         suite:
           - capabilities
         os:
-          - ubuntu-2004
           - ubuntu-2204
           - ubuntu-2404
+          - ubuntu-2604
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1

@@ -122,5 +122,5 @@ begin
     end
   end
 rescue LoadError => e
-  logger.debug("[Docker] train gem not found for InSpec verifier. #{e}")
+  warn "[Docker] train gem not found. #{e}"
 end
