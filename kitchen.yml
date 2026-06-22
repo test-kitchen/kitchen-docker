@@ -11,6 +11,9 @@ transport:
 provisioner:
   name: cinc_infra
 
+verifier:
+  name: cinc_auditor
+
 platforms:
   - name: almalinux-9
   - name: almalinux-10

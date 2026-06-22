@@ -4,7 +4,8 @@ gemspec
 
 group :development do
   # Integration testing gems.
-  gem "kitchen-inspec", ">= 2.0"
+  gem "kitchen-cinc-auditor", git: "https://github.com/chef/kitchen-cinc-auditor.git"
+  gem "kitchen-cinc"
   gem "train", ">= 2.1", "< 4.0" # validate 4.x when it's released
 end
 
