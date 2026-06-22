@@ -34,8 +34,10 @@ module Kitchen
             gentoo_paludis_platform
           when "opensuse/tumbleweed", "opensuse/leap", "opensuse", "sles"
             opensuse_platform
-          when "rhel", "centos", "oraclelinux", "amazonlinux"
+          when "rhel", "centos", "oraclelinux"
             rhel_platform
+          when "amazonlinux"
+            amazonlinux_platform
           when "centosstream"
             centosstream_platform
           when "almalinux"
@@ -110,6 +112,15 @@ module Kitchen
             ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+          CODE
+        end
+
+        def amazonlinux_platform
+          <<-CODE
+            ENV container=docker
+            RUN yum clean all
+            RUN yum install -y --allowerasing sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
           CODE
         end
