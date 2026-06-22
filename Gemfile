@@ -7,6 +7,7 @@ group :development do
   gem "kitchen-cinc-auditor", git: "https://github.com/test-kitchen/kitchen-cinc-auditor.git"
   gem "cinc-auditor-bin", source: "https://rubygems.cinc.sh"
   gem "kitchen-cinc"
+  gem "chef-cli"
   gem "train", ">= 2.1", "< 4.0" # validate 4.x when it's released
 end
 
