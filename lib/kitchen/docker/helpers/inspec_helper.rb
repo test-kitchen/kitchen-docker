@@ -24,7 +24,7 @@ begin
         "logger" => logger,
         "host" => config_data[:container_id],
       }
-      logger.debug "Connect to Container: #{opts['host']}"
+      logger.debug "Connect to Container: #{opts["host"]}"
       opts
     end
   end
@@ -42,7 +42,7 @@ begin
         "logger" => logger,
         "host" => state[:container_id],
       }
-      logger.debug("Connect to Container: #{options['host']}")
+      logger.debug("Connect to Container: #{options["host"]}")
       options
     end
   end
