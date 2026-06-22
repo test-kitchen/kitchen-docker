@@ -51,8 +51,6 @@ platforms:
       run_command: /sbin/init
 
 suites:
-
-  suites:
   - name: default
     run_list:
       - recipe[cinc_test::default]
