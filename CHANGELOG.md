@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.2.2](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.1...v3.2.2) (2026-06-22)
+
+
+### Bug Fixes
+
+* Fix curl package conflict in Amazon Linux 2022 images ([#436](https://github.com/test-kitchen/kitchen-docker/issues/436)) ([4eccec9](https://github.com/test-kitchen/kitchen-docker/commit/4eccec928556a1c6fc48e7fcf14de83a9ced5afa))
+
 ## [3.2.1](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.0...v3.2.1) (2026-01-22)
 
 
