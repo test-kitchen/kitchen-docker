@@ -13,7 +13,6 @@ Gem::Specification.new do |spec|
   spec.license       = "Apache 2.0"
 
   spec.files         = `git ls-files`.split($/)
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
   spec.add_dependency "test-kitchen", ">= 1.0.0", "< 5.0"

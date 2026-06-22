@@ -72,8 +72,8 @@ module Kitchen
                      file.write(dockerfile)
                      file.close
                      docker_command("#{cmd} #{build_context}",
-                                    input: dockerfile_contents,
-                                    environment: { BUILDKIT_PROGRESS: "plain" })
+                       input: dockerfile_contents,
+                       environment: { BUILDKIT_PROGRESS: "plain" })
                    ensure
                      file.close unless file.closed?
                      file.unlink

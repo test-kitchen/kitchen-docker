@@ -74,7 +74,7 @@ module Kitchen
           cmd = "mkdir -p #{path}"
 
           if state[:platform].include?("windows")
-            psh = "-Command if(-not (Test-Path \'#{path}\')) { New-Item -Path \'#{path}\' -Force }"
+            psh = "-Command if(-not (Test-Path '#{path}')) { New-Item -Path '#{path}' -Force }"
             cmd = build_powershell_command(psh)
           end
 
@@ -150,6 +150,7 @@ module Kitchen
           docker_command("rm #{container_id}")
         end
 
+        # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         def dockerfile_proxy_config
           env_variables = ""
           if config[:http_proxy]
@@ -169,6 +170,7 @@ module Kitchen
 
           env_variables
         end
+        # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
       end
       # rubocop:enable Metrics/ModuleLength, Style/Documentation
     end
