@@ -51,16 +51,25 @@ platforms:
       run_command: /sbin/init
 
 suites:
+
+  suites:
   - name: default
+    run_list:
+      - recipe[cinc_test::default]
+    verifier:
+      inspec_tests:
+        - test/integration/cinc/inspec
+  - name: docker-test
+    run_list:
+      - recipe[docker_test::default]
+    attributes:
+      docker_test:
+        revision: <%= `git rev-parse HEAD` %>
   - name: no_build_context
     driver:
       build_context: false
   - name: capabilities
-    includes: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     driver:
-      provision_command:
-        - curl -L https://www.chef.io/chef/install.sh | bash
-        - apt-get install -y net-tools
       cap_drop:
         - NET_ADMIN
   - name: arm64
