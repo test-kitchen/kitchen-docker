@@ -15,6 +15,7 @@ verifier:
   name: cinc_auditor
 
 platforms:
+  - name: almalinux-8
   - name: almalinux-9
   - name: almalinux-10
   - name: amazonlinux-2023
@@ -35,6 +36,7 @@ platforms:
   - name: oraclelinux-8
   - name: oraclelinux-9
   - name: oraclelinux-10
+  - name: rockylinux-8
   - name: rockylinux-9
   - name: rockylinux-10
   - name: debian-13
@@ -68,7 +70,3 @@ suites:
     driver:
       docker_platform: linux/amd64
   - name: inspec
-    driver:
-      provision_command: true
-    verifier:
-      name: inspec
