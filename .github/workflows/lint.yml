@@ -17,7 +17,6 @@ jobs:
       matrix:
         suite: [default]
         os: [ubuntu-24.04]
-        ruby: ["3.3"]
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
@@ -83,7 +82,10 @@ jobs:
       matrix:
         suite:
           - capabilities
-        os: [ubuntu-2004, ubuntu-2204, ubuntu-2404]
+        os:
+          - ubuntu-2004
+          - ubuntu-2204
+          - ubuntu-2404
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
