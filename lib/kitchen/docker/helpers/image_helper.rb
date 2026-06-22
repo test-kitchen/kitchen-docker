@@ -35,6 +35,11 @@ module Kitchen
               img_id = line.split(/\s+/).last
               return img_id
             end
+            # Docker ~v4.31 support
+            if line =~ /naming to moby-dangling@(sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
+              img_id = line[/naming to moby-dangling@(sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i, 1]
+              return img_id
+            end
           end
           raise ActionFailed, "Could not parse Docker build output for image ID"
         end

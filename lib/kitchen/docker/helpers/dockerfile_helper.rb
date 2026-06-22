@@ -34,8 +34,10 @@ module Kitchen
             gentoo_paludis_platform
           when "opensuse/tumbleweed", "opensuse/leap", "opensuse", "sles"
             opensuse_platform
-          when "rhel", "centos", "oraclelinux", "amazonlinux"
+          when "rhel", "centos", "oraclelinux"
             rhel_platform
+          when "amazonlinux"
+            amazonlinux_platform
           when "centosstream"
             centosstream_platform
           when "almalinux"
@@ -50,15 +52,11 @@ module Kitchen
         end
 
         def arch_platform
-          # See https://bugs.archlinux.org/task/47052 for why we
-          # blank out limits.conf.
           <<-CODE
             RUN pacman --noconfirm -Sy archlinux-keyring
             RUN pacman-db-upgrade
             RUN pacman --noconfirm -Syu openssl openssh sudo curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
-            RUN echo >/etc/security/limits.conf
           CODE
         end
 
@@ -68,8 +66,8 @@ module Kitchen
                 && ln -sf /bin/true /sbin/initctl
           CODE
           packages = <<-CODE
-            ENV DEBIAN_FRONTEND noninteractive
-            ENV container docker
+            ENV DEBIAN_FRONTEND=noninteractive
+            ENV container=docker
             RUN apt-get update
             RUN apt-get install -y sudo openssh-server curl lsb-release
           CODE
@@ -78,11 +76,10 @@ module Kitchen
 
         def fedora_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN dnf clean all
             RUN dnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
@@ -91,7 +88,6 @@ module Kitchen
             RUN emerge-webrsync
             RUN emerge --quiet --noreplace net-misc/openssh app-admin/sudo
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           CODE
         end
 
@@ -100,13 +96,12 @@ module Kitchen
             RUN cave sync
             RUN cave resolve -zx net-misc/openssh app-admin/sudo
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -A -t rsa -f /etc/ssh/ssh_host_rsa_key
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -A -t dsa -f /etc/ssh/ssh_host_dsa_key
           CODE
         end
 
         def opensuse_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN zypper install -y sudo openssh which curl gawk
             RUN /usr/sbin/sshd-gen-keys-start
           CODE
@@ -114,47 +109,52 @@ module Kitchen
 
         def rhel_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+          CODE
+        end
+
+        def amazonlinux_platform
+          <<-CODE
+            ENV container=docker
+            RUN yum clean all
+            RUN yum install -y --allowerasing sudo openssh-server openssh-clients which curl
+            RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
           CODE
         end
 
         def centosstream_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
         def almalinux_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
         def rockylinux_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-            RUN [ -f "/etc/ssh/ssh_host_dsa_key" ] || ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
           CODE
         end
 
         def photonos_platform
           <<-CODE
-            ENV container docker
+            ENV container=docker
             RUN tdnf clean all
             RUN tdnf install -y sudo openssh-server openssh-clients which curl
             RUN [ -f "/etc/ssh/ssh_host_ecdsa_key" ] || ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
