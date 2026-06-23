@@ -4,6 +4,9 @@ name: 'Lint, Unit & Integration Tests'
 "on":
   pull_request:
 
+env:
+  CHEF_LICENSE_KEY: ${{ secrets.CHEF_LICENSE_KEY }}
+
 jobs:
   lint-unit:
     uses: test-kitchen/.github/.github/workflows/lint-unit.yml@main
