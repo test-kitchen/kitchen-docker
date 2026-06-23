@@ -12,8 +12,6 @@ transport:
 provisioner:
   name: cinc_infra
   install_strategy: skip
-  run_list:
-    - recipe[cinc_test::default]
 
 verifier:
   name: cinc_auditor
@@ -52,6 +50,8 @@ platforms:
 
 suites:
   - name: default
+    run_list:
+      - recipe[cinc_test::default]
     verifier:
       inspec_tests:
         - test/integration/cinc/inspec
@@ -62,16 +62,26 @@ suites:
       docker_test:
         revision: <%= `git rev-parse HEAD` %>
   - name: no_build_context
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       build_context: false
   - name: capabilities
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       cap_drop:
         - NET_ADMIN
   - name: arm64
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       docker_platform: linux/arm64
   - name: amd64
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       docker_platform: linux/amd64
   - name: inspec
+    run_list:
+      - recipe[cinc_test::default]
