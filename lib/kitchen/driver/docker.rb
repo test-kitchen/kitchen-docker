@@ -97,7 +97,7 @@ module Kitchen
 
       default_config :socket do |driver|
         socket = "unix:///var/run/docker.sock"
-        socket = "npipe:////./pipe/docker_engine" if driver.windows_os?
+        socket = "npipe:////./pipe/docker_engine" if Gem.win_platform?
         ENV["DOCKER_HOST"] || socket
       end
 
