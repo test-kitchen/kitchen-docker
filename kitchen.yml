@@ -37,6 +37,8 @@ platforms:
   - name: rockylinux-8
   - name: rockylinux-9
   - name: rockylinux-10
+    driver:
+      image: dokken/rockylinux-10
   - name: debian-13
   - name: opensuse-16
     driver:
