@@ -1,6 +1,3 @@
-# <% # Make sure the local copy of the driver is loaded %>
-# <% lib = File.expand_path('../lib', __FILE__) %>
-# <% $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib) %>
 ---
 driver:
   name: docker
@@ -48,6 +45,11 @@ platforms:
       username: dockerfile
       password: dockerfile
       dockerfile: test/Dockerfile
+  - name: windows-2022
+    driver:
+      image: mcr.microsoft.com/windows/servercore:ltsc2022
+      provision_command:
+        - powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://omnitruck.cinc.sh/install.ps1')); Install-Project -Project cinc -Channel stable"
 
 suites:
   - name: default

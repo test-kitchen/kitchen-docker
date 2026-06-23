@@ -15,15 +15,13 @@ jobs:
     name: Windows ${{matrix.suite}} ${{matrix.os}}
     runs-on: windows-latest
     needs: lint-unit
-    env:
-      DOCKER_DEFAULT_PLATFORM: linux/amd64
     strategy:
       fail-fast: false
       matrix:
         suite:
           - default
         os:
-          - ubuntu-2404
+          - windows-2022
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
