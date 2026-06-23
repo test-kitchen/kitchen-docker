@@ -28,8 +28,6 @@ jobs:
         with:
           ruby-version: "3.4"
           bundler-cache: true
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
       - run: bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }}
 
   integration-linux:
