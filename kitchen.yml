@@ -4,12 +4,16 @@
 ---
 driver:
   name: docker
+  provision_command: curl -L https://omnitruck.cinc.sh/install.sh | bash
 
 transport:
   name: docker
 
 provisioner:
   name: cinc_infra
+  install_strategy: skip
+  run_list:
+    - recipe[cinc_test::default]
 
 verifier:
   name: cinc_auditor
@@ -23,10 +27,6 @@ platforms:
   - name: ubuntu-24.04
   - name: ubuntu-26.04
   - name: fedora-latest
-    driver:
-      provision_command:
-        - yum install libxcrypt-compat -y
-        - curl -L https://www.chef.io/chef/install.sh | bash
   - name: centos-stream-9
     driver:
       image: dokken/centos-stream-9
@@ -56,7 +56,8 @@ suites:
       inspec_tests:
         - test/integration/cinc/inspec
   - name: docker-test
-    named_run_list: docker_test
+    run_list:
+      - recipe[docker_test::default]
     attributes:
       docker_test:
         revision: <%= `git rev-parse HEAD` %>
