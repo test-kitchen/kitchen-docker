@@ -20,8 +20,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [default]
-        os: [ubuntu-24.04]
+        suite:
+          - default
+        os:
+          - ubuntu-2404
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
