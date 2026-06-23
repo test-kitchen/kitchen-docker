@@ -48,7 +48,6 @@ platforms:
       username: dockerfile
       password: dockerfile
       dockerfile: test/Dockerfile
-      run_command: /sbin/init
 
 suites:
   - name: default
