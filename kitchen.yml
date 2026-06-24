@@ -50,6 +50,8 @@ platforms:
       image: mcr.microsoft.com/windows/servercore:ltsc2022
       provision_command:
         - powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://omnitruck.cinc.sh/install.ps1')); Install-Project -Project cinc -Channel stable"
+    provisioner:
+      cinc_omnibus_root: 'C:\cinc-project\cinc'
 
 suites:
   - name: default
