@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.2.3](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.2...v3.2.3) (2026-06-25)
+
+
+### Bug Fixes
+
+* release please configs & tests ([#418](https://github.com/test-kitchen/kitchen-docker/issues/418)) ([9be9d75](https://github.com/test-kitchen/kitchen-docker/commit/9be9d754fd025dd721f1863e23e5502744f5bafb))
+
 ## [3.2.2](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.1...v3.2.2) (2026-06-22)
 
 
