@@ -32,7 +32,7 @@ module Kitchen
         if container_exists?(state)
           info("Container ID #{state[:container_id]} already exists.")
         elsif !container_exists?(state) && state[:container_id]
-          raise ActionFailed, "Container ID #{state[:container_id]} was found in the kitchen state data, "\
+          raise ActionFailed, "Container ID #{state[:container_id]} was found in the kitchen state data, " \
                               "but the container does not exist."
         end
 

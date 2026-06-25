@@ -1,66 +1,94 @@
-# <% # Make sure the local copy of the driver is loaded %>
-# <% lib = File.expand_path('../lib', __FILE__) %>
-# <% $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib) %>
 ---
 driver:
   name: docker
-  provision_command: curl -L https://www.chef.io/chef/install.sh | bash
+  provision_command: curl -L https://omnitruck.cinc.sh/install.sh | bash
 
 transport:
   name: docker
 
 provisioner:
-  name: dummy
+  name: cinc_infra
+  install_strategy: skip
+
+verifier:
+  name: cinc_auditor
 
 platforms:
-  - name: amazonlinux-2
-  - name: ubuntu-20.04
+  - name: almalinux-8
+  - name: almalinux-9
+  - name: almalinux-10
+  - name: amazonlinux-2023
   - name: ubuntu-22.04
   - name: ubuntu-24.04
+  - name: ubuntu-26.04
   - name: fedora-latest
-    driver:
-      provision_command:
-        - yum install libxcrypt-compat -y
-        - curl -L https://www.chef.io/chef/install.sh | bash
   - name: centos-stream-9
     driver:
       image: dokken/centos-stream-9
-  - name: oraclelinux-7
+  - name: centos-stream-10
+    driver:
+      image: dokken/centos-stream-10
   - name: oraclelinux-8
   - name: oraclelinux-9
+  - name: oraclelinux-10
+  - name: rockylinux-8
   - name: rockylinux-9
-  - name: debian-12
-  - name: opensuse-15
+  - name: rockylinux-10
     driver:
-      image: opensuse/leap:15
+      image: dokken/rockylinux-10
+  - name: debian-13
+  - name: opensuse-16
+    driver:
+      image: opensuse/leap:16
   - name: dockerfile
     driver:
       username: dockerfile
       password: dockerfile
       dockerfile: test/Dockerfile
-      run_command: /sbin/init
+  - name: windows-2022
+    driver:
+      image: mcr.microsoft.com/windows/servercore:ltsc2022
+      provision_command:
+        - powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://omnitruck.cinc.sh/install.ps1')); Install-Project -Project cinc -Channel stable"
+    provisioner:
+      cinc_omnibus_root: 'C:\cinc-project\cinc'
+    verifier:
+      name: dummy  # cinc_auditor uses WinRM for Windows but Windows containers don't have WinRM; verify via follow-up
 
 suites:
   - name: default
+    run_list:
+      - recipe[cinc_test::default]
+    verifier:
+      inspec_tests:
+        - test/integration/cinc/inspec
+  - name: docker-test
+    run_list:
+      - recipe[docker_test::default]
+    attributes:
+      docker_test:
+        revision: <%= `git rev-parse HEAD` %>
   - name: no_build_context
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       build_context: false
   - name: capabilities
-    includes: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+    run_list:
+      - recipe[cinc_test::default]
     driver:
-      provision_command:
-        - curl -L https://www.chef.io/chef/install.sh | bash
-        - apt-get install -y net-tools
       cap_drop:
         - NET_ADMIN
   - name: arm64
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       docker_platform: linux/arm64
   - name: amd64
+    run_list:
+      - recipe[cinc_test::default]
     driver:
       docker_platform: linux/amd64
   - name: inspec
-    driver:
-      provision_command: true
-    verifier:
-      name: inspec
+    run_list:
+      - recipe[cinc_test::default]

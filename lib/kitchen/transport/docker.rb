@@ -18,15 +18,14 @@ require_relative "../docker/container/windows"
 
 require_relative "../docker/helpers/inspec_helper"
 
-require_relative "../../docker/version"
-require_relative "../../train/docker"
+# require_relative "../../docker/version"
 
 module Kitchen
   module Transport
     class Docker < Kitchen::Transport::Base
       class DockerFailed < TransportFailed; end
 
-      kitchen_transport_api_version 1
+      # kitchen_transport_api_version 1
       plugin_version Kitchen::VERSION
 
       default_config :binary,        "docker"
@@ -43,7 +42,7 @@ module Kitchen
 
       default_config :socket do |transport|
         socket = "unix:///var/run/docker.sock"
-        socket = "npipe:////./pipe/docker_engine" if transport.windows_os?
+        socket = "npipe:////./pipe/docker_engine" if Gem.win_platform?
         ENV["DOCKER_HOST"] || socket
       end
 

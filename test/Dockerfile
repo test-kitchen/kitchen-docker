@@ -1,6 +1,6 @@
-FROM almalinux:9
+FROM almalinux:latest
 RUN dnf clean all
-RUN dnf install -y sudo openssh-server openssh-clients which curl htop
+RUN dnf install -y sudo openssh-server openssh-clients which curl
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
 RUN mkdir -p /var/run/sshd
 RUN useradd -d /home/<%= @username %> -m -s /bin/bash <%= @username %>
@@ -12,5 +12,5 @@ RUN chmod 0700 /home/<%= @username %>/.ssh
 RUN touch /home/<%= @username %>/.ssh/authorized_keys
 RUN chown <%= @username %> /home/<%= @username %>/.ssh/authorized_keys
 RUN chmod 0600 /home/<%= @username %>/.ssh/authorized_keys
-RUN curl -L https://www.chef.io/chef/install.sh | bash
+RUN curl -L https://omnitruck.cinc.sh/install.sh | bash
 RUN echo '<%= IO.read(@public_key).strip %>' >> /home/<%= @username %>/.ssh/authorized_keys

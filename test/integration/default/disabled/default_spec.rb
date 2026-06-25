@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-# Disable now busser-serever is gone.
-# require 'serverspec'
-# require 'spec_helper'
-
-# # Just make sure the image launched and is reachable.
-# describe command('true') do
+# Disable now busser-server is gone.
+# require "serverspec"
+# require "spec_helper"
+#
+# Just make sure the image launched and is reachable.
+# describe command("true") do
 #   its(:exit_status) { is_expected.to eq 0 }
 # end

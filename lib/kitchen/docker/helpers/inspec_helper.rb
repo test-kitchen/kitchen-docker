@@ -11,30 +11,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This helper should be removed when the kitchen-inspec gem has been updated to include these runner options
+# This helper patches kitchen-inspec and/or kitchen-cinc-auditor to add Docker
+# transport support. Remove once upstream gems include this natively.
+
+# Patch kitchen-inspec if available
 begin
   require "kitchen/verifier/inspec"
+  Kitchen::Verifier::Inspec.class_eval do
+    def runner_options_for_docker(config_data)
+      opts = {
+        "backend" => "docker",
+        "logger" => logger,
+        "host" => config_data[:container_id],
+      }
+      logger.debug "Connect to Container: #{opts["host"]}"
+      opts
+    end
+  end
+rescue LoadError
+  # kitchen-inspec not available; skipping patch
+end
 
-  # Add runner options for Docker transport for kitchen-inspec gem
-  module Kitchen
-    module Docker
-      module Helpers
-        module InspecHelper
-          Kitchen::Verifier::Inspec.class_eval do
-            def runner_options_for_docker(config_data)
-              opts = {
-                "backend" => "docker",
-                "logger" => logger,
-                "host" => config_data[:container_id],
-              }
-              logger.debug "Connect to Container: #{opts["host"]}"
-              opts
-            end
-          end
-        end
+# Patch kitchen-cinc-auditor if available
+begin
+  require "kitchen/verifier/cinc_auditor"
+  Kitchen::Verifier::CincAuditor::TransportOptions.class_eval do
+    def build_docker(state)
+      options = {
+        "backend" => "docker",
+        "logger" => logger,
+        "host" => state[:container_id],
+      }
+      logger.debug("Connect to Container: #{options["host"]}")
+      options
+    end
+  end
+rescue LoadError
+  # kitchen-cinc-auditor not available; skipping patch
+end
+
+module Kitchen
+  module Docker
+    module Helpers
+      # Marker module included by the Docker transport Connection class.
+      # Actual verifier patches are applied directly to verifier classes above.
+      module InspecHelper
       end
     end
   end
-rescue LoadError => e
-  logger.debug("[Docker] kitchen-inspec gem not found for InSpec verifier. #{e}")
 end
