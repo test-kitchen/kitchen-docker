@@ -61,4 +61,48 @@ describe Kitchen::Driver::Docker do
       it { is_expected.to eq '--foo=bar\\ two --other=baz' }
     end # /context with a hash of strings with spaces
   end # /describe #config_to_options
+
+  describe "socket default config logic" do
+    def resolve_socket
+      socket = "unix:///var/run/docker.sock"
+      socket = "npipe:////./pipe/docker_engine" if Gem.win_platform?
+      ENV["DOCKER_HOST"] || socket
+    end
+
+    context "on a non-Windows host without DOCKER_HOST set" do
+      before do
+        allow(Gem).to receive(:win_platform?).and_return(false)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return(nil)
+      end
+
+      it "uses the Unix socket" do
+        expect(resolve_socket).to eq("unix:///var/run/docker.sock")
+      end
+    end
+
+    context "on a Windows host without DOCKER_HOST set" do
+      before do
+        allow(Gem).to receive(:win_platform?).and_return(true)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return(nil)
+      end
+
+      it "uses the Windows named pipe" do
+        expect(resolve_socket).to eq("npipe:////./pipe/docker_engine")
+      end
+    end
+
+    context "when DOCKER_HOST env var is set" do
+      before do
+        allow(Gem).to receive(:win_platform?).and_return(false)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return("tcp://192.168.1.1:2375")
+      end
+
+      it "uses DOCKER_HOST over the default socket" do
+        expect(resolve_socket).to eq("tcp://192.168.1.1:2375")
+      end
+    end
+  end
 end

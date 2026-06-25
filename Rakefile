@@ -1,12 +1,7 @@
 require "bundler/gem_tasks"
 
-require "rake/testtask"
-Rake::TestTask.new(:unit) do |t|
-  t.libs.push "lib"
-  t.test_files = FileList["spec/**/*_spec.rb"]
-  t.verbose = true
-  t.warning = false
-end
+require "rspec/core/rake_task"
+RSpec::Core::RakeTask.new(:unit)
 
 desc "Run all unit tests"
 task test: %i{unit}
