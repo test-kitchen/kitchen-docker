@@ -61,9 +61,10 @@ describe Kitchen::Docker::Helpers::DockerfileHelper do
       expect(result).not_to include("--allowerasing")
     end
 
-    it "installs required packages including curl" do
+    it "installs required packages including curl if needed" do
       result = helper.rhel_platform
-      expect(result).to include("sudo openssh-server openssh-clients which curl")
+      expect(result).to include("sudo openssh-server openssh-clients which")
+      expect(result).to include("which curl || yum install -y curl")
     end
   end
 
