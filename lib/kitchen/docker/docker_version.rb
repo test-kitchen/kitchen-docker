@@ -16,6 +16,6 @@
 module Kitchen
   module Docker
     # Version string for Docker Kitchen driver
-    DOCKER_VERSION = "3.2.3".freeze
+    DOCKER_VERSION = "3.2.4".freeze
   end
 end

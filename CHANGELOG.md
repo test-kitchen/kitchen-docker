@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.2.4](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.3...v3.2.4) (2026-07-28)
+
+
+### Bug Fixes
+
+* Avoid curl conflict with RHEL ubi in dockerfile helper ([#458](https://github.com/test-kitchen/kitchen-docker/issues/458)) ([028ce4c](https://github.com/test-kitchen/kitchen-docker/commit/028ce4c6ebdde7727f0e8aea7ae1a998f73f6eb8))
+
 ## [3.2.3](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.2...v3.2.3) (2026-06-25)
 
 
