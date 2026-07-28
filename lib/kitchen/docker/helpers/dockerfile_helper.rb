@@ -111,7 +111,9 @@ module Kitchen
           <<-CODE
             ENV container=docker
             RUN yum clean all
-            RUN yum install -y sudo openssh-server openssh-clients which curl
+            RUN yum install -y which
+            RUN which curl || yum install -y curl
+            RUN yum install -y sudo openssh-server openssh-clients
             RUN [ -f "/etc/ssh/ssh_host_rsa_key" ] || ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
           CODE
         end
