@@ -627,6 +627,22 @@ Examples:
   docker_platform: linux/amd64
 ```
 
+## Logging into a container
+
+`kitchen login` opens an interactive shell inside a running container using the
+Docker transport, so you do not need to look up the container ID and run
+`docker exec` by hand:
+
+```bash
+kitchen login default-ubuntu-2404
+```
+
+The session runs `docker exec` against the instance's container. On Linux
+platforms it starts `/bin/bash --login -i`; on Windows platforms it starts
+`powershell`. The transport's `username`, `working_dir`, `env_variables` and
+`privileged` settings are honoured, so the shell matches the environment that
+Test Kitchen uses when it runs the provisioner.
+
 ## Development
 
 * Source hosted at [GitHub][repo]

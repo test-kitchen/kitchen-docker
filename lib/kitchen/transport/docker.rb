@@ -97,12 +97,61 @@ module Kitchen
         end
 
         def container
-          @container ||= if @options[:platform].include?("windows")
+          @container ||= if windows_container?
                            Kitchen::Docker::Container::Windows.new(@options)
                          else
                            Kitchen::Docker::Container::Linux.new(@options)
                          end
           @container
+        end
+
+        # (see Base::Connection#login_command)
+        def login_command
+          argv = build_login_command
+          LoginCommand.new(argv.first, argv.drop(1))
+        end
+
+        private
+
+        def windows_container?
+          @options[:platform].to_s.include?("windows")
+        end
+
+        # Builds the argv array for an interactive `docker exec` session.
+        #
+        # Kitchen hands the result to `Kernel.exec` in its multi-argument form,
+        # which bypasses the shell entirely. Every flag and its value therefore
+        # has to be its own token -- a packed "-H unix:///var/run/docker.sock"
+        # would reach Docker as a single argument -- and values must not be
+        # quoted, since there is no shell to strip the quotes back off.
+        #
+        # @return [Array<String>] the docker command and its arguments
+        def build_login_command
+          docker = [@options[:binary]]
+          docker.push("-H", @options[:socket]) if @options[:socket]
+          docker << "--tls" if @options[:tls]
+          docker << "--tlsverify" if @options[:tls_verify]
+          docker << "--tlscacert=#{@options[:tls_cacert]}" if @options[:tls_cacert]
+          docker << "--tlscert=#{@options[:tls_cert]}" if @options[:tls_cert]
+          docker << "--tlskey=#{@options[:tls_key]}" if @options[:tls_key]
+
+          # Always attached, always a TTY: a detached or non-interactive exec
+          # would hand back a session the user cannot type into.
+          cmd = ["exec"]
+          cmd << "--privileged" if @options[:privileged]
+          cmd.push("-t", "-i")
+          Hash(@options[:env_variables]).each { |key, value| cmd.push("-e", "#{key}=#{value}") }
+          cmd.push("-u", @options[:username]) if @options[:username]
+          cmd.push("-w", @options[:working_dir]) if @options[:working_dir]
+          cmd << @options[:container_id]
+          cmd.concat(login_shell)
+
+          logger.debug("build_login_command: #{(docker + cmd).join(" ")}")
+          docker + cmd
+        end
+
+        def login_shell
+          windows_container? ? ["powershell"] : ["/bin/bash", "--login", "-i"]
         end
       end
     end
