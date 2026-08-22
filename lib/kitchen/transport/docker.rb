@@ -104,6 +104,49 @@ module Kitchen
                          end
           @container
         end
+
+        def login_command
+          config = container.instance_variable_get(:@config)
+          login_config = config.dup
+          login_config[:interactive] = true
+          login_config[:tty] = true
+          login_config[:detach] = false
+          login_config[:username] = nil
+          login_cmd = build_login_command(login_config)
+          LoginCommand.new(login_cmd[0], login_cmd[1..-1])
+        end
+
+        def build_login_command(config)
+          # This function duplicates a lot of CliHelper functionality, but I think I'd need to refactor
+          # things to override some aspects of Configurable in order to reuse that code.
+          docker = [config[:binary].dup]
+          docker << "-H #{config[:socket]}" if config[:socket]
+          docker << "--tls" if config[:tls]
+          docker << "--tlsverify" if config[:tls_verify]
+          docker << "--tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
+          docker << "--tlscert=#{config[:tls_cert]}" if config[:tls_cert]
+          docker << "--tlskey=#{config[:tls_key]}" if config[:tls_key]
+          logger.debug("docker_command: #{docker.join(" ")}")
+
+          cmd = ["exec"]
+          cmd << "-d" if config[:detach]
+          if config[:env_variables]
+            config[:env_variables].each do |var|
+              cmd << "-e #{var}"
+            end
+          end
+          cmd << "--privileged" if config[:privileged]
+          cmd << "-t" if config[:tty]
+          cmd << "-i" if config[:interactive]
+          cmd << "-u #{config[:username]}" if config[:username]
+          cmd << "-w #{config[:working_dir]}" if config[:working_dir]
+          cmd << "#{config[:container_id]}"
+          cmd << "/bin/bash"
+          cmd << "-login"
+          cmd << "-i"
+          logger.debug("build_exec_command: #{cmd.join(" ")}")
+          docker + cmd
+        end
       end
     end
   end
