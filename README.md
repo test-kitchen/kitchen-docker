@@ -666,6 +666,6 @@ limitations under the License.
 [docker_installation]:    https://docs.docker.com/installation/#installation
 [docker_index]:           https://index.docker.io/
 [test_kitchen_docs]:      https://kitchen.ci/docs/getting-started/introduction/
-[chef_omnibus_dl]:        https://downloads.chef.io/chef-client/
+[chef_omnibus_dl]:        https://downloads.chef.io/tools/infra-client
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
 [memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html

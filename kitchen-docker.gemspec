@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{A Docker Driver for Test Kitchen}
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/test-kitchen/kitchen-docker"
-  spec.license       = "Apache 2.0"
+  spec.license       = "Apache-2.0"
 
   spec.files         = `git ls-files`.split($/)
   spec.require_paths = ["lib"]
