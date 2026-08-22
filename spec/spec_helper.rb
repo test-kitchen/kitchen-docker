@@ -21,7 +21,7 @@ require "rspec/its"
 require "kitchen/driver/docker"
 
 RSpec.configure do |config|
-  # Basic configuraiton
+  # Basic configuration
   config.run_all_when_everything_filtered = true
   config.filter_run(:focus)
 
