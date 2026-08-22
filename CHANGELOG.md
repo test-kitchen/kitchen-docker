@@ -2,6 +2,13 @@
 
 Future CHANGELOG notes will be in GitHub release notes
 
+## [3.3.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.4...v3.3.0) (2026-08-22)
+
+
+### Features
+
+* Support `kitchen login` with the Docker transport ([#462](https://github.com/test-kitchen/kitchen-docker/issues/462)) ([ba9b75e](https://github.com/test-kitchen/kitchen-docker/commit/ba9b75e8187eea72316dc91dbe3aec41221055bf))
+
 ## [3.2.4](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.3...v3.2.4) (2026-07-28)
 
 
