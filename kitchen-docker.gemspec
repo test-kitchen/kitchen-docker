@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "kitchen/docker/docker_version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "kitchen-docker"
+  spec.name = "kitchen-docker"
   spec.required_ruby_version = ">= 3.1"
   spec.version       = Kitchen::Docker::DOCKER_VERSION
   spec.authors       = ["Sean Porter"]
