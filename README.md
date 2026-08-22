@@ -688,6 +688,55 @@ Examples:
   docker_platform: linux/amd64
 ```
 
+## Transport Configuration
+
+This gem also ships a `docker` transport, which runs commands inside the
+container with `docker exec` instead of connecting over SSH or WinRM. Set it
+alongside the driver:
+
+```yaml
+transport:
+  name: docker
+```
+
+These options go under `transport:` rather than `driver:`.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `binary` | `docker` | Docker CLI binary used to run commands. |
+| `socket` | `$DOCKER_HOST`, else `unix:///var/run/docker.sock` (`npipe:////./pipe/docker_engine` on Windows) | Docker daemon to connect to. |
+| `username` | `kitchen` on Linux, unset on Windows | User that commands run as inside the container. |
+| `interactive` | `false` | Pass `-i` to `docker exec`, keeping stdin open. |
+| `tty` | `false` | Pass `-t` to `docker exec`, allocating a pseudo-TTY. |
+| `privileged` | `false` | Run commands with `--privileged`. |
+| `working_dir` | `nil` | Working directory inside the container, passed as `--workdir`. |
+| `temp_dir` | `/tmp`, or `$env:TEMP` on Windows | Directory inside the container used to stage files. |
+| `env_variables` | `nil` | Environment variables set for commands run in the container. |
+| `wait_for_transport` | `true` | Wait for the transport to become ready before continuing. Set to `false` for containers that do not stay up. |
+| `private_key` | `.kitchen/docker_id_rsa` | Private key used when the container is reached over SSH rather than `docker exec`. |
+| `public_key` | `.kitchen/docker_id_rsa.pub` | Matching public key. |
+
+### Connecting to a TLS-protected daemon
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `tls` | `false` | Use TLS when connecting to the daemon. |
+| `tls_verify` | `false` | Verify the daemon's certificate. |
+| `tls_cacert` | `nil` | Path to the CA certificate. |
+| `tls_cert` | `nil` | Path to the client certificate. |
+| `tls_key` | `nil` | Path to the client key. |
+
+```yaml
+transport:
+  name: docker
+  socket: tcp://docker.example.com:2376
+  tls: true
+  tls_verify: true
+  tls_cacert: ~/.docker/ca.pem
+  tls_cert: ~/.docker/cert.pem
+  tls_key: ~/.docker/key.pem
+```
+
 ## Logging into a container
 
 `kitchen login` opens an interactive shell inside a running container using the
@@ -703,6 +752,7 @@ platforms it starts `/bin/bash --login -i`; on Windows platforms it starts
 `powershell`. The transport's `username`, `working_dir`, `env_variables` and
 `privileged` settings are honoured, so the shell matches the environment that
 Test Kitchen uses when it runs the provisioner.
+
 
 ## Using with Chef
 
