@@ -1,6 +1,5 @@
 # Kitchen-Docker
 
-[![Build Status](https://travis-ci.org/test-kitchen/kitchen-docker.svg?branch=master)](https://travis-ci.org/test-kitchen/kitchen-docker)
 [![Gem Version](https://img.shields.io/gem/v/kitchen-docker.svg)](https://rubygems.org/gems/kitchen-docker)
 [![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -667,6 +666,6 @@ limitations under the License.
 [docker_installation]:    https://docs.docker.com/installation/#installation
 [docker_index]:           https://index.docker.io/
 [test_kitchen_docs]:      https://kitchen.ci/docs/getting-started/introduction/
-[chef_omnibus_dl]:        https://downloads.chef.io/chef-client/
+[chef_omnibus_dl]:        https://downloads.chef.io/tools/infra-client
 [cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
 [memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html

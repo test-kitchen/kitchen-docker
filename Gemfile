@@ -1,7 +1,6 @@
 source "https://rubygems.org"
 
-gemspec
-
+gemspec development_group: :test
 group :development do
   # Integration testing gems.
   gem "kitchen-cinc-auditor", git: "https://github.com/test-kitchen/kitchen-cinc-auditor.git"
@@ -11,7 +10,6 @@ group :development do
 end
 
 group :test do
-  gem "bundler"
   gem "rake"
   gem "rspec", "~> 3.2"
   gem "rspec-its", "~> 2.0"
