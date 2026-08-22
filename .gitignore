@@ -20,3 +20,5 @@ tmp
 Dockerfile
 .DS_Store
 vendor/
+bin/*
+.idea/*
