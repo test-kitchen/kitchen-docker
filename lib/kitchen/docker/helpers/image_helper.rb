@@ -19,12 +19,22 @@ require_relative "container_helper"
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
+      # Building, inspecting, and removing Docker images.
       module ImageHelper
         include Configurable
         include Kitchen::Docker::Helpers::CliHelper
         include Kitchen::Docker::Helpers::ContainerHelper
 
+        # Pulls the built image's id out of `docker build` output.
+        #
+        # Scanned in reverse, and against several patterns, because the wording has
+        # changed across Docker and BuildKit versions.
+        #
+        # @param output [String] the build output
+        # @return [String] the image id
+        # @raise [Kitchen::ActionFailed] if no id could be found
         def parse_image_id(output)
           output.split("\n").reverse_each do |line|
             if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
@@ -44,6 +54,10 @@ module Kitchen
           raise ActionFailed, "Could not parse Docker build output for image ID"
         end
 
+        # Removes the built image, unless a container is still using it.
+        #
+        # @param state [Hash] instance state naming the image
+        # @return [void]
         def remove_image(state)
           image_id = state[:image_id]
           if image_in_use?(state)
@@ -54,10 +68,22 @@ module Kitchen
           end
         end
 
+        # @param state [Hash] instance state naming the image
+        # @return [Boolean] whether any container references it
         def image_in_use?(state)
           docker_command("ps -a", suppress_output: !logger.debug?).include?(state[:image_id])
         end
 
+        # Builds the image from the given Dockerfile.
+        #
+        # The Dockerfile is written to a temp file and also passed on stdin, so the
+        # build works both with a build context and without one. The temp file is
+        # removed whether or not the build succeeded.
+        #
+        # @param state [Hash] instance state
+        # @param dockerfile [String] the Dockerfile contents
+        # @return [String] the new image's id
+        # @raise [Kitchen::ActionFailed] if the id cannot be parsed from the output
         def build_image(state, dockerfile)
           cmd = "build"
           cmd << " --no-cache" unless config[:use_cache]
@@ -82,6 +108,8 @@ module Kitchen
           parse_image_id(output)
         end
 
+        # @param state [Hash] instance state naming the image
+        # @return [Boolean] whether the image is present locally
         def image_exists?(state)
           state[:image_id] && !!docker_command("inspect --type=image #{state[:image_id]}") rescue false
         end

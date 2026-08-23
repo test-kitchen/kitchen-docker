@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Test Kitchen's top-level namespace.
 module Kitchen
+  # Everything belonging to the kitchen-docker plugin.
   module Docker
-    # Version string for Docker Kitchen driver
+    # The version of the kitchen-docker gem.
     DOCKER_VERSION = "3.3.0".freeze
   end
 end

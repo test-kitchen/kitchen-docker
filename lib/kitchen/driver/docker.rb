@@ -26,6 +26,7 @@ require_relative "../docker/helpers/cli_helper"
 require_relative "../docker/helpers/container_helper"
 
 module Kitchen
+  # Test Kitchen's driver plugins.
   module Driver
     # Docker driver for Kitchen.
     #
@@ -111,28 +112,50 @@ module Kitchen
         end
       end
 
+      # Checks that the Docker CLI is installed and runnable.
+      #
+      # @return [void]
+      # @raise [Kitchen::UserError] if the binary cannot be run
       def verify_dependencies
         run_command("#{config[:binary]} >> #{dev_null} 2>&1", quiet: true, use_sudo: config[:use_sudo])
       rescue
         raise UserError, "You must first install the Docker CLI tool https://www.docker.com/get-started"
       end
 
+      # Builds the image and starts the container.
+      #
+      # @param state [Hash] mutable instance state
+      # @return [void]
       def create(state)
         container.create(state)
 
         wait_for_transport(state)
       end
 
+      # Removes the container, and its image when +remove_images+ is set.
+      #
+      # @param state [Hash] instance state naming the container
+      # @return [void]
       def destroy(state)
         container.destroy(state)
       end
 
+      # Waits for the transport to accept a connection, unless disabled.
+      #
+      # @param state [Hash] instance state describing how to connect
+      # @return [void]
       def wait_for_transport(state)
         if config[:wait_for_transport]
           instance.transport.connection(state, &:wait_until_ready)
         end
       end
 
+      # The Docker image implied by the platform name.
+      #
+      # +ubuntu-22.04+ becomes +ubuntu:22.04+. CentOS is special-cased, since its
+      # images are tagged +centos7+ rather than +centos:7+.
+      #
+      # @return [String] an image reference
       def default_image
         platform, release = instance.platform.name.split("-")
         if platform == "centos" && release
@@ -141,12 +164,16 @@ module Kitchen
         release ? [platform, release].join(":") : platform
       end
 
+      # @return [String] the platform family, e.g. +ubuntu+ from +ubuntu-22.04+
       def default_platform
         instance.platform.name.split("-").first
       end
 
       protected
 
+      # The container implementation for this platform.
+      #
+      # @return [Kitchen::Docker::Container] a Windows or Linux container
       def container
         @container ||= if windows_os?
                          Kitchen::Docker::Container::Windows.new(config)

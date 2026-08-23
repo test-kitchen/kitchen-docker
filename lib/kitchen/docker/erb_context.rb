@@ -17,13 +17,22 @@ require "erb" unless defined?(Erb)
 
 module Kitchen
   module Docker
+    # Evaluation context for a user-supplied Dockerfile template.
+    #
+    # Each configuration key becomes an instance variable, so a template can
+    # refer to +@image+, +@username+, and the rest.
     class ERBContext
+      # Exposes each config key to the template as an instance variable, so a
+      # custom Dockerfile can refer to +@image+, +@username+, and the rest.
+      #
+      # @param config [Hash] the configuration to expose
       def initialize(config = {})
         config.each do |key, value|
           instance_variable_set("@" + key.to_s, value)
         end
       end
 
+      # @return [Binding] a binding for ERB to evaluate the template in
       def get_binding
         binding
       end

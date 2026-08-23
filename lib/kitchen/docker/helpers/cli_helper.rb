@@ -18,14 +18,22 @@ require "kitchen/shell_out"
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
-      # rubocop:disable Metrics/ModuleLength, Style/Documentation
+      # rubocop:disable Metrics/ModuleLength
+      # Builds and runs docker CLI command lines.
       module CliHelper
         include Configurable
         include Logging
         include ShellOut
 
         # rubocop:disable Metrics/AbcSize
+
+        # Runs a docker CLI command with the configured connection flags.
+        #
+        # @param cmd [String] the docker subcommand and its arguments
+        # @param options [Hash] shell-out options
+        # @return [String] the command's combined stdout and stderr
         def docker_command(cmd, options = {})
           docker = config[:binary].dup
           docker << " -H #{config[:socket]}" if config[:socket]
@@ -39,8 +47,17 @@ module Kitchen
         end
         # rubocop:enable Metrics/AbcSize
 
-        # Copied from kitchen because we need stderr
         # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+
+        # Runs a shell command, returning stderr as well as stdout.
+        #
+        # Test Kitchen's own +run_command+ discards stderr, but docker writes build
+        # progress and image ids there, so this reimplements it to keep both.
+        #
+        # @param cmd [String] the command to run
+        # @param options [Hash] shell-out options
+        # @return [String] combined stdout and stderr
+        # @raise [Kitchen::ShellCommandFailed] if the command exits non-zero
         def run_command(cmd, options = {})
           if options.fetch(:use_sudo, false)
             cmd = "#{options.fetch(:sudo_command, "sudo -E")} #{cmd}"
@@ -62,6 +79,12 @@ module Kitchen
         # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
         # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/AbcSize
+
+        # Builds the `docker run` command line from the configuration.
+        #
+        # @param image_id [String] the image to run
+        # @param transport_port [Integer, nil] container port to publish, if any
+        # @return [String] the docker subcommand and its arguments
         def build_run_command(image_id, transport_port = nil)
           cmd = "run -d"
           cmd << " -i" if config[:interactive]
@@ -100,6 +123,12 @@ module Kitchen
         # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/AbcSize
 
         # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
+
+        # Builds a `docker exec` command line from the configuration.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param command [String] the command to run inside it
+        # @return [String] the docker subcommand and its arguments
         def build_exec_command(state, command)
           cmd = "exec"
           cmd << " -d" if config[:detach]
@@ -116,6 +145,12 @@ module Kitchen
         end
         # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/AbcSize
 
+        # Builds a `docker cp` command line.
+        #
+        # @param local_file [String] source path
+        # @param remote_file [String] destination, as +container:path+
+        # @param opts [Hash] +:archive+ to preserve ownership and mode
+        # @return [String] the docker subcommand and its arguments
         def build_copy_command(local_file, remote_file, opts = {})
           cmd = "cp"
           cmd << " -a" if opts[:archive]
@@ -123,6 +158,10 @@ module Kitchen
           cmd
         end
 
+        # Wraps PowerShell code so it can be run through `docker exec`.
+        #
+        # @param args [String] the PowerShell arguments
+        # @return [String] the full powershell invocation
         def build_powershell_command(args)
           cmd = "powershell -ExecutionPolicy Bypass -NoLogo "
           cmd << args
@@ -130,6 +169,11 @@ module Kitchen
           cmd
         end
 
+        # Turns a hash of environment variables into `-e` flags.
+        #
+        # @param vars [Hash] variable names to values
+        # @return [String] the flags, each preceded by a space
+        # @raise [Kitchen::ActionFailed] if given something other than a Hash
         def build_env_variable_args(vars)
           raise ActionFailed, "Environment variables are not of a Hash type" unless vars.is_a?(Hash)
 
@@ -141,6 +185,8 @@ module Kitchen
           args
         end
 
+        # @return [String] the platform's null device, +NUL+ on Windows and
+        #   +/dev/null+ everywhere else
         def dev_null
           case RbConfig::CONFIG["host_os"]
           when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
@@ -150,6 +196,13 @@ module Kitchen
           end
         end
 
+        # Normalizes shell-out options for a docker command.
+        #
+        # Translates +:suppress_output+ into silencing the live stream, and removes
+        # it, since Mixlib::ShellOut would reject the unknown key.
+        #
+        # @param options [Hash] the options to normalize
+        # @return [Hash] options Mixlib::ShellOut accepts
         def docker_shell_opts(options = {})
           options[:live_stream] = nil if options[:suppress_output]
           options.delete(:suppress_output)
@@ -178,7 +231,7 @@ module Kitchen
         end
         # rubocop:enable Metrics/CyclomaticComplexity
       end
-      # rubocop:enable Metrics/ModuleLength, Style/Documentation
+      # rubocop:enable Metrics/ModuleLength
     end
   end
 end

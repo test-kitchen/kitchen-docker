@@ -15,6 +15,10 @@ group :test do
   gem "rspec-its", "~> 2.0"
 end
 
+group :docs do
+  gem "yard"
+end
+
 group :cookstyle do
   gem "cookstyle"
 end

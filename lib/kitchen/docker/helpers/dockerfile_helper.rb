@@ -16,10 +16,20 @@ require "kitchen/configurable"
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
+      # Per-distribution Dockerfile fragments that prepare a Linux image for SSH.
       module DockerfileHelper
         include Configurable
 
+        # Dockerfile lines that prepare the configured platform for SSH.
+        #
+        # Each distribution needs its own package manager invocation to install an
+        # SSH server and sudo, and its own host-key generation, which is why there
+        # is one method per family rather than a shared one.
+        #
+        # @return [String] the RUN lines for this platform
+        # @raise [Kitchen::ActionFailed] if the platform is not recognised
         def dockerfile_platform
           case config[:platform]
           when "arch"
@@ -51,6 +61,9 @@ module Kitchen
           end
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Arch Linux.
+        #
+        # @return [String] the RUN lines
         def arch_platform
           <<-CODE
             RUN pacman --noconfirm -Sy archlinux-keyring
@@ -60,6 +73,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Debian and Ubuntu.
+        #
+        # @return [String] the RUN lines
         def debian_platform
           disable_upstart = <<-CODE
             RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl \
@@ -74,6 +90,9 @@ module Kitchen
           config[:disable_upstart] ? disable_upstart + packages : packages
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Fedora.
+        #
+        # @return [String] the RUN lines
         def fedora_platform
           <<-CODE
             ENV container=docker
@@ -83,6 +102,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Gentoo with Portage.
+        #
+        # @return [String] the RUN lines
         def gentoo_platform
           <<-CODE
             RUN emerge-webrsync
@@ -91,6 +113,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Gentoo with Paludis.
+        #
+        # @return [String] the RUN lines
         def gentoo_paludis_platform
           <<-CODE
             RUN cave sync
@@ -99,6 +124,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on openSUSE and SLES.
+        #
+        # @return [String] the RUN lines
         def opensuse_platform
           <<-CODE
             ENV container=docker
@@ -107,6 +135,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on RHEL, CentOS, and Oracle Linux.
+        #
+        # @return [String] the RUN lines
         def rhel_platform
           <<-CODE
             ENV container=docker
@@ -117,6 +148,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Amazon Linux.
+        #
+        # @return [String] the RUN lines
         def amazonlinux_platform
           <<-CODE
             ENV container=docker
@@ -126,6 +160,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on CentOS Stream.
+        #
+        # @return [String] the RUN lines
         def centosstream_platform
           <<-CODE
             ENV container=docker
@@ -135,6 +172,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on AlmaLinux.
+        #
+        # @return [String] the RUN lines
         def almalinux_platform
           <<-CODE
             ENV container=docker
@@ -144,6 +184,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Rocky Linux.
+        #
+        # @return [String] the RUN lines
         def rockylinux_platform
           <<-CODE
             ENV container=docker
@@ -153,6 +196,9 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines installing an SSH server and sudo on Photon OS.
+        #
+        # @return [String] the RUN lines
         def photonos_platform
           <<-CODE
             ENV container=docker
@@ -163,6 +209,14 @@ module Kitchen
           CODE
         end
 
+        # Dockerfile lines creating the login user and its SSH directory.
+        #
+        # The user gets passwordless sudo and +Defaults !requiretty+, because Test
+        # Kitchen runs commands non-interactively and sudo would otherwise refuse.
+        #
+        # @param username [String] the login user to create
+        # @param homedir [String] that user's home directory
+        # @return [String] the RUN lines
         def dockerfile_base_linux(username, homedir)
           <<-CODE
             RUN if ! getent passwd #{username}; then \

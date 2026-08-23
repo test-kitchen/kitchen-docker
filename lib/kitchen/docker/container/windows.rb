@@ -18,11 +18,25 @@ require_relative "../container"
 module Kitchen
   module Docker
     class Container
+      # A Windows container, driven through `docker exec`.
+      #
+      # There is no SSH server and no key to inject: commands are uploaded as
+      # PowerShell scripts and executed in the container directly, so no port
+      # is published.
       class Windows < Kitchen::Docker::Container
+        # @param config [Hash] the driver configuration
         def initialize(config)
           super
         end
 
+        # Builds the image and runs the container.
+        #
+        # No port is published: Windows containers are driven through `docker exec`
+        # rather than SSH, so there is nothing to map.
+        #
+        # @param state [Hash] mutable instance state; gains +username+, +image_id+,
+        #   +container_id+, and +hostname+
+        # @return [void]
         def create(state)
           super
 
@@ -33,6 +47,11 @@ module Kitchen
           state[:hostname] = hostname(state)
         end
 
+        # Runs a command in the container by uploading it as a PowerShell script.
+        #
+        # @param command [String] the PowerShell code to run
+        # @return [String] the command's combined output
+        # @raise [RuntimeError] if the command fails
         def execute(command)
           # Create temp script file and upload files to container
           debug("Executing command on Windows container")
@@ -62,6 +81,14 @@ module Kitchen
 
         protected
 
+        # Builds the Dockerfile for a Windows container.
+        #
+        # Much shorter than the Linux equivalent: there is no SSH server and no
+        # key to inject, so only the base image, proxy settings, and any
+        # +provision_command+ entries are emitted.
+        #
+        # @return [String] the Dockerfile contents
+        # @raise [Kitchen::ActionFailed] if the platform is not +windows+
         def dockerfile
           raise ActionFailed, "Unknown platform '#{@config[:platform]}'" unless @config[:platform] == "windows"
           return dockerfile_template if @config[:dockerfile]
