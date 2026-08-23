@@ -6,6 +6,14 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.3.3](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.2...v3.3.3) (2026-08-23)
+
+
+### Bug Fixes
+
+* detect containers that exist but have stopped ([#476](https://github.com/test-kitchen/kitchen-docker/issues/476)) ([c6c7038](https://github.com/test-kitchen/kitchen-docker/commit/c6c70382f9e7be4a4c27f5f225f72465a3b392a6))
+* detect that an image is in use before removing it ([#477](https://github.com/test-kitchen/kitchen-docker/issues/477)) ([4c5f255](https://github.com/test-kitchen/kitchen-docker/commit/4c5f255bdcbbb58c9f8b4e225627642d6ac79fed))
+
 ## [3.3.2](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.1...v3.3.2) (2026-08-23)
 
 
