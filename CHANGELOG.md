@@ -6,6 +6,15 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.3.2](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.1...v3.3.2) (2026-08-23)
+
+
+### Bug Fixes
+
+* escape configured values interpolated into docker command lines ([#471](https://github.com/test-kitchen/kitchen-docker/issues/471)) ([994b0ca](https://github.com/test-kitchen/kitchen-docker/commit/994b0ca9d89bab0501b3946ca45fd177b24bf2bd))
+* split printenv output on the first equals sign only ([#473](https://github.com/test-kitchen/kitchen-docker/issues/473)) ([9b0d0d7](https://github.com/test-kitchen/kitchen-docker/commit/9b0d0d784efe4f65c1c6585e19440e90e322b3a1))
+* tolerate stderr warnings when parsing docker run container id (rebase of [#452](https://github.com/test-kitchen/kitchen-docker/issues/452)) ([#475](https://github.com/test-kitchen/kitchen-docker/issues/475)) ([a8ad6f6](https://github.com/test-kitchen/kitchen-docker/commit/a8ad6f6e05e927f3966a72ee6029b9f135246565))
+
 ## [3.3.1](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.0...v3.3.1) (2026-08-23)
 
 
