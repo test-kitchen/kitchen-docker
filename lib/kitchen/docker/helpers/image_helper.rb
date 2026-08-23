@@ -27,6 +27,9 @@ module Kitchen
         include Kitchen::Docker::Helpers::CliHelper
         include Kitchen::Docker::Helpers::ContainerHelper
 
+        # An id on a line of its own, which is all `docker build -q` prints.
+        QUIET_BUILD_IMAGE_ID = /\A(sha256:[[:xdigit:]]{64})\z/
+
         # Pulls the built image's id out of `docker build` output.
         #
         # Scanned in reverse, and against several patterns, because the wording has
@@ -37,6 +40,13 @@ module Kitchen
         # @raise [Kitchen::ActionFailed] if no id could be found
         def parse_image_id(output)
           output.split("\n").reverse_each do |line|
+            line = line.strip
+            # `docker build -q` prints the id and nothing else -- none of the
+            # wording below appears -- so a build with `build_options: -q` had
+            # no line any of these matched and failed with "Could not parse
+            # Docker build output for image ID" (#225).
+            return Regexp.last_match(1) if line.match(QUIET_BUILD_IMAGE_ID)
+
             if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
               img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i, 1]
               return img_id

@@ -81,6 +81,15 @@ module DockerOutput
 
   BUILD_LEGACY_IMAGE_ID = "1a2b3c4d5e6f".freeze
 
+  # `docker build -q` on Docker 29.7.2. Quiet mode prints the id and nothing
+  # else -- no step lines, no exporting lines, none of the wording the other
+  # fixtures here are built around. Reachable through the driver as
+  # `build_options: -q`.
+  BUILD_QUIET = "sha256:ab86ce908a36ffb7de411a72550e416a4d8c268570a0f7313c284c79344d6c0f\n".freeze
+
+  BUILD_QUIET_IMAGE_ID =
+    "sha256:ab86ce908a36ffb7de411a72550e416a4d8c268570a0f7313c284c79344d6c0f".freeze
+
   # `docker run -d`, the ordinary case: the id and nothing else.
   RUN_CONTAINER_ID = "b89e1e8b07664a1ee0bd09decb833146eaf9cc810a152950e3576a56745944db".freeze
   RUN_CLEAN = "#{RUN_CONTAINER_ID}\n".freeze
