@@ -120,14 +120,27 @@ module Kitchen
 
         # Pulls the published port out of `docker port` output.
         #
-        # @param output [String] e.g. +"0.0.0.0:32768"+
+        # One line is printed per published binding, and the host part varies:
+        #
+        #   0.0.0.0:32768
+        #   [::]:32768
+        #
+        # The port is taken from the end of the line rather than by splitting on
+        # ":" from the left, because an IPv6 host contains colons of its own --
+        # splitting left-to-right returned "" for those, and "".to_i is 0, so a
+        # daemon publishing on IPv6 handed Test Kitchen port 0 to connect to.
+        #
+        # @param output [String] e.g. +"0.0.0.0:32768\n[::]:32768\n"+
         # @return [Integer] the host-side port
-        # @raise [Kitchen::ActionFailed] if the output cannot be parsed
+        # @raise [Kitchen::ActionFailed] if no port could be found
         def parse_container_ssh_port(output)
-          _host, port = output.split(":")
+          port = output.lines.filter_map { |line| line[/:(\d+)\s*\z/, 1] }.first
+
+          if port.nil?
+            raise ActionFailed, "Could not parse Docker port output for container SSH port: #{output.inspect}"
+          end
+
           port.to_i
-        rescue => e
-          raise ActionFailed, "Could not parse Docker port output for container SSH port. #{e}"
         end
 
         # The port Test Kitchen should connect to for SSH.
