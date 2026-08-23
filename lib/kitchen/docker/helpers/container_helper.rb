@@ -159,7 +159,14 @@ module Kitchen
           else
             cmd = build_exec_command(state, "printenv")
             stdout = docker_command(cmd, suppress_output: !logger.debug?).strip
-            stdout.split("\n").each { |line| vars[line.split("=")[0]] = line.split("=")[1] }
+            # printenv writes NAME=VALUE, and values routinely contain "=" --
+            # LS_COLORS and anything -Dkey=value shaped do. Split on the first
+            # one only, or the value is truncated at it. Lines with no "=" are
+            # continuations of a multi-line value and carry no name.
+            stdout.split("\n").each do |line|
+              name, value = line.split("=", 2)
+              vars[name] = value unless value.nil?
+            end
           end
 
           vars
