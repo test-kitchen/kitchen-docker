@@ -270,6 +270,58 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
     end
   end
 
+  describe "#container_ip_address" do
+    def helper_inspecting(output)
+      h = helper
+      @asked = nil
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @asked = cmd; output }
+      h
+    end
+
+    let(:state) { { container_id: "abc123abc123" } }
+
+    it "returns the address docker reports" do
+      expect(helper_inspecting("172.17.0.7 \n").container_ip_address(state)).to eq "172.17.0.7"
+    end
+
+    it "reads Networks rather than the removed top-level IPAddress" do
+      # Docker 29 dropped NetworkSettings.IPAddress. Asking for it does not
+      # return empty -- it fails the whole inspect with a template error, which
+      # took use_internal_docker_network down with it.
+      helper_inspecting("172.17.0.7\n").container_ip_address(state)
+      expect(@asked).to include(".NetworkSettings.Networks")
+      expect(@asked).not_to include(".NetworkSettings.IPAddress")
+    end
+
+    it "takes the first address when the container is on several networks" do
+      expect(helper_inspecting("172.17.0.7 172.19.0.2 \n").container_ip_address(state))
+        .to eq "172.17.0.7"
+    end
+
+    it "handles an IPv6 address" do
+      expect(helper_inspecting("2001:db8::2 \n").container_ip_address(state)).to eq "2001:db8::2"
+    end
+
+    it "ignores a warning docker wrote to stderr" do
+      expect(helper_inspecting("WARNING: something happened\n172.17.0.7 \n").container_ip_address(state))
+        .to eq "172.17.0.7"
+    end
+
+    it "fails loudly when docker reports no address" do
+      # Returning "" here would be recorded as the instance hostname, and the
+      # connection would fail somewhere far from the cause.
+      expect { helper_inspecting(" \n").container_ip_address(state) }
+        .to raise_error(Kitchen::ActionFailed, /no IP address/)
+    end
+
+    it "fails loudly when the inspect itself fails" do
+      h = helper
+      allow(h).to receive(:docker_command).and_raise(Kitchen::ShellOut::ShellCommandFailed, "boom")
+      expect { h.container_ip_address(state) }
+        .to raise_error(Kitchen::ActionFailed, /Error getting internal IP/)
+    end
+  end
+
   describe "#remove_container" do
     it "stops the container before removing it" do
       # `docker rm` refuses to remove a running container, so the order matters.
