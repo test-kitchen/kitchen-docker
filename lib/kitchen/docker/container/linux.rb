@@ -80,9 +80,6 @@ module Kitchen
           debug("Uploading temp file #{temp_file} to #{remote_path} on container")
           upload(temp_file, remote_path)
 
-          debug("Deleting temp file from local filesystem")
-          ::File.delete(temp_file)
-
           # Replace any environment variables used in the path and execute script file
           debug("Executing temp script #{remote_path}/#{filename} on container")
           remote_path = replace_env_variables(@config, remote_path)
@@ -90,6 +87,13 @@ module Kitchen
           container_exec(@config, "/bin/bash #{remote_path}/#{filename}")
         rescue => e
           raise "Failed to execute command on Linux container. #{e}"
+        ensure
+          # Removed here rather than after the upload, so that a failure part
+          # way through does not leave the script behind in .kitchen/temp.
+          if temp_file && ::File.exist?(temp_file)
+            debug("Deleting temp file from local filesystem")
+            ::File.delete(temp_file)
+          end
         end
 
         protected

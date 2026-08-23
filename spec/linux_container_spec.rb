@@ -168,6 +168,51 @@ describe Kitchen::Docker::Container::Linux do
     end
   end
 
+  describe "#execute" do
+    # The command is staged as a script under .kitchen/temp and uploaded. That
+    # local copy has to go whether or not the rest of the run works, or a failing
+    # converge leaves a file behind on every attempt.
+    def container_in(dir, &upload)
+      c = container
+      allow(c).to receive(:create_dir_on_container)
+      allow(c).to receive(:replace_env_variables) { |_cfg, path| path }
+      allow(c).to receive(:container_exec).and_return("ok")
+      allow(c).to receive(:upload, &(upload || ->(*) { nil }))
+      allow(Dir).to receive(:pwd).and_return(dir)
+      c
+    end
+
+    around do |example|
+      Dir.chdir(@tmpdir) { example.run }
+    end
+
+    it "removes the staged script once the command has run" do
+      c = container_in(@tmpdir)
+      c.execute("echo hi")
+      expect(Dir.glob(".kitchen/temp/docker-*.sh")).to be_empty
+    end
+
+    it "removes the staged script when the upload fails" do
+      c = container_in(@tmpdir) { raise "upload exploded" }
+      expect { c.execute("echo hi") }.to raise_error(/Failed to execute command/)
+      expect(Dir.glob(".kitchen/temp/docker-*.sh")).to be_empty
+    end
+
+    it "removes the staged script when the command itself fails" do
+      c = container_in(@tmpdir)
+      allow(c).to receive(:container_exec).and_raise("command exploded")
+      expect { c.execute("echo hi") }.to raise_error(/Failed to execute command/)
+      expect(Dir.glob(".kitchen/temp/docker-*.sh")).to be_empty
+    end
+
+    it "uploads the command as the contents of the script" do
+      uploaded = nil
+      c = container_in(@tmpdir) { |local, _remote| uploaded = ::File.read(local) }
+      c.execute("echo hi")
+      expect(uploaded).to eq "echo hi"
+    end
+  end
+
   describe "#generate_keys" do
     it "writes a usable key pair when none exists" do
       private_key = File.join(@tmpdir, "generated")
