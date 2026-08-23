@@ -34,18 +34,30 @@ module Kitchen
 
         # Pulls the container id out of `docker run` output.
         #
-        # Docker prints ids in short (12) or full (64) hex form; anything else
-        # means the output was not an id at all.
+        # Docker prints ids in short (12) or full (64) hex form, on a line of
+        # their own. The id is looked for line by line rather than by taking the
+        # whole output, because {CliHelper#run_command} returns stdout and stderr
+        # together and some daemons write warnings to stderr on a run that
+        # otherwise succeeds. Rootless Docker emits "WARNING: IPv4 forwarding is
+        # disabled. Networking will not work." on every run; setting
+        # +run_options+ to +--net=host+ produces "WARNING: Published ports are
+        # discarded when using host network mode", since the driver always
+        # publishes port 22 for Linux containers. Treating the whole output as
+        # the id failed those runs *after* the container had been created,
+        # leaving it running and untracked.
         #
-        # @param output [String] the command output
+        # Scanning forward is deterministic: +run_command+ concatenates stdout
+        # before stderr, so the id always precedes anything a warning adds.
+        #
+        # @param output [String] the command output, stdout and stderr together
         # @return [String] the container id
-        # @raise [Kitchen::ActionFailed] if no id could be parsed
+        # @raise [Kitchen::ActionFailed] if no id could be found
         def parse_container_id(output)
-          container_id = output.chomp
-
-          unless [12, 64].include?(container_id.size)
-            raise ActionFailed, "Could not parse Docker run output for container ID"
+          container_id = output.to_s.lines.map(&:strip).find do |line|
+            line.match?(/\A[0-9a-f]{12}(?:[0-9a-f]{52})?\z/)
           end
+
+          raise ActionFailed, "Could not parse Docker run output for container ID" unless container_id
 
           container_id
         end
