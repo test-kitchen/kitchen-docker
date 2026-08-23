@@ -52,6 +52,7 @@ module Kitchen
       default_config :remove_images, false
       default_config :run_options,   nil
       default_config :security_opt,  nil
+      default_config :sudo_command,  nil
       default_config :tls,           false
       default_config :tls_cacert,    nil
       default_config :tls_cert,      nil
