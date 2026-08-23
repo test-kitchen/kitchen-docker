@@ -178,4 +178,49 @@ describe Kitchen::Docker::Helpers::ImageHelper do
       h.remove_image(state)
     end
   end
+
+  describe "#image_exists?" do
+    let(:state) { { image_id: "sha256:abc" } }
+
+    def asking(&answer)
+      helper.tap do |h|
+        @opts = nil
+        allow(h).to receive(:logger).and_return(double(debug?: false, debug: nil))
+        allow(h).to receive(:docker_command) { |_cmd, opts = {}| @opts = opts; answer.call }
+      end
+    end
+
+    it "is true when docker knows the image" do
+      expect(asking { "[{}]" }.image_exists?(state)).to be true
+    end
+
+    it "is false when docker does not" do
+      expect(asking { raise Kitchen::ShellOut::ShellCommandFailed, "no such image" }
+        .image_exists?(state)).to be false
+    end
+
+    it "does not ask about an image that state does not name" do
+      h = helper
+      expect(h).not_to receive(:docker_command)
+      expect(h.image_exists?({})).to be false
+    end
+
+    # `kitchen destroy` with remove_images set printed the image's whole
+    # inspect JSON -- config, every layer digest, metadata -- between removing
+    # the container and removing the image. Only whether the command succeeded
+    # is used here, as in every other predicate in this file, all of which
+    # already silence their output.
+    it "does not print the inspect output" do
+      asking { "[{}]" }.image_exists?(state)
+      expect(@opts).to eq(suppress_output: true)
+    end
+
+    it "still prints it under -l debug" do
+      h = helper
+      allow(h).to receive(:logger).and_return(double(debug?: true, debug: nil))
+      allow(h).to receive(:docker_command) { |_cmd, opts = {}| @opts = opts; "[{}]" }
+      h.image_exists?(state)
+      expect(@opts).to eq(suppress_output: false)
+    end
+  end
 end
