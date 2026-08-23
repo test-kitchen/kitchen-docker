@@ -334,11 +334,80 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
   end
 
   describe "#copy_file_to_container" do
+    let(:state) { { container_id: "abc", platform: "ubuntu-24.04" } }
+
+    # Records every docker subcommand, and answers the copy check with
+    # `landed`. `docker cp` itself prints nothing on success, so the probe is
+    # the only call whose output matters.
+    def copier(landed:)
+      helper.tap do |h|
+        @commands = []
+        allow(h).to receive(:replace_env_variables) { |_s, path| path }
+        allow(h).to receive(:docker_command) do |cmd, _opts = {}|
+          @commands << cmd
+          cmd.include?(described_class::COPIED_MARKER) && landed ? "#{described_class::COPIED_MARKER}\n" : ""
+        end
+      end
+    end
+
     it "addresses the destination as container:path" do
-      h = helper
-      allow(h).to receive(:replace_env_variables) { |_state, path| path }
-      expect(h).to receive(:docker_command).with("cp /local/f.rb abc:/tmp/f.rb")
-      h.copy_file_to_container({ container_id: "abc", platform: "ubuntu-24.04" }, "/local/f.rb", "/tmp/f.rb")
+      copier(landed: true).copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb")
+      expect(@commands.first).to eq "cp /local/f.rb abc:/tmp/f.rb"
+    end
+
+    it "says nothing when the file arrived" do
+      expect { copier(landed: true).copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb") }
+        .not_to raise_error
+    end
+
+    # From #387. `docker cp` writes to the container's filesystem layer, which
+    # a tmpfs or volume mounted over the destination then hides -- and it exits
+    # 0, so nothing about the copy says it did not happen. Left unchecked the
+    # first sign is the next command failing with "No such file or directory",
+    # which names neither the copy nor the mount.
+    context "when docker exits 0 but wrote nothing, as it does into a mount" do
+      it "fails at the copy rather than somewhere later" do
+        expect { copier(landed: false).copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb") }
+          .to raise_error(RuntimeError, %r{Failed to copy file /local/f\.rb})
+      end
+
+      it "names the mount as the cause" do
+        expect { copier(landed: false).copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb") }
+          .to raise_error(RuntimeError, /cannot write into a mount/)
+      end
+
+      it "names the settings that move the destination off the mount" do
+        expect { copier(landed: false).copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb") }
+          .to raise_error(RuntimeError, /temp_dir.*root_path/m)
+      end
+    end
+
+    it "checks the path docker copies into, not the directory it was given" do
+      copier(landed: true).copy_file_to_container(state, "/local/f.rb", "/tmp")
+      # The probe is handed both parts and picks between them inside the
+      # container, since only there is it known whether /tmp is a directory.
+      expect(@commands.last).to include("/tmp f.rb")
+    end
+
+    it "does not print the probe's marker to the console" do
+      h = copier(landed: true)
+      allow(h).to receive(:logger).and_return(double(debug?: false, debug: nil))
+      opts = []
+      allow(h).to receive(:docker_command) { |_cmd, o = {}| opts << o; "" }
+      begin
+        h.copy_file_to_container(state, "/local/f.rb", "/tmp/f.rb")
+      rescue RuntimeError
+        nil
+      end
+      expect(opts.last).to eq(suppress_output: true)
+    end
+
+    # Windows containers have no tmpfs, and `docker cp` against them is a
+    # different code path in Docker, so they keep the behaviour they had.
+    it "does not probe a Windows container" do
+      h = copier(landed: false)
+      h.copy_file_to_container({ container_id: "abc", platform: "windows-2022" }, "C:\\f.rb", "C:\\Temp")
+      expect(@commands.length).to eq 1
     end
   end
 end
