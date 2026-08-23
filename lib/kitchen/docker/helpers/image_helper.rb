@@ -126,10 +126,28 @@ module Kitchen
           parse_image_id(output)
         end
 
+        # Whether the image named in state is present locally.
+        #
+        # The inspect is silenced, as every other predicate that shells out to
+        # docker is. Left speaking, `kitchen destroy` on an instance with
+        # +remove_images+ set printed the image's entire `docker inspect` JSON
+        # -- config, every layer digest, metadata -- into the middle of the
+        # destroy output, between the container being removed and the image
+        # being removed. Nothing read it: only whether the command succeeded is
+        # used.
+        #
+        # It is still printed under `-l debug`, where the rest of the driver's
+        # docker traffic is.
+        #
         # @param state [Hash] instance state naming the image
         # @return [Boolean] whether the image is present locally
         def image_exists?(state)
-          state[:image_id] && !!docker_command("inspect --type=image #{state[:image_id]}") rescue false
+          return false unless state[:image_id]
+
+          !!docker_command("inspect --type=image #{state[:image_id]}",
+            suppress_output: !logger.debug?)
+        rescue
+          false
         end
       end
     end
