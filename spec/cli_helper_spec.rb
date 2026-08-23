@@ -104,17 +104,14 @@ describe Kitchen::Docker::Helpers::CliHelper do
       # configured value containing a space has to survive shell splitting as a
       # single argument. These are the cases where it does not.
       it "keeps a volume path containing a space as one argument" do
-        pending "BUG: build_run_command interpolates volume unquoted, so a path with a space becomes two arguments"
         expect(run_argv(volume: "/host dir:/data")).to include_consecutive("-v", "/host dir:/data")
       end
 
       it "keeps a hostname containing a space as one argument" do
-        pending "BUG: build_run_command interpolates hostname unquoted"
         expect(run_argv(hostname: "two words")).to include_consecutive("-h", "two words")
       end
 
       it "keeps a mount specification containing a space as one argument" do
-        pending "BUG: build_run_command interpolates mount unquoted"
         expect(run_argv(mount: "type=bind,source=/my dir,destination=/d"))
           .to include_consecutive("--mount", "type=bind,source=/my dir,destination=/d")
       end
@@ -176,9 +173,21 @@ describe Kitchen::Docker::Helpers::CliHelper do
     end
 
     it "keeps a value containing a double quote intact" do
-      pending "BUG: values are wrapped in double quotes, so an embedded double quote ends the quoting early"
       expect(argv(helper.build_env_variable_args("MSG" => 'say "hi"')))
         .to eq ["-e", 'MSG=say "hi"']
+    end
+
+    it "keeps a value containing a dollar sign out of the shell's reach" do
+      # An unescaped $HOME would be expanded by the shell running the docker
+      # command, so the container would receive the workstation's home
+      # directory instead of the literal string.
+      expect(argv(helper.build_env_variable_args("P" => "$HOME/x")))
+        .to eq ["-e", "P=$HOME/x"]
+    end
+
+    it "keeps a name containing a space as one argument" do
+      expect(argv(helper.build_env_variable_args("ODD NAME" => "v")))
+        .to eq ["-e", "ODD NAME=v"]
     end
   end
 
@@ -194,7 +203,6 @@ describe Kitchen::Docker::Helpers::CliHelper do
     end
 
     it "keeps a local path containing a space as one argument" do
-      pending "BUG: build_copy_command interpolates both paths unquoted, so uploads from a path with a space fail"
       expect(argv(helper.build_copy_command("/Users/me/My Cookbooks/f.rb", "abc:/tmp/f.rb")))
         .to eq ["cp", "/Users/me/My Cookbooks/f.rb", "abc:/tmp/f.rb"]
     end

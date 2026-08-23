@@ -15,6 +15,7 @@ require "kitchen"
 require "kitchen/configurable"
 require "kitchen/logging"
 require "kitchen/shell_out"
+require "shellwords" unless defined?(Shellwords)
 
 module Kitchen
   module Docker
@@ -27,6 +28,27 @@ module Kitchen
         include Logging
         include ShellOut
 
+        # Escapes a configured value for the shell.
+        #
+        # Docker command lines are assembled as strings and handed to a shell, so
+        # a value that is a single datum -- a path, a name, a port mapping -- has
+        # to be escaped, or a space inside it is read as an argument separator and
+        # the rest of the value is taken as the image name.
+        #
+        # Values that are deliberately shell fragments are *not* escaped:
+        # +run_command+, +run_options+, +build_options+, and the command handed to
+        # `docker exec` are all documented as accepting flags and arguments.
+        #
+        # Escaping is a no-op for ordinary values -- +db:db+ and +8.8.8.8+ come
+        # back unchanged -- so this only alters command lines that were already
+        # broken.
+        #
+        # @param value [#to_s] the configured value
+        # @return [String] the value, safe to interpolate into a command line
+        def shell_escape(value)
+          Shellwords.escape(value.to_s)
+        end
+
         # rubocop:disable Metrics/AbcSize
 
         # Runs a docker CLI command with the configured connection flags.
@@ -36,12 +58,12 @@ module Kitchen
         # @return [String] the command's combined stdout and stderr
         def docker_command(cmd, options = {})
           docker = config[:binary].dup
-          docker << " -H #{config[:socket]}" if config[:socket]
+          docker << " -H #{shell_escape(config[:socket])}" if config[:socket]
           docker << " --tls" if config[:tls]
           docker << " --tlsverify" if config[:tls_verify]
-          docker << " --tlscacert=#{config[:tls_cacert]}" if config[:tls_cacert]
-          docker << " --tlscert=#{config[:tls_cert]}" if config[:tls_cert]
-          docker << " --tlskey=#{config[:tls_key]}" if config[:tls_key]
+          docker << " --tlscacert=#{shell_escape(config[:tls_cacert])}" if config[:tls_cacert]
+          docker << " --tlscert=#{shell_escape(config[:tls_cert])}" if config[:tls_cert]
+          docker << " --tlskey=#{shell_escape(config[:tls_key])}" if config[:tls_key]
           logger.debug("docker_command: #{docker} #{cmd} shell_opts: #{docker_shell_opts(options)}")
           run_command("#{docker} #{cmd}", docker_shell_opts(options))
         end
@@ -91,32 +113,33 @@ module Kitchen
           cmd << " -t" if config[:tty]
           cmd << build_env_variable_args(config[:env_variables]) if config[:env_variables]
           cmd << " -p #{transport_port}" unless transport_port.nil?
-          Array(config[:forward]).each { |port| cmd << " -p #{port}" }
-          Array(config[:dns]).each { |dns| cmd << " --dns #{dns}" }
-          Array(config[:add_host]).each { |host, ip| cmd << " --add-host=#{host}:#{ip}" }
-          Array(config[:volume]).each { |volume| cmd << " -v #{volume}" }
-          Array(config[:volumes_from]).each { |container| cmd << " --volumes-from #{container}" }
-          Array(config[:links]).each { |link| cmd << " --link #{link}" }
-          Array(config[:devices]).each { |device| cmd << " --device #{device}" }
-          Array(config[:mount]).each { |mount| cmd << " --mount #{mount}" }
-          Array(config[:tmpfs]).each { |tmpfs| cmd << " --tmpfs #{tmpfs}" }
-          cmd << " --name #{config[:instance_name]}" if config[:instance_name]
+          Array(config[:forward]).each { |port| cmd << " -p #{shell_escape(port)}" }
+          Array(config[:dns]).each { |dns| cmd << " --dns #{shell_escape(dns)}" }
+          Array(config[:add_host]).each { |host, ip| cmd << " --add-host=#{shell_escape("#{host}:#{ip}")}" }
+          Array(config[:volume]).each { |volume| cmd << " -v #{shell_escape(volume)}" }
+          Array(config[:volumes_from]).each { |container| cmd << " --volumes-from #{shell_escape(container)}" }
+          Array(config[:links]).each { |link| cmd << " --link #{shell_escape(link)}" }
+          Array(config[:devices]).each { |device| cmd << " --device #{shell_escape(device)}" }
+          Array(config[:mount]).each { |mount| cmd << " --mount #{shell_escape(mount)}" }
+          Array(config[:tmpfs]).each { |tmpfs| cmd << " --tmpfs #{shell_escape(tmpfs)}" }
+          cmd << " --name #{shell_escape(config[:instance_name])}" if config[:instance_name]
           cmd << " -P" if config[:publish_all]
-          cmd << " -h #{config[:hostname]}" if config[:hostname]
-          cmd << " -m #{config[:memory]}" if config[:memory]
-          cmd << " -c #{config[:cpu]}" if config[:cpu]
-          cmd << " --gpus #{config[:gpus]}" if config[:gpus]
-          cmd << " -e http_proxy=#{config[:http_proxy]}" if config[:http_proxy]
-          cmd << " -e https_proxy=#{config[:https_proxy]}" if config[:https_proxy]
+          cmd << " -h #{shell_escape(config[:hostname])}" if config[:hostname]
+          cmd << " -m #{shell_escape(config[:memory])}" if config[:memory]
+          cmd << " -c #{shell_escape(config[:cpu])}" if config[:cpu]
+          cmd << " --gpus #{shell_escape(config[:gpus])}" if config[:gpus]
+          cmd << " -e http_proxy=#{shell_escape(config[:http_proxy])}" if config[:http_proxy]
+          cmd << " -e https_proxy=#{shell_escape(config[:https_proxy])}" if config[:https_proxy]
           cmd << " --privileged" if config[:privileged]
-          cmd << " --isolation #{config[:isolation]}" if config[:isolation]
-          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{cap}" } if config[:cap_add]
-          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{cap}" } if config[:cap_drop]
-          Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{opt}" } if config[:security_opt]
-          cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
+          cmd << " --isolation #{shell_escape(config[:isolation])}" if config[:isolation]
+          Array(config[:cap_add]).each { |cap| cmd << " --cap-add=#{shell_escape(cap)}" } if config[:cap_add]
+          Array(config[:cap_drop]).each { |cap| cmd << " --cap-drop=#{shell_escape(cap)}" } if config[:cap_drop]
+          Array(config[:security_opt]).each { |opt| cmd << " --security-opt=#{shell_escape(opt)}" } if config[:security_opt]
+          cmd << " --platform=#{shell_escape(config[:docker_platform])}" if config[:docker_platform]
           extra_run_options = config_to_options(config[:run_options])
           cmd << " #{extra_run_options}" unless extra_run_options.empty?
-          cmd << " #{image_id} #{config[:run_command]}"
+          # run_command is a command line, not a single value, so it stays raw.
+          cmd << " #{shell_escape(image_id)} #{config[:run_command]}"
           logger.debug("build_run_command: #{cmd}")
           cmd
         end
@@ -136,9 +159,10 @@ module Kitchen
           cmd << " --privileged" if config[:privileged]
           cmd << " -t" if config[:tty]
           cmd << " -i" if config[:interactive]
-          cmd << " -u #{config[:username]}" if config[:username]
-          cmd << " -w #{config[:working_dir]}" if config[:working_dir]
-          cmd << " #{state[:container_id]}"
+          cmd << " -u #{shell_escape(config[:username])}" if config[:username]
+          cmd << " -w #{shell_escape(config[:working_dir])}" if config[:working_dir]
+          cmd << " #{shell_escape(state[:container_id])}"
+          # command is a command line, not a single value, so it stays raw.
           cmd << " #{command}"
           logger.debug("build_exec_command: #{cmd}")
           cmd
@@ -154,7 +178,7 @@ module Kitchen
         def build_copy_command(local_file, remote_file, opts = {})
           cmd = "cp"
           cmd << " -a" if opts[:archive]
-          cmd << " #{local_file} #{remote_file}"
+          cmd << " #{shell_escape(local_file)} #{shell_escape(remote_file)}"
           cmd
         end
 
@@ -179,7 +203,7 @@ module Kitchen
 
           args = ""
           vars.each do |k, v|
-            args << " -e #{k.to_s.strip}=\"#{v.to_s.strip}\""
+            args << " -e #{shell_escape("#{k.to_s.strip}=#{v.to_s.strip}")}"
           end
 
           args
