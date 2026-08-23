@@ -30,18 +30,64 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
         .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
     end
 
+    it "fails loudly on empty output" do
+      expect { helper.parse_container_id("") }
+        .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
+    end
+
+    # Cases from #452. Rootless Docker emits this on every `docker run`, which
+    # makes it the most common way to reach this code path.
+    context "when docker wrote a warning to stderr" do
+      let(:warning) { "WARNING: IPv4 forwarding is disabled. Networking will not work." }
+
+      it "finds an id the warning follows" do
+        expect(helper.parse_container_id("#{DockerOutput::RUN_CONTAINER_ID}\n#{warning}\n"))
+          .to eq DockerOutput::RUN_CONTAINER_ID
+      end
+
+      it "finds an id the warning precedes" do
+        expect(helper.parse_container_id("#{warning}\n#{DockerOutput::RUN_CONTAINER_ID}\n"))
+          .to eq DockerOutput::RUN_CONTAINER_ID
+      end
+
+      it "finds a short id" do
+        expect(helper.parse_container_id("abcdef123456\n#{warning}\n")).to eq "abcdef123456"
+      end
+
+      it "still fails when the warning is all there is" do
+        expect { helper.parse_container_id("#{warning}\nno container id here") }
+          .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
+      end
+    end
+
+    it "takes the id docker printed, not a later hex line" do
+      # run_command concatenates stdout before stderr, so the id always comes
+      # first. Scanning backwards would prefer a bare hex line that a warning
+      # happened to leave on stderr.
+      expect(helper.parse_container_id("#{DockerOutput::RUN_CONTAINER_ID}\ndeadbeefcafe\n"))
+        .to eq DockerOutput::RUN_CONTAINER_ID
+    end
+
+    it "does not mistake a hex-looking word inside a message for an id" do
+      expect { helper.parse_container_id("WARNING: layer abcdef123456 was skipped\n") }
+        .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
+    end
+
+    it "tolerates surrounding whitespace on the id line" do
+      expect(helper.parse_container_id("  #{DockerOutput::RUN_CONTAINER_ID}  \n"))
+        .to eq DockerOutput::RUN_CONTAINER_ID
+    end
+
     # run_command returns stdout + stderr, and the parser requires the whole
     # combined string to be exactly the id. Anything docker writes to stderr on
     # a successful `run` therefore fails container creation, with an error that
     # blames parsing rather than naming the warning.
     it "finds the id when docker pulled the image and logged progress to stderr" do
-      pending "BUG: parse_container_id requires the entire output to be the id, so any stderr output fails the run"
       expect(helper.parse_container_id(DockerOutput::RUN_WITH_PULL_ON_STDERR))
         .to eq DockerOutput::RUN_CONTAINER_ID
     end
 
     it "finds the id when the kernel lacks swap accounting" do
-      pending "BUG: the 'No swap limit support' warning docker emits on many Linux hosts is concatenated onto the id"
       expect(helper.parse_container_id(DockerOutput::RUN_WITH_SWAP_WARNING))
         .to eq DockerOutput::RUN_CONTAINER_ID
     end
