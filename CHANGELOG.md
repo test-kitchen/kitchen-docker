@@ -6,6 +6,16 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.3.5](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.4...v3.3.5) (2026-08-23)
+
+
+### Bug Fixes
+
+* report when docker cp silently writes nothing ([#487](https://github.com/test-kitchen/kitchen-docker/issues/487)) ([1bc62ba](https://github.com/test-kitchen/kitchen-docker/commit/1bc62ba615d25d402a97775dbf6ac252af5cbdd8))
+* require test-kitchen 3.0 or newer ([#492](https://github.com/test-kitchen/kitchen-docker/issues/492)) ([0c64225](https://github.com/test-kitchen/kitchen-docker/commit/0c64225dd22aca8a2a32e6f61a6d648bcd8c0b2b))
+* run every docker command through sudo when use_sudo is set ([#485](https://github.com/test-kitchen/kitchen-docker/issues/485)) ([2481aad](https://github.com/test-kitchen/kitchen-docker/commit/2481aadfc6415e5b7ed597e1095d0fe8db89afbb))
+* stop printing the image inspect JSON on destroy ([#488](https://github.com/test-kitchen/kitchen-docker/issues/488)) ([0011558](https://github.com/test-kitchen/kitchen-docker/commit/00115588236900d9ef3275a73892f9d3bdb4e3c8))
+
 ## [3.3.4](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.3...v3.3.4) (2026-08-23)
 
 
