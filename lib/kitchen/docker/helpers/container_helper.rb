@@ -12,6 +12,7 @@
 # limitations under the License.
 
 require "erb" unless defined?(Erb)
+require "ipaddr" unless defined?(IPAddr)
 require "json" unless defined?(JSON)
 require "shellwords" unless defined?(Shellwords)
 require "tempfile" unless defined?(Tempfile)
@@ -253,15 +254,47 @@ module Kitchen
           parse_container_id(output)
         end
 
+        # The container's address on the Docker network.
+        #
+        # Read from +NetworkSettings.Networks+ rather than the top-level
+        # +NetworkSettings.IPAddress+. That field was only ever populated for
+        # the default bridge, and Docker 29 removed it altogether -- asking for
+        # it there fails the whole `docker inspect` with "map has no entry for
+        # key \"IPAddress\"", which took +use_internal_docker_network+ with it.
+        # +Networks+ has been present since Docker 1.9, so reading it works on
+        # both.
+        #
+        # A container attached to several networks has an address on each; the
+        # first is used, which is the only one for the single-network case this
+        # option is for.
+        #
         # @param state [Hash] instance state naming the container
         # @return [String] the container's address on the Docker network
         # @raise [Kitchen::ActionFailed] if it cannot be determined
         def container_ip_address(state)
-          cmd = "inspect --format '{{ .NetworkSettings.IPAddress }}'"
+          cmd = "inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}'"
           cmd << " #{state[:container_id]}"
-          docker_command(cmd).strip
-        rescue
-          raise ActionFailed, "Error getting internal IP of Docker container"
+          output = docker_command(cmd, suppress_output: !logger.debug?)
+
+          # Picked by parsing rather than by taking the first word, so that a
+          # warning docker writes to stderr is not returned as an address.
+          address = output.split(/\s+/).find { |token| ip_address?(token) }
+          raise ActionFailed, "Docker reports no IP address for the container" if address.nil?
+
+          address
+        rescue => e
+          raise ActionFailed, "Error getting internal IP of Docker container. #{e}"
+        end
+
+        # @param token [String] a candidate address
+        # @return [Boolean] whether it parses as an IPv4 or IPv6 address
+        def ip_address?(token)
+          return false if token.nil? || token.empty?
+
+          IPAddr.new(token)
+          true
+        rescue IPAddr::Error
+          false
         end
 
         # Stops and removes the container.
