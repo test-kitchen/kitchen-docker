@@ -68,10 +68,28 @@ module Kitchen
           end
         end
 
+        # Whether any container was created from the image.
+        #
+        # Asked with a filter rather than by searching `docker ps -a` output for
+        # the id. That output abbreviates the IMAGE column to twelve characters,
+        # while state carries the full +sha256:+ digest, so the substring never
+        # matched and the answer was always false -- which defeated the guard
+        # entirely and let {#remove_image} run `docker rmi` against an image a
+        # container was still using.
+        #
         # @param state [Hash] instance state naming the image
         # @return [Boolean] whether any container references it
         def image_in_use?(state)
-          docker_command("ps -a", suppress_output: !logger.debug?).include?(state[:image_id])
+          return false unless state[:image_id]
+
+          output = docker_command("ps -a -q --filter ancestor=#{state[:image_id]}",
+            suppress_output: !logger.debug?)
+
+          # Matched line by line rather than by emptiness, so a warning docker
+          # writes to stderr is not mistaken for a container id.
+          output.lines.map(&:strip).any? do |line|
+            line.match?(/\A[0-9a-f]{12}(?:[0-9a-f]{52})?\z/)
+          end
         end
 
         # Builds the image from the given Dockerfile.
