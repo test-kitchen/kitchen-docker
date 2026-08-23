@@ -33,6 +33,11 @@ module Kitchen
         include Configurable
         include Kitchen::Docker::Helpers::CliHelper
 
+        # Printed by the probe in {#file_on_container?} when the file is there.
+        # A marker is echoed rather than the exit status being read, because a
+        # non-zero exit from `docker exec` is raised rather than returned.
+        COPIED_MARKER = "kitchen_docker_copied".freeze
+
         # Pulls the container id out of `docker run` output.
         #
         # Docker prints ids in short (12) or full (64) hex form, on a line of
@@ -172,21 +177,82 @@ module Kitchen
 
         # Copies a local file into the container.
         #
+        # The copy is checked afterwards, because `docker cp` cannot write into
+        # a mount and does not say so. A destination under a tmpfs or a volume
+        # is written to the container's own filesystem layer, which the mount
+        # then hides, and docker exits 0 with no output -- so the copy looks
+        # like it worked and the file is simply not there.
+        #
+        # Left unchecked, that surfaces later and somewhere else. Running with
+        # `tmpfs: /tmp`, which is how the Docker documentation suggests running
+        # systemd, the first sign is the next command failing with
+        # `/bin/bash: /tmp/docker-<uuid>.sh: No such file or directory` (#387),
+        # which names neither the copy nor the mount.
+        #
         # @param state [Hash] instance state naming the container
         # @param local_file [String] source path
         # @param remote_file [String] destination path inside the container
         # @return [String] the command's combined output
-        # @raise [RuntimeError] if the copy fails
+        # @raise [RuntimeError] if the copy fails, or if it silently wrote
+        #   nothing
         def copy_file_to_container(state, local_file, remote_file)
           debug("Copying local file #{local_file} to #{remote_file} on container")
 
           remote_file = replace_env_variables(state, remote_file)
 
-          remote_file = "#{state[:container_id]}:#{remote_file}"
-          cmd = build_copy_command(local_file, remote_file)
-          docker_command(cmd)
+          cmd = build_copy_command(local_file, "#{state[:container_id]}:#{remote_file}")
+          output = docker_command(cmd)
+          verify_file_copied(state, local_file, remote_file)
+          output
         rescue => e
           raise "Failed to copy file #{local_file} to container. #{e}"
+        end
+
+        # Checks that a copied file arrived, and says why if it did not.
+        #
+        # Only Linux containers are checked. tmpfs mounts are a Linux container
+        # feature, and `docker cp` against a Windows container is a different
+        # code path in Docker that this cannot be tried against, so those keep
+        # the behaviour they have always had.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param local_file [String] the source that was copied
+        # @param remote_file [String] the destination it was copied to
+        # @return [void]
+        # @raise [Kitchen::ActionFailed] if the file is not there
+        def verify_file_copied(state, local_file, remote_file)
+          return if state[:platform].to_s.include?("windows")
+          return if file_on_container?(state, remote_file, ::File.basename(local_file))
+
+          raise ActionFailed,
+            "docker reported no error copying it to #{remote_file}, but the file is " \
+            "not there. `docker cp` cannot write into a mount -- if #{remote_file} is " \
+            "a tmpfs or a volume, set the transport's temp_dir and the provisioner's " \
+            "root_path to a path that is not."
+        end
+
+        # Whether a `docker cp` destination now holds the file that was copied.
+        #
+        # `docker cp SRC CONTAINER:DEST` copies into DEST when DEST is a
+        # directory and to DEST otherwise. Which of those happened is only known
+        # inside the container, so the choice is made there, in the one command,
+        # rather than by asking twice from here.
+        #
+        # The two paths are passed as arguments to `sh` rather than interpolated
+        # into the script, so that nothing in either is read as shell syntax.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param remote_file [String] the destination that was copied to
+        # @param basename [String] the source's file name
+        # @return [Boolean] whether the file is there
+        def file_on_container?(state, remote_file, basename)
+          script = 'p="$1"; if [ -d "$p" ]; then p="$p/$2"; fi; ' \
+                   "if [ -e \"$p\" ]; then echo #{COPIED_MARKER}; fi"
+          probe = "/bin/sh -c #{Shellwords.escape(script)} sh " \
+                  "#{Shellwords.escape(remote_file)} #{Shellwords.escape(basename)}"
+
+          output = docker_command(build_exec_command(state, probe), suppress_output: !logger.debug?)
+          output.include?(COPIED_MARKER)
         end
 
         # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
