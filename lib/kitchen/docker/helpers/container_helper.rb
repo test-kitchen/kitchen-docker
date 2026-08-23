@@ -220,8 +220,6 @@ module Kitchen
           docker_command("rm #{container_id}")
         end
 
-        # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-
         # Dockerfile ENV lines carrying the configured proxy settings.
         #
         # Each is emitted in both lower and upper case, because different tools
@@ -229,25 +227,22 @@ module Kitchen
         #
         # @return [String] the ENV lines, empty when no proxy is configured
         def dockerfile_proxy_config
-          env_variables = ""
-          if config[:http_proxy]
-            env_variables << "ENV http_proxy=#{config[:http_proxy]}\n"
-            env_variables << "ENV HTTP_PROXY=#{config[:http_proxy]}\n"
-          end
-
-          if config[:https_proxy]
-            env_variables << "ENV https_proxy=#{config[:https_proxy]}\n"
-            env_variables << "ENV HTTPS_PROXY=#{config[:https_proxy]}\n"
-          end
-
-          if config[:no_proxy]
-            env_variables << "ENV no_proxy=#{config[:no_proxy]}\n"
-            env_variables << "ENV NO_PROXY=#{config[:no_proxy]}\n"
-          end
-
-          env_variables
+          %i{http_proxy https_proxy no_proxy}.map do |proxy_type|
+            proxy_env_vars(proxy_type)
+          end.join
         end
-        # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+        # ENV lines for one proxy setting, in both spellings.
+        #
+        # @param proxy_type [Symbol] +:http_proxy+, +:https_proxy+, or
+        #   +:no_proxy+
+        # @return [String] two ENV lines, or empty when that proxy is unset
+        def proxy_env_vars(proxy_type)
+          return "" unless config[proxy_type]
+
+          value = config[proxy_type]
+          "ENV #{proxy_type}=#{value}\nENV #{proxy_type.upcase}=#{value}\n"
+        end
       end
       # rubocop:enable Metrics/ModuleLength
     end
