@@ -15,8 +15,16 @@ require "fileutils" unless defined?(FileUtils)
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
+      # Local temp-file handling.
       module FileHelper
+        # Writes a temp file, creating its parent directory if needed.
+        #
+        # @param file [String] path to write
+        # @param contents [String] what to write
+        # @return [void]
+        # @raise [RuntimeError] if the write fails
         def create_temp_file(file, contents)
           debug("[Docker] Creating temp file #{file}")
           debug("[Docker] --- Start Temp File Contents ---")

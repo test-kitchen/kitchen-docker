@@ -21,8 +21,14 @@ require_relative "../docker/helpers/inspec_helper"
 # require_relative "../../docker/version"
 
 module Kitchen
+  # Test Kitchen's transport plugins.
   module Transport
+    # Test Kitchen transport that runs commands inside a Docker container.
+    #
+    # Commands go through `docker exec` rather than a network protocol, so no
+    # SSH or WinRM server is needed inside the image.
     class Docker < Kitchen::Transport::Base
+      # Raised when a docker command against the container fails.
       class DockerFailed < TransportFailed; end
 
       # kitchen_transport_api_version 1
@@ -64,6 +70,15 @@ module Kitchen
         end
       end
 
+      # Builds a connection to the container.
+      #
+      # +DOCKER_HOST+ is exported here because the docker-api gem, used by the
+      # InSpec verifier, reads the daemon address from the environment rather
+      # than from Test Kitchen's configuration.
+      #
+      # @param state [Hash] instance state naming the container
+      # @yieldparam connection [Connection] if a block is given
+      # @return [Connection]
       def connection(state, &block)
         options = config.to_hash.merge(state)
         options[:platform] = instance.platform.name
@@ -77,10 +92,16 @@ module Kitchen
         Kitchen::Transport::Docker::Connection.new(options, &block)
       end
 
+      # A connection to one container.
       class Connection < Kitchen::Transport::Docker::Connection
         # Include the InSpec patches to be able to execute tests on Windows containers
         include Kitchen::Docker::Helpers::InspecHelper
 
+        # Runs a command inside the container.
+        #
+        # @param command [String] the command to run; nil is a no-op
+        # @return [void]
+        # @raise [DockerFailed] if the command fails
         def execute(command)
           return if command.nil?
 
@@ -92,10 +113,18 @@ module Kitchen
           raise DockerFailed, "Docker failed to execute command on container. Error Details: #{e}"
         end
 
+        # Copies local files into the container.
+        #
+        # @param locals [String, Array<String>] one path or several
+        # @param remote [String] destination path inside the container
+        # @return [Array<String>] the files copied
         def upload(locals, remote)
           container.upload(locals, remote)
         end
 
+        # The container implementation for this platform.
+        #
+        # @return [Kitchen::Docker::Container] a Windows or Linux container
         def container
           @container ||= if windows_container?
                            Kitchen::Docker::Container::Windows.new(@options)
@@ -113,6 +142,7 @@ module Kitchen
 
         private
 
+        # @return [Boolean] whether the platform under test is Windows
         def windows_container?
           @options[:platform].to_s.include?("windows")
         end
@@ -150,6 +180,8 @@ module Kitchen
           docker + cmd
         end
 
+        # @return [Array<String>] the shell to drop the user into, PowerShell on
+        #   Windows and an interactive login bash elsewhere
         def login_shell
           windows_container? ? ["powershell"] : ["/bin/bash", "--login", "-i"]
         end

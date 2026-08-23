@@ -52,6 +52,7 @@ end
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
       # Marker module included by the Docker transport Connection class.
       # Actual verifier patches are applied directly to verifier classes above.

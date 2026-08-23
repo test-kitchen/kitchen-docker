@@ -24,12 +24,22 @@ require_relative "cli_helper"
 
 module Kitchen
   module Docker
+    # Mixins shared by the driver, transport, and container classes.
     module Helpers
-      # rubocop:disable Metrics/ModuleLength, Style/Documentation
+      # rubocop:disable Metrics/ModuleLength
+      # Operations against a running container: exec, copy, inspect, remove.
       module ContainerHelper
         include Configurable
         include Kitchen::Docker::Helpers::CliHelper
 
+        # Pulls the container id out of `docker run` output.
+        #
+        # Docker prints ids in short (12) or full (64) hex form; anything else
+        # means the output was not an id at all.
+        #
+        # @param output [String] the command output
+        # @return [String] the container id
+        # @raise [Kitchen::ActionFailed] if no id could be parsed
         def parse_container_id(output)
           container_id = output.chomp
 
@@ -40,28 +50,49 @@ module Kitchen
           container_id
         end
 
+        # Renders the configured Dockerfile through ERB.
+        #
+        # @return [String] the rendered Dockerfile
         def dockerfile_template
           template = IO.read(File.expand_path(config[:dockerfile]))
           context = Kitchen::Docker::ERBContext.new(config.to_hash)
           ERB.new(template).result(context.get_binding)
         end
 
+        # @return [Boolean] whether the configured socket is a TCP one, meaning
+        #   the daemon is not on this machine
         def remote_socket?
           config[:socket] ? socket_uri.scheme == "tcp" : false
         end
 
+        # @return [URI] the configured Docker socket
         def socket_uri
           URI.parse(config[:socket])
         end
 
+        # The path to pass to `docker build -f`.
+        #
+        # With a build context the path has to be relative to it; without one
+        # docker reads the Dockerfile from stdin and the absolute path is fine.
+        #
+        # @param file [File] the temp Dockerfile
+        # @return [String] the path to use
         def dockerfile_path(file)
           config[:build_context] ? Pathname.new(file.path).relative_path_from(Pathname.pwd).to_s : file.path
         end
 
+        # @param state [Hash] instance state naming the container
+        # @return [Boolean] whether the container is present and running
         def container_exists?(state)
           state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
         end
 
+        # Runs a command inside the container.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param command [String] the command to run
+        # @return [String] the command's combined output
+        # @raise [RuntimeError] if the command fails
         def container_exec(state, command)
           cmd = build_exec_command(state, command)
           docker_command(cmd)
@@ -69,6 +100,13 @@ module Kitchen
           raise "Failed to execute command on Docker container. #{e}"
         end
 
+        # Creates a directory inside the container, on Linux or Windows.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param path [String] the directory to create; environment variable
+        #   references are expanded first
+        # @return [String] the command's combined output
+        # @raise [RuntimeError] if the directory cannot be created
         def create_dir_on_container(state, path)
           path = replace_env_variables(state, path)
           cmd = "mkdir -p #{path}"
@@ -84,6 +122,13 @@ module Kitchen
           raise "Failed to create directory #{path} on container. #{e}"
         end
 
+        # Copies a local file into the container.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param local_file [String] source path
+        # @param remote_file [String] destination path inside the container
+        # @return [String] the command's combined output
+        # @raise [RuntimeError] if the copy fails
         def copy_file_to_container(state, local_file, remote_file)
           debug("Copying local file #{local_file} to #{remote_file} on container")
 
@@ -97,6 +142,11 @@ module Kitchen
         end
 
         # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+
+        # Reads the container's environment.
+        #
+        # @param state [Hash] instance state naming the container
+        # @return [Hash] variable names to values
         def container_env_variables(state)
           # Retrieves all environment variables from inside container
           vars = {}
@@ -116,6 +166,14 @@ module Kitchen
         end
         # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
+        # Expands a container-side environment variable reference in a path.
+        #
+        # Handles both +$env:TEMP+ and +$TEMP+ forms. The value has to be read from
+        # inside the container, since the workstation's environment is unrelated.
+        #
+        # @param state [Hash] instance state naming the container
+        # @param str [String] the string to expand
+        # @return [String] the expanded string
         def replace_env_variables(state, str)
           if str.include?("$env:")
             key = str[/\$env:(.*?)(\\|$)/, 1]
@@ -130,12 +188,20 @@ module Kitchen
           str
         end
 
+        # Runs the container and returns its id.
+        #
+        # @param state [Hash] instance state naming the image
+        # @param transport_port [Integer, nil] container port to publish, if any
+        # @return [String] the new container's id
         def run_container(state, transport_port = nil)
           cmd = build_run_command(state[:image_id], transport_port)
           output = docker_command(cmd)
           parse_container_id(output)
         end
 
+        # @param state [Hash] instance state naming the container
+        # @return [String] the container's address on the Docker network
+        # @raise [Kitchen::ActionFailed] if it cannot be determined
         def container_ip_address(state)
           cmd = "inspect --format '{{ .NetworkSettings.IPAddress }}'"
           cmd << " #{state[:container_id]}"
@@ -144,6 +210,10 @@ module Kitchen
           raise ActionFailed, "Error getting internal IP of Docker container"
         end
 
+        # Stops and removes the container.
+        #
+        # @param state [Hash] instance state naming the container
+        # @return [void]
         def remove_container(state)
           container_id = state[:container_id]
           docker_command("stop -t 0 #{container_id}")
@@ -151,6 +221,13 @@ module Kitchen
         end
 
         # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+
+        # Dockerfile ENV lines carrying the configured proxy settings.
+        #
+        # Each is emitted in both lower and upper case, because different tools
+        # inside the image read different spellings.
+        #
+        # @return [String] the ENV lines, empty when no proxy is configured
         def dockerfile_proxy_config
           env_variables = ""
           if config[:http_proxy]
@@ -172,7 +249,7 @@ module Kitchen
         end
         # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
       end
-      # rubocop:enable Metrics/ModuleLength, Style/Documentation
+      # rubocop:enable Metrics/ModuleLength
     end
   end
 end

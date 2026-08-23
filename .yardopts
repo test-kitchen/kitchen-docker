@@ -1,0 +1,11 @@
+--markup markdown
+--output-dir doc
+--readme README.md
+--title "kitchen-docker"
+--protected
+--private
+lib/**/*.rb
+-
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
