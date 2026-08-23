@@ -156,9 +156,24 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
     # rather than the first silently truncates them, and the truncated value
     # then flows into replace_env_variables and into upload paths.
     it "keeps a value containing an equals sign intact" do
-      pending "BUG: values are split on every '=' rather than the first; use split(\"=\", 2)"
       expect(with_printenv("LS_COLORS=rs=0:di=01;34\n"))
         .to eq("LS_COLORS" => "rs=0:di=01;34")
+    end
+
+    it "keeps a value that is itself a key=value list" do
+      expect(with_printenv("JAVA_OPTS=-Dfoo=bar -Dbaz=qux\n"))
+        .to eq("JAVA_OPTS" => "-Dfoo=bar -Dbaz=qux")
+    end
+
+    it "keeps a variable with an empty value" do
+      expect(with_printenv("EMPTY=\n")).to eq("EMPTY" => "")
+    end
+
+    it "ignores a continuation line of a multi-line value" do
+      # printenv prints an embedded newline literally, so the second line has no
+      # name. Recording it would put a nil-valued entry under a bogus key.
+      expect(with_printenv("CERT=-----BEGIN-----\nMIIBIjANBg\n"))
+        .to eq("CERT" => "-----BEGIN-----")
     end
 
     it "parses the JSON a Windows container returns" do
