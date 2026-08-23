@@ -122,6 +122,45 @@ describe Kitchen::Docker::Helpers::ImageHelper do
     end
   end
 
+  describe "#image_in_use?" do
+    let(:image_id) { "sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc" }
+
+    def helper_seeing(output)
+      h = helper
+      @asked = nil
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @asked = cmd; output }
+      h
+    end
+
+    it "reports the image as in use when a container references it" do
+      expect(helper_seeing("331a7cd151e4\n").image_in_use?(image_id: image_id)).to be true
+    end
+
+    it "reports the image as free when nothing references it" do
+      expect(helper_seeing("").image_in_use?(image_id: image_id)).to be false
+    end
+
+    it "reports the image as free when state names no image" do
+      h = helper
+      expect(h).not_to receive(:docker_command)
+      expect(h.image_in_use?({})).to be false
+    end
+
+    it "asks docker to filter, rather than searching ps output for the id" do
+      # `docker ps -a` abbreviates the IMAGE column to twelve characters, so
+      # searching it for the full sha256 digest never matched and the guard
+      # was always false.
+      h = helper_seeing("331a7cd151e4\n")
+      h.image_in_use?(image_id: image_id)
+      expect(@asked).to eq "ps -a -q --filter ancestor=#{image_id}"
+    end
+
+    it "does not mistake a warning on stderr for a container" do
+      expect(helper_seeing("WARNING: something happened\n").image_in_use?(image_id: image_id))
+        .to be false
+    end
+  end
+
   describe "#remove_image" do
     let(:state) { { image_id: "sha256:abc" } }
 
