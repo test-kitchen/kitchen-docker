@@ -28,6 +28,7 @@ machine to boot.
 * [Driver configuration](#driver-configuration)
 * [Transport configuration](#transport-configuration)
 * [Logging into a container](#logging-into-a-container)
+* [Other commands](#other-commands)
 * [Examples](#examples)
 * [Using with Chef](#using-with-chef)
 * [Troubleshooting](#troubleshooting)
@@ -207,6 +208,7 @@ platforms:
 | `build_tempdir` | working directory | Where the generated Dockerfile is written, relative to `build_context`. |
 | `use_cache` | `true` | Use Docker's build cache. `false` adds `--no-cache`. |
 | `remove_images` | `false` | Remove the built image on `kitchen destroy`. |
+| `package_name` | the instance name, tagged `latest` | Image `kitchen package` commits the container to. |
 | `docker_platform` | *(none)* | Target architecture, passed as `--platform` to both build and run — e.g. `linux/arm64`. |
 
 ### Provisioning the image
@@ -336,6 +338,68 @@ On Linux platforms this starts `/bin/bash --login -i`; on Windows platforms it
 starts `powershell`. The transport's `username`, `working_dir`,
 `env_variables`, and `privileged` settings are honoured, so the shell matches
 the environment the provisioner ran in.
+
+## Other commands
+
+### `kitchen package`
+
+Commits the container to a Docker image, so a converged instance can be kept
+and reused:
+
+```sh
+kitchen package default-ubuntu-2404
+```
+
+```text
+-----> Packaging remote instance
+       [Docker] Packaged default-ubuntu-2404 as default-ubuntu-2404:latest (sha256:1f51c590...)
+```
+
+The image is named after the instance. Set `package_name` for something else:
+
+```yaml
+driver:
+  name: docker
+  package_name: myapp/under-test:candidate
+```
+
+Run `docker save` against the result if you want a tarball.
+
+### `kitchen doctor`
+
+Checks that the daemon is reachable and that the configuration points at
+things that exist:
+
+```sh
+kitchen doctor default-ubuntu-2404
+```
+
+```text
+-----> The doctor is in
+       Docker daemon at unix:///var/run/docker.sock is reachable, running 29.7.2.
+```
+
+It reports every problem it finds rather than stopping at the first, and exits
+non-zero when there is one: a daemon it cannot reach, a `tls_cacert`,
+`tls_cert`, `tls_key`, or `dockerfile` naming a path that is not there, or a
+state file naming a container the daemon no longer has.
+
+### `kitchen list --live`
+
+Asks Docker what state each container is actually in, rather than reporting
+only the last action Test Kitchen took:
+
+```sh
+kitchen list --live
+```
+
+```text
+Instance             Driver  Provisioner  Verifier  Transport  Last Action  Last Error  Live Status
+default-ubuntu-2404  Docker  Shell        Dummy     Docker     Created      <None>      running
+```
+
+`running`, `stopped`, `gone` (the state file names a container the daemon does
+not have), or `not created`.
 
 ## Examples
 

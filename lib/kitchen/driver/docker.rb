@@ -17,6 +17,7 @@ require "kitchen"
 require "json" unless defined?(JSON)
 require "securerandom" unless defined?(SecureRandom)
 require "net/ssh" unless defined?(Net::SSH)
+require "time" unless defined?(Time)
 
 require "kitchen/driver/base"
 
@@ -80,6 +81,13 @@ module Kitchen
         ].join("-").downcase
       end
 
+      # The image `kitchen package` commits to. Derived from the instance name,
+      # which is already lowercase and dash-separated, so it is a valid Docker
+      # repository name as it stands.
+      default_config :package_name do |driver|
+        "#{driver.instance.name.downcase.gsub(/[^a-z0-9_.-]/, "-")}:latest"
+      end
+
       default_config :platform, &:default_platform
 
       default_config :run_command do |driver|
@@ -141,6 +149,82 @@ module Kitchen
         container.destroy(state)
       end
 
+      # Commits the container to a Docker image.
+      #
+      # `kitchen package` asks a driver to turn a converged instance into
+      # something reusable. For Docker that is an image: `docker commit` on the
+      # running container, which is the artifact every other docker tool
+      # already takes. Run `docker save` against the result for a tarball.
+      #
+      # @param state [Hash] instance state naming the container
+      # @return [void]
+      # @raise [Kitchen::ActionFailed] if the instance has not been created
+      def package(state)
+        unless state[:container_id]
+          raise ActionFailed, "Cannot package #{instance.name}: it has not been created."
+        end
+
+        # Asked here rather than left to `docker commit`, which reports a
+        # container that is gone as a bare "Error response from daemon: No such
+        # container: <64 hex characters>" with nothing about the instance or
+        # what to do next.
+        unless container_exists?(state)
+          raise ActionFailed, "Cannot package #{instance.name}: the state file names container " \
+                              "#{state[:container_id]}, which the daemon does not have. " \
+                              "Run `kitchen destroy` to clear it."
+        end
+
+        name = config[:package_name]
+        info("[Docker] Committing container #{state[:container_id]} to #{name}")
+        output = docker_command("commit #{shell_escape(state[:container_id])} #{shell_escape(name)}",
+          suppress_output: !logger.debug?)
+        image_id = output.lines.map(&:strip).find { |line| line.match?(/\Asha256:[[:xdigit:]]{64}\z/) }
+        info("[Docker] Packaged #{instance.name} as #{name}#{" (#{image_id})" if image_id}")
+      end
+
+      # Checks the configuration and the daemon it points at.
+      #
+      # Run by `kitchen doctor`. A true return is how Test Kitchen decides to
+      # exit non-zero, so every check runs and the results are OR-ed together
+      # rather than returning at the first problem -- somebody running `doctor`
+      # wants the whole list, not the first item on it.
+      #
+      # @param state [Hash] instance state
+      # @return [Boolean] whether a problem was found
+      def doctor(state)
+        [
+          doctor_daemon,
+          doctor_files,
+          doctor_container(state),
+        ].any?
+      end
+
+      # Reports whether the container backing this instance is up.
+      #
+      # Read by `kitchen list --live`, which showed "unknown" for every
+      # instance: {Kitchen::Driver::Base} cannot know, and this driver never
+      # said. Docker can answer directly, and these are the same two questions
+      # create and destroy already ask.
+      #
+      # @param state [Hash] instance state naming the container
+      # @return [Hash] normalized status data
+      def status(state)
+        common = { source: "driver", checked_at: Time.now.utc.iso8601, resource_id: state[:container_id] }
+
+        if !state[:container_id]
+          common.merge(live: false, state: "not created",
+            message: "No container is recorded in the state file")
+        elsif !container_exists?(state)
+          common.merge(live: false, state: "gone",
+            message: "The state file names a container the daemon does not have")
+        elsif container_running?(state)
+          common.merge(live: true, state: "running")
+        else
+          common.merge(live: false, state: "stopped",
+            message: "The container exists but is not running")
+        end
+      end
+
       # Waits for the transport to accept a connection, unless disabled.
       #
       # @param state [Hash] instance state describing how to connect
@@ -171,6 +255,44 @@ module Kitchen
       end
 
       protected
+
+      # @return [Boolean] whether the daemon could not be reached
+      def doctor_daemon
+        version = docker_command("version --format '{{.Server.Version}}'", suppress_output: true).strip
+        info("Docker daemon at #{config[:socket]} is reachable, running #{version}.")
+        false
+      rescue => e
+        error("Cannot reach the Docker daemon at #{config[:socket]}. #{e}")
+        true
+      end
+
+      # Checks paths the configuration names.
+      #
+      # A missing TLS file or Dockerfile is worth catching here because docker
+      # reports it far from the cause -- a missing client certificate surfaces
+      # as a connection error rather than as a missing file.
+      #
+      # @return [Boolean] whether any named path is missing
+      def doctor_files
+        %i{tls_cacert tls_cert tls_key dockerfile}.map do |key|
+          path = config[key]
+          next false if path.nil? || ::File.exist?(::File.expand_path(path))
+
+          error("#{key} is set to #{path}, which does not exist.")
+          true
+        end.any?
+      end
+
+      # @param state [Hash] instance state naming the container
+      # @return [Boolean] whether state names a container that is gone
+      def doctor_container(state)
+        return false unless state[:container_id]
+        return false if container_exists?(state)
+
+        error("The state file names container #{state[:container_id]}, which the daemon does " \
+              "not have. Run `kitchen destroy` to clear it.")
+        true
+      end
 
       # The container implementation for this platform.
       #
