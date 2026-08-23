@@ -1,732 +1,415 @@
-# Kitchen-Docker
+# kitchen-docker
 
 [![Gem Version](https://img.shields.io/gem/v/kitchen-docker.svg)](https://rubygems.org/gems/kitchen-docker)
-[![Coverage](https://img.shields.io/codecov/c/github/test-kitchen/kitchen-docker.svg)](https://codecov.io/github/test-kitchen/kitchen-docker)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-A Test Kitchen Driver and Transport for Docker.
+A [Test Kitchen][test_kitchen_docs] **driver** and **transport** for Docker.
 
-***MAINTAINERS WANTED***: This Test-Kitchen driver is currently without a maintainer and has many known issues. If you're interested in maintaining this driver for the long run including expanding the CI testing please reach out on [Chef Community Slack: #test-kitchen](https://chefcommunity.slack.com/archives/C2B6G1WCQ). Until such a time that this driver is maintained we highly recommend the [kitchen-dokken](https://github.com/test-kitchen/kitchen-dokken) for Chef Infra testing with Docker containers.
+The driver builds an image for each platform and runs a container from it. The
+transport runs your commands inside that container with `docker exec`, so no
+SSH or WinRM server is needed. Together they let you converge and verify a
+cookbook against a dozen distributions in about the time it takes one virtual
+machine to boot.
+
+> **Maintainers wanted.** This driver is currently without a maintainer and has
+> known issues. If you would like to take it on — including expanding the CI
+> coverage — please reach out in
+> [#test-kitchen on Chef Community Slack](https://chefcommunity.slack.com/archives/C2B6G1WCQ).
+> Until then, we recommend [kitchen-dokken][dokken] for Chef Infra testing with
+> Docker containers.
+
+## Contents
+
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Quick start](#quick-start)
+* [How it works](#how-it-works)
+* [Choosing an image and platform](#choosing-an-image-and-platform)
+* [Driver configuration](#driver-configuration)
+* [Transport configuration](#transport-configuration)
+* [Logging into a container](#logging-into-a-container)
+* [Examples](#examples)
+* [Using with Chef](#using-with-chef)
+* [Troubleshooting](#troubleshooting)
+* [Contributing](#contributing)
+* [License](#license)
 
 ## Requirements
 
-* [Docker][docker_installation] **(>= 1.5)**
+* [Docker][docker_installation] 1.5 or newer, running locally or reachable over
+  the network.
+* Ruby 3.1 or newer.
 
-## Installation and Setup
+## Installation
 
-This driver ships as part of [Cinc Workstation](https://cinc.sh/start/workstation/).
-If you have Cinc Workstation installed, there is nothing else to install. To
-install it into a standalone Ruby:
+This driver ships as part of [Cinc Workstation][cinc_workstation] and
+[Chef Workstation][chef_workstation]. If you have either installed, there is
+nothing else to do.
+
+To install it into a standalone Ruby:
 
 ```sh
 gem install kitchen-docker
 ```
 
-The examples below use the `cinc` commands. Everything here works identically
-with Chef Workstation — see [Using with Chef](#using-with-chef).
+Or add it to your cookbook's `Gemfile`:
 
-Please read the Test Kitchen [docs][test_kitchen_docs] for more details.
-
-Example (Linux) `.kitchen.local.yml`:
-
-```yaml
----
-driver:
-  name: docker
-  env_variables:
-    TEST_KEY: TEST_VALUE
-
-platforms:
-- name: ubuntu
-  run_list:
-  - recipe[apt]
-- name: centos
-  driver_config:
-    image: centos
-    platform: rhel
-  run_list:
-  - recipe[yum]
-
-transport:
-  name: docker
+```ruby
+gem "kitchen-docker"
 ```
 
-Example (Windows) `.kitchen.local.yml`:
+## Quick start
+
+Create a `kitchen.yml` in your cookbook:
 
 ```yaml
 ---
 driver:
   name: docker
 
-platforms:
-- name: windows
-  driver_config:
-    image: mcr.microsoft.com/windows/servercore:1607
-    platform: windows
-  run_list:
-  - recipe[chef_client]
-
 transport:
   name: docker
-  env_variables:
-    TEST_KEY: TEST_VALUE
-```
 
-## Default Configuration
+provisioner:
+  name: cinc_infra
 
-This driver can determine an image and platform type for a select number of
-platforms.
+verifier:
+  name: cinc_auditor
 
-Examples:
-
-```yaml
----
 platforms:
-- name: ubuntu-18.04
-- name: centos-7
+  - name: ubuntu-24.04
+  - name: almalinux-9
+
+suites:
+  - name: default
+    run_list:
+      - recipe[my_cookbook::default]
 ```
 
-This will effectively generate a configuration similar to:
+That is a complete configuration — no `image`, no `platform`, no
+`run_command`. The driver derives them from each platform name.
+
+Run it:
+
+```sh
+kitchen test
+```
+
+Test Kitchen will, for each platform, build an image, start a container,
+converge your cookbook, run the verifier, and destroy the container. To work
+interactively instead:
+
+```sh
+kitchen converge default-ubuntu-2404   # build, start, and converge
+kitchen login default-ubuntu-2404      # get a shell inside the container
+kitchen verify default-ubuntu-2404     # run the tests
+kitchen destroy default-ubuntu-2404    # clean up
+```
+
+The examples above use the `cinc_infra` provisioner and `cinc_auditor`
+verifier. If you use Chef Workstation, substitute `chef_infra` and `inspec` —
+see [Using with Chef](#using-with-chef). No driver changes are needed.
+
+## How it works
+
+Knowing the sequence makes the configuration options below much easier to
+place:
+
+1. **Generate a Dockerfile.** The driver writes one based on `image` and
+   `platform`: it installs an SSH server and `sudo`, creates the `username`
+   account, and authorises the generated `public_key`. Anything in
+   `provision_command` is appended. Supply your own with
+   [`dockerfile`](#images-and-building) to skip all of this.
+2. **Build the image**, sending `build_context` (your cookbook directory) to
+   the daemon if the daemon needs it.
+3. **Run a container** from the image with `run_command` as PID 1 — by default
+   `sshd`, which keeps the container alive and gives Test Kitchen something to
+   connect to.
+4. **Run commands in it.** With `transport: docker` this is `docker exec`. With
+   the default SSH transport, it is SSH to the forwarded port using the
+   generated key.
+
+Because the image is rebuilt from a Dockerfile, most driver options are
+*image*-level (`build_options`, `provision_command`) or *container*-level
+(`volume`, `privileged`, `forward`). The tables below are grouped that way.
+
+## Choosing an image and platform
+
+For most platforms, the name is all you need. The driver splits it on the first
+`-` into an image and a platform family:
 
 ```yaml
----
 platforms:
-- name: ubuntu-18.04
-  driver_config:
-    image: ubuntu:18.04
-    platform: ubuntu
-- name: centos-7
-  driver_config:
-    image: centos:7
-    platform: centos
+  - name: ubuntu-24.04     # image: ubuntu:24.04,    platform: ubuntu
+  - name: almalinux-9      # image: almalinux:9,     platform: almalinux
+  - name: fedora-latest    # image: fedora:latest,   platform: fedora
 ```
 
-## Configuration
+`centos` is special-cased, because its images are tagged `centos7` rather than
+`centos:7`.
 
-### binary
-
-The Docker binary to use.
-
-The default value is `docker`.
-
-Examples:
+Set `image` and `platform` explicitly when the image name does not match the
+distribution, which is common for vendor or mirror images:
 
 ```yaml
-  binary: docker.io
+platforms:
+  - name: centos-stream-9
+    driver:
+      image: dokken/centos-stream-9
+      platform: centosstream
 ```
+
+`platform` selects how the Dockerfile bootstraps the container, so it must be
+one the driver recognises:
+
+| `platform` | Notes |
+| --- | --- |
+| `debian`, `ubuntu` | Also honours [`disable_upstart`](#provisioning-the-image). |
+| `rhel`, `centos`, `oraclelinux` | Shared RHEL package set. |
+| `almalinux`, `rockylinux`, `centosstream` | RHEL rebuilds, each with its own package set. |
+| `amazonlinux` | Adds `--allowerasing` to `dnf install`. |
+| `fedora` | |
+| `arch` | |
+| `gentoo`, `gentoo-paludis` | |
+| `opensuse`, `opensuse/leap`, `opensuse/tumbleweed`, `sles` | |
+| `photon` | |
+| `windows` | Uses Windows containers; see [Windows containers](#windows-containers). |
+
+Anything else raises `Unknown platform '<name>'`. If your distribution is not
+listed, supply your own [`dockerfile`](#images-and-building) instead.
+
+## Driver configuration
+
+Everything in this section goes under `driver:` — either at the top level, or
+per-platform and per-suite:
 
 ```yaml
-  binary: /opt/docker
-```
-
-### socket
-
-The Docker daemon socket to use. By default, Docker will listen on `unix:///var/run/docker.sock` (On Windows, `npipe:////./pipe/docker_engine`),
-and no configuration here is required. If Docker is binding to another host/port or Unix socket, you will need to set this option.
-If a TCP socket is set, its host will be used for SSH access to suite containers.
-
-Examples:
-
-```yaml
-  socket: unix:///tmp/docker.sock
-```
-
-```yaml
-  socket: tcp://docker.example.com:4242
-```
-
-If you are using the InSpec verifier on Windows, using named pipes for the Docker engine will not work with the Docker transport.
-Set the socket option with the TCP socket address of the Docker engine as shown below:
-
-```yaml
-socket: tcp://localhost:2375
-```
-
-The Docker engine must be configured to listen on a TCP port (default port is 2375). This can be configured by editing the configuration file
-(usually located in `C:\ProgramData\docker\config\daemon.json`) and adding the hosts value:
-
-```json
-"hosts": ["tcp://0.0.0.0:2375"]
-```
-
-Example configuration is shown below:
-
-```json
-{
-  "registry-mirrors": [],
-  "insecure-registries": [],
-  "debug": true,
-  "experimental": false,
-  "hosts": ["tcp://0.0.0.0:2375"]
-}
-```
-
-If you use [Boot2Docker](https://github.com/boot2docker/boot2docker)
-or [docker-machine](https://docs.docker.com/machine/get-started/) set
-your `DOCKER_HOST` environment variable properly with `export
-DOCKER_HOST=tcp://192.168.59.103:2375` or `eval "$(docker-machine env
-$MACHINE)"` then use the following:
-
-```yaml
-socket: tcp://192.168.59.103:2375
-```
-
-### image
-
-The Docker image to use as the base for the suite containers. You can find
-images using the [Docker Index][docker_index].
-
-The default will be computed, using the platform name (see the Default
-Configuration section for more details).
-
-### isolation
-
-The isolation technology for the container. This is not set by default and will use the default container isolation settings.
-
-For example, the following driver configuration options can be used to specify the container isolation technology for Windows containers:
-
-```yaml
-# Hyper-V
-isolation: hyperv
-
-# Process
-isolation: process
-```
-
-### platform
-
-The platform of the chosen image. This is used to properly bootstrap the
-suite container for Test Kitchen. Kitchen Docker currently supports:
-
-* `arch`
-* `debian` or `ubuntu`
-* `amazonlinux`, `rhel`, `centos`, `fedora`, `oraclelinux`, `almalinux` or `rockylinux`
-* `gentoo` or `gentoo-paludis`
-* `opensuse/tumbleweed`, `opensuse/leap`, `opensuse` or `sles`
-* `windows`
-
-The default will be computed, using the platform name (see the Default
-Configuration section for more details).
-
-### require\_chef\_omnibus
-
-Determines whether or not a Chef [Omnibus package][chef_omnibus_dl] will be
-installed. There are several different behaviors available:
-
-* `true` - the latest release will be installed. Subsequent converges
-  will skip re-installing if chef is present.
-* `latest` - the latest release will be installed. Subsequent converges
-  will always re-install even if chef is present.
-* `<VERSION_STRING>` (ex: `10.24.0`) - the desired version string will
-  be passed the the install.sh script. Subsequent converges will skip if
-  the installed version and the desired version match.
-* `false` or `nil` - no chef is installed.
-
-The default value is `true`.
-
-### disable\_upstart
-
-Disables upstart on Debian/Ubuntu containers, as many images do not support a
-working upstart.
-
-The default value is `true`.
-
-### provision\_command
-
-Custom command(s) to be run when provisioning the base for the suite containers.
-
-Examples:
-
-```yaml
-  provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
-```
-
-```yaml
-  provision_command:
-    - apt-get install dnsutils
-    - apt-get install telnet
-```
-
-```yaml
-driver_config:
-  provision_command: curl -L https://www.opscode.com/chef/install.sh | bash
-  require_chef_omnibus: false
-```
-
-### env_variables
-
-Adds environment variables to Docker container
-
-Examples:
-
-```yaml
-  env_variables:
-    TEST_KEY_1: TEST_VALUE
-    SOME_VAR: SOME_VALUE
-```
-
-### use\_cache
-
-This determines if the Docker cache is used when provisioning the base for suite
-containers.
-
-The default value is `true`.
-
-### use\_sudo
-
-This determines if Docker commands are run with `sudo`.
-
-The default value depends on the type of socket being used. For local sockets, the default value is `true`. For remote sockets, the default value is `false`.
-
-This should be set to `false` if you're using boot2docker, as every command passed into the VM runs as root by default.
-
-### remove\_images
-
-This determines if images are automatically removed when the suite container is
-destroyed.
-
-The default value is `false`.
-
-### run\_command
-
-Sets the command used to run the suite container.
-
-The default value is `/usr/sbin/sshd -D -o UseDNS=no -o UsePAM=no -o PasswordAuthentication=yes -o UsePrivilegeSeparation=no -o PidFile=/tmp/sshd.pid`.
-
-Examples:
-
-```yaml
-  run_command: /sbin/init
-```
-
-### memory
-
-Sets the memory limit for the suite container in bytes. Otherwise use Dockers
-default. You can read more about `memory.limit_in_bytes` in the [Resource Management Guide][memory_limit].
-
-### cpu
-
-Sets the CPU shares (relative weight) for the suite container. Otherwise use
-Dockers defaults. You can read more about cpu.shares in the [Resource Management Guide][cpu_shares].
-
-### volume
-
-Adds a data volume(s) to the suite container.
-
-Examples:
-
-```yaml
-  volume: /ftp
-```
-
-```yaml
-  volume:
-  - /ftp
-  - /srv
-```
-
-### volumes\_from
-
-Mount volumes managed by other containers.
-
-Examples:
-
-```yaml
-  volumes_from: repos
-```
-
-```yaml
-  volumes_from:
-  - repos
-  - logging
-  - rvm
-```
-
-### mount
-
-Attach a filesystem mount to the container (**NOTE:** supported only in docker
-17.05 and newer).
-
-Examples:
-
-```yaml
-  mount: type=volume,source=my-volume,destination=/path/in/container
-```
-
-```yaml
-  mount:
-  - type=volume,source=my-volume,destination=/path/in/container
-  - type=tmpfs,tmpfs-size=512M,destination=/path/to/tmpdir
-```
-
-### tmpfs
-
-Adds a tmpfs volume(s) to the suite container.
-
-Examples:
-
-```yaml
-  tmpfs: /tmp
-```
-
-```yaml
-  tmpfs:
-  - /tmp:exec
-  - /run
-```
-
-### dns
-
-Adjusts `resolv.conf` to use the dns servers specified. Otherwise use
-Dockers defaults.
-
-Examples:
-
-```yaml
-  dns: 8.8.8.8
-```
-
-```yaml
-  dns:
-  - 8.8.8.8
-  - 8.8.4.4
-```
-
-### http\_proxy
-
-Sets an http proxy for the suite container using the `http_proxy` environment variable.
-
-Examples:
-
-```yaml
-  http_proxy: http://proxy.host.com:8080
-```
-
-### https\_proxy
-
-Sets an https proxy for the suite container using the `https_proxy` environment variable.
-
-Examples:
-
-```yaml
-  https_proxy: http://proxy.host.com:8080
-```
-
-### no\_proxy
-
-Sets a proxy exclusion list for the suite container using the `no_proxy`
-environment variable. Used alongside `http_proxy` and `https_proxy`.
-
-Examples:
-
-```yaml
-  no_proxy: localhost,127.0.0.1,.internal.example.com
-```
-
-### forward
-
-Set suite container port(s) to forward to the host machine. You may specify
-the host (public) port in the mappings, if not, Docker chooses for you.
-
-Examples:
-
-```yaml
-  forward: 80
-```
-
-```yaml
-  forward:
-  - 22:2222
-  - 80:8080
-```
-
-### hostname
-
-Set the suite container hostname. Otherwise use Dockers default.
-
-Examples:
-
-```yaml
-  hostname: foobar.local
-```
-
-### privileged
-
-Run the suite container in privileged mode. This allows certain functionality
-inside the Docker container which is not otherwise permitted.
-
-The default value is `false`.
-
-Examples:
-
-```yaml
-  privileged: true
-```
-
-### cap\_add
-
-Adds a capability to the running container.
-
-Examples:
-
-```yaml
-cap_add:
-- SYS_PTRACE
-
-```
-
-### cap\_drop
-
-Drops a capability from the running container.
-
-Examples:
-
-```yaml
-cap_drop:
-- CHOWN
-```
-
-### security\_opt
-
-Apply a security profile to the Docker container. Allowing finer granularity of
-access control than privileged mode, through leveraging SELinux/AppArmor
-profiles to grant access to specific resources.
-
-Examples:
-
-```yaml
-security_opt:
-  - apparmor:my_profile
-```
-
-### dockerfile
-
-Use a custom Dockerfile, instead of having Kitchen-Docker build one for you.
-
-Examples:
-
-```yaml
-  dockerfile: test/Dockerfile
-```
-
-### instance\_name
-
-Set the name of container to link to other container(s).
-
-Examples:
-
-```yaml
-  instance_name: web
-```
-
-### links
-
-Set ```instance_name```(and alias) of other container(s) that connect from the suite container.
-
-Examples:
-
-```yaml
- links: db:db
-```
-
-```yaml
-  links:
-  - db:db
-  - kvs:kvs
-```
-
-### publish\_all
-
-Publish all exposed ports to the host interfaces.
-This option used to communicate between some containers.
-
-The default value is `false`.
-
-Examples:
-
-```yaml
-  publish_all: true
-```
-
-### devices
-
-Share a host device with the container. Host device must be an absolute path.
-
-Examples:
-
-```yaml
-devices: /dev/vboxdrv
-```
-
-```yaml
-devices:
-  - /dev/vboxdrv
-  - /dev/vboxnetctl
-```
-
-### build_context
-
-Transfer the cookbook directory (cwd) as build context. This is required for
-Dockerfile commands like ADD and COPY. When using a remote Docker server, the
-whole directory has to be copied, which can be slow.
-
-The default value is `true` for local Docker and `false` for remote Docker.
-
-Examples:
-
-```yaml
-  build_context: true
-```
-
-### build_options
-
-Extra command-line options to pass to `docker build` when creating the image.
-
-Examples:
-
-```yaml
-  build_options: --rm=false
-```
-
-```yaml
-  build_options:
-    rm: false
-    build-arg: something
-```
-
-### run_options
-
-Extra command-line options to pass to `docker run` when starting the container.
-
-Examples:
-
-```yaml
-  run_options: --ip=1.2.3.4
-```
-
-```yaml
-  run_options:
-    tmpfs:
-    - /run/lock
-    - /tmp
-    net: br3
-```
-
-### build_tempdir
-
-Relative (to `build_context`) temporary directory path for built Dockerfile.
-
-Example:
-
-```yaml
-  build_tempdir: .kitchen
-```
-
-### use_internal_docker_network
-
-If you want to use kitchen-docker from within another Docker container you'll
-need to set this to true. When set to true uses port 22 as the SSH port and
-the IP of the container that chef is going to run in as the hostname so that
-you can connect to it over SSH from within another Docker container.
-
-Examples:
-
-```yaml
-  use_internal_docker_network: true
-```
-
-### add\_host
-
-Adds entries to the container's `/etc/hosts`, as a map of hostname to IP
-address. Each entry becomes a `--add-host` argument.
-
-Examples:
-
-```yaml
-  add_host:
-    db.internal: 10.0.0.5
-    cache.internal: 10.0.0.6
-```
-
-### gpus
-
-Requests GPU devices for the container, passed through as `--gpus`. Requires a
-Docker installation configured for GPU access.
-
-Examples:
-
-```yaml
-  gpus: all
-```
-
-```yaml
-  gpus: '"device=0,1"'
-```
-
-### detach
-
-Runs the container detached, with `-d`. The driver normally manages this itself;
-set it only if you know you need it.
-
-Examples:
-
-```yaml
-  detach: true
-```
-
-### docker_platform
-
-Configure the CPU platform (architecture) used by docker to build the image.
-
-Examples:
-
-```yaml
-  docker_platform: linux/arm64
-```
-
-```yaml
-  docker_platform: linux/amd64
-```
-
-## Transport Configuration
-
-This gem also ships a `docker` transport, which runs commands inside the
-container with `docker exec` instead of connecting over SSH or WinRM. Set it
-alongside the driver:
-
-```yaml
-transport:
+driver:
   name: docker
+  privileged: true          # applies everywhere
+
+platforms:
+  - name: ubuntu-24.04
+    driver:
+      forward:              # applies to this platform only
+        - 8080:80
 ```
 
-These options go under `transport:` rather than `driver:`.
+### Images and building
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `binary` | `docker` | Docker CLI binary used to run commands. |
-| `socket` | `$DOCKER_HOST`, else `unix:///var/run/docker.sock` (`npipe:////./pipe/docker_engine` on Windows) | Docker daemon to connect to. |
-| `username` | `kitchen` on Linux, unset on Windows | User that commands run as inside the container. |
-| `interactive` | `false` | Pass `-i` to `docker exec`, keeping stdin open. |
-| `tty` | `false` | Pass `-t` to `docker exec`, allocating a pseudo-TTY. |
-| `privileged` | `false` | Run commands with `--privileged`. |
-| `working_dir` | `nil` | Working directory inside the container, passed as `--workdir`. |
-| `temp_dir` | `/tmp`, or `$env:TEMP` on Windows | Directory inside the container used to stage files. |
-| `env_variables` | `nil` | Environment variables set for commands run in the container. |
-| `wait_for_transport` | `true` | Wait for the transport to become ready before continuing. Set to `false` for containers that do not stay up. |
-| `private_key` | `.kitchen/docker_id_rsa` | Private key used when the container is reached over SSH rather than `docker exec`. |
-| `public_key` | `.kitchen/docker_id_rsa.pub` | Matching public key. |
+| `image` | derived from the platform name | Base image for the container. |
+| `platform` | derived from the platform name | Distribution family, used to bootstrap the image. See [above](#choosing-an-image-and-platform). |
+| `dockerfile` | *(none)* | Path to your own Dockerfile, used instead of the generated one. Rendered as [ERB](#using-a-custom-dockerfile). |
+| `build_context` | `true` locally, `false` for a remote daemon | Send the working directory to the daemon as build context. Required for `ADD` and `COPY`; slow against a remote daemon. |
+| `build_options` | *(none)* | Extra flags for `docker build`, as a string or a map. |
+| `build_tempdir` | working directory | Where the generated Dockerfile is written, relative to `build_context`. |
+| `use_cache` | `true` | Use Docker's build cache. `false` adds `--no-cache`. |
+| `remove_images` | `false` | Remove the built image on `kitchen destroy`. |
+| `docker_platform` | *(none)* | Target architecture, passed as `--platform` to both build and run — e.g. `linux/arm64`. |
 
-### Connecting to a TLS-protected daemon
+### Provisioning the image
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `tls` | `false` | Use TLS when connecting to the daemon. |
+| `provision_command` | *(none)* | Command, or list of commands, to run while building the image. Each becomes a `RUN` line. |
+| `disable_upstart` | `true` | Neutralise upstart on Debian and Ubuntu images that ship a broken copy. Ignored on other platforms. |
+| `username` | `kitchen` on Linux, unset on Windows | Account created in the image and used for the connection. |
+| `private_key` | `.kitchen/docker_id_rsa` | SSH key used to reach the container. Generated on first use if absent. |
+| `public_key` | `.kitchen/docker_id_rsa.pub` | Matching public key, authorised in the image. |
+
+### Running the container
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `run_command` | `sshd -D …` on Linux, `ping -t localhost` on Windows | Process run as PID 1. It must stay in the foreground, or the container will exit immediately. |
+| `run_options` | *(none)* | Extra flags for `docker run`, as a string or a map. |
+| `instance_name` | generated, unique | `--name` for the container. Set it to give other containers a stable name to `link` to. |
+| `hostname` | Docker's default | Container hostname. |
+| `memory` | Docker's default | Memory limit in bytes. |
+| `cpu` | Docker's default | CPU shares (relative weight). |
+| `gpus` | *(none)* | Passed as `--gpus`. Requires a GPU-enabled Docker installation. |
+| `isolation` | Docker's default | Isolation technology — `hyperv` or `process` for Windows containers. |
+| `interactive` | `false` | Pass `-i`, keeping stdin open. |
+| `tty` | `false` | Pass `-t`, allocating a pseudo-TTY. |
+| `env_variables` | *(none)* | Environment variables set in the container, as a map. |
+| `wait_for_transport` | `true` | Wait for the transport to answer before converging. Set `false` for containers that do not stay up. |
+| `detach` | `false` | Run provisioner commands with `docker exec -d`, returning immediately instead of waiting for them. The container itself is always started detached, regardless of this setting, and `kitchen login` ignores it so the shell stays usable. |
+
+### Networking
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `forward` | *(none)* | Ports to publish, as `container` or `host:container`. Docker picks the host port if you omit it. |
+| `publish_all` | `false` | Publish every exposed port to a random host port (`-P`). |
+| `dns` | Docker's default | DNS servers for the container. |
+| `add_host` | *(none)* | Extra `/etc/hosts` entries, as a map of hostname to IP. |
+| `links` | *(none)* | Other containers to link, as `name:alias`. |
+| `use_internal_docker_network` | `false` | Connect over the container's own IP on port 22 instead of a forwarded host port. Needed when Test Kitchen itself runs inside a container. |
+
+### Storage
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `volume` | *(none)* | Volumes to add, in `docker run -v` syntax. |
+| `volumes_from` | *(none)* | Containers whose volumes to mount. |
+| `mount` | *(none)* | Mounts in `--mount` syntax. Requires Docker 17.05 or newer. |
+| `tmpfs` | *(none)* | tmpfs mounts, e.g. `/tmp` or `/tmp:exec`. |
+| `devices` | *(none)* | Host devices to share. Must be absolute paths. |
+
+Each of these accepts a single value or a list.
+
+### Security and privileges
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `privileged` | `false` | Run the container privileged. Needed for systemd, Docker-in-Docker, and some kernel-level tests. |
+| `cap_add` | *(none)* | Capabilities to add, e.g. `SYS_PTRACE`. |
+| `cap_drop` | *(none)* | Capabilities to drop. |
+| `security_opt` | *(none)* | SELinux or AppArmor profiles — finer-grained than `privileged`. |
+
+### Proxies
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `http_proxy` | *(none)* | Set as `http_proxy` and `HTTP_PROXY`, both in the image and in the running container. |
+| `https_proxy` | *(none)* | Set as `https_proxy` and `HTTPS_PROXY`, in the image and the container. |
+| `no_proxy` | *(none)* | Set as `no_proxy` and `NO_PROXY` **in the image only**, for use during the build. |
+
+### Connecting to the Docker daemon
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `binary` | `docker` | Docker CLI to invoke — e.g. `docker.io`, or an absolute path. |
+| `socket` | `$DOCKER_HOST`, else `unix:///var/run/docker.sock` (`npipe:////./pipe/docker_engine` on Windows) | Daemon to talk to. A `tcp://` value also supplies the host used for SSH to the container. |
+| `use_sudo` | `false` | Run every `docker` command through `sudo`. |
+| `tls` | `false` | Use TLS when connecting. |
 | `tls_verify` | `false` | Verify the daemon's certificate. |
-| `tls_cacert` | `nil` | Path to the CA certificate. |
-| `tls_cert` | `nil` | Path to the client certificate. |
-| `tls_key` | `nil` | Path to the client key. |
+| `tls_cacert` | *(none)* | Path to the CA certificate. |
+| `tls_cert` | *(none)* | Path to the client certificate. |
+| `tls_key` | *(none)* | Path to the client key. |
+
+## Transport configuration
+
+The `docker` transport runs commands with `docker exec` rather than over SSH or
+WinRM. It is the recommended pairing with this driver, and is required for
+Windows containers, which have no WinRM service:
 
 ```yaml
+transport:
+  name: docker
+```
+
+These options go under `transport:`, not `driver:`.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `binary` | `docker` | Docker CLI to invoke. |
+| `socket` | `$DOCKER_HOST`, else the platform default | Daemon to talk to. |
+| `username` | `kitchen` on Linux, unset on Windows | User that commands run as (`-u`). |
+| `working_dir` | *(none)* | Working directory inside the container (`-w`). |
+| `temp_dir` | `/tmp`, or `$env:TEMP` on Windows | Directory used to stage uploaded files. |
+| `env_variables` | *(none)* | Environment variables for each command. |
+| `privileged` | `false` | Run commands with `--privileged`. |
+| `interactive` | `false` | Pass `-i`. |
+| `tty` | `false` | Pass `-t`. |
+| `tls`, `tls_verify`, `tls_cacert`, `tls_cert`, `tls_key` | as for the driver | TLS settings for the daemon connection. |
+
+The driver and transport each read their own copy of `binary`, `socket`,
+`username`, and the TLS settings. If you point one at a non-default daemon,
+point the other at it too.
+
+## Logging into a container
+
+`kitchen login` opens an interactive shell inside a running container, so you
+do not have to look up the container ID and run `docker exec` yourself:
+
+```sh
+kitchen login default-ubuntu-2404
+```
+
+On Linux platforms this starts `/bin/bash --login -i`; on Windows platforms it
+starts `powershell`. The transport's `username`, `working_dir`,
+`env_variables`, and `privileged` settings are honoured, so the shell matches
+the environment the provisioner ran in.
+
+## Examples
+
+### Testing a systemd service
+
+systemd needs to run as PID 1 with enough privileges to manage cgroups:
+
+```yaml
+platforms:
+  - name: almalinux-9
+    driver:
+      run_command: /usr/sbin/init
+      privileged: true
+      volume: /sys/fs/cgroup:/sys/fs/cgroup:ro
+```
+
+Because `run_command` is no longer `sshd`, pair this with `transport: docker`
+so Test Kitchen does not try to connect over SSH.
+
+### Using a custom Dockerfile
+
+Point `dockerfile` at your own file to bypass the generated one entirely:
+
+```yaml
+platforms:
+  - name: custom
+    driver:
+      dockerfile: test/Dockerfile
+      username: dockerfile
+      password: dockerfile
+```
+
+The file is rendered as an **ERB template**, and every driver configuration key
+is available as an instance variable of the same name — `@username`, `@image`,
+`@public_key`, and so on, including keys you invent yourself (`@password`
+above). That is how a custom Dockerfile authorises the key Test Kitchen will
+connect with:
+
+```erb
+FROM almalinux:latest
+RUN dnf install -y sudo openssh-server openssh-clients which curl
+RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+RUN useradd -d /home/<%= @username %> -m -s /bin/bash <%= @username %>
+RUN echo '<%= @username %> ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN mkdir -p /home/<%= @username %>/.ssh && chmod 0700 /home/<%= @username %>/.ssh
+RUN echo '<%= IO.read(@public_key).strip %>' >> /home/<%= @username %>/.ssh/authorized_keys
+```
+
+A working copy lives in [`test/Dockerfile`](test/Dockerfile). Your Dockerfile
+is responsible for the SSH server and the `authorized_keys` entry — the driver
+adds nothing to it.
+
+### Building for another architecture
+
+```yaml
+platforms:
+  - name: ubuntu-24.04
+    driver:
+      docker_platform: linux/arm64
+```
+
+This requires emulation — install QEMU binfmt handlers (`docker run --privileged
+--rm tonistiigi/binfmt --install all`) or use a Buildx builder that can reach a
+native node.
+
+### Using a remote daemon over TLS
+
+```yaml
+driver:
+  name: docker
+  socket: tcp://docker.example.com:2376
+  tls: true
+  tls_verify: true
+  tls_cacert: ~/.docker/ca.pem
+  tls_cert: ~/.docker/cert.pem
+  tls_key: ~/.docker/key.pem
+
 transport:
   name: docker
   socket: tcp://docker.example.com:2376
@@ -737,30 +420,95 @@ transport:
   tls_key: ~/.docker/key.pem
 ```
 
-## Logging into a container
+`build_context` defaults to `false` against a remote daemon, since sending the
+whole working directory over the network is slow. Set it to `true` if your
+Dockerfile uses `ADD` or `COPY`.
 
-`kitchen login` opens an interactive shell inside a running container using the
-Docker transport, so you do not need to look up the container ID and run
-`docker exec` by hand:
+### Windows containers
 
-```bash
-kitchen login default-ubuntu-2404
+```yaml
+driver:
+  name: docker
+
+transport:
+  name: docker
+  socket: tcp://localhost:2375
+
+platforms:
+  - name: windows-2022
+    driver:
+      image: mcr.microsoft.com/windows/servercore:ltsc2022
+      platform: windows
+      isolation: hyperv
 ```
 
-The session runs `docker exec` against the instance's container. On Linux
-platforms it starts `/bin/bash --login -i`; on Windows platforms it starts
-`powershell`. The transport's `username`, `working_dir`, `env_variables` and
-`privileged` settings are honoured, so the shell matches the environment that
-Test Kitchen uses when it runs the provisioner.
+Windows containers have no WinRM service, so `transport: docker` is required
+rather than optional. If you use the InSpec verifier on Windows, the named-pipe
+socket will not work — the daemon must listen on TCP. Add `hosts` to
+`C:\ProgramData\docker\config\daemon.json`:
 
+```json
+{
+  "hosts": ["tcp://0.0.0.0:2375"]
+}
+```
+
+### Building behind a proxy
+
+```yaml
+driver:
+  name: docker
+  http_proxy: http://proxy.example.com:8080
+  https_proxy: http://proxy.example.com:8080
+  no_proxy: localhost,127.0.0.1,.internal.example.com
+```
+
+### Linking containers together
+
+Give the container a stable name, then link to it from another suite:
+
+```yaml
+suites:
+  - name: database
+    driver:
+      instance_name: db
+
+  - name: web
+    driver:
+      links:
+        - db:db
+```
+
+### Running Test Kitchen inside a container
+
+When Test Kitchen itself runs in a container, forwarded host ports are not
+reachable. Connect over the Docker network instead:
+
+```yaml
+driver:
+  name: docker
+  use_internal_docker_network: true
+```
+
+### Passing flags the driver has no option for
+
+`build_options` and `run_options` are escape hatches, accepting either a raw
+string or a map that is expanded into flags:
+
+```yaml
+driver:
+  build_options:
+    rm: false
+    build-arg: VERSION=1.2.3
+  run_options: --ip=1.2.3.4
+```
 
 ## Using with Chef
 
-This driver is not tied to Cinc. It runs containers and does not itself install
-either distribution — that is the provisioner's job. If you use
-[Chef Workstation](https://www.chef.io/downloads/tools/workstation) rather than
-[Cinc Workstation](https://cinc.sh/start/workstation/), run `kitchen` instead of
-`cinc kitchen` and use `chef_infra` instead of `cinc_infra`:
+This driver is not tied to Cinc. It builds images and runs containers; it does
+not install either distribution — that is the provisioner's job. If you use
+[Chef Workstation][chef_workstation] rather than
+[Cinc Workstation][cinc_workstation], use `chef_infra` and `inspec`:
 
 ```yaml
 provisioner:
@@ -772,37 +520,52 @@ verifier:
 
 No driver configuration changes are needed.
 
+## Troubleshooting
+
+**The container exits immediately.** `run_command` must stay in the
+foreground. A command that forks and returns leaves the container with nothing
+running, and Docker stops it.
+
+**`Unknown platform '<name>'`.** The `platform` value is not one the driver can
+bootstrap. Set it to a supported family, or supply your own
+[`dockerfile`](#using-a-custom-dockerfile).
+
+**`ADD` or `COPY` cannot find a file.** Set `build_context: true`. It defaults
+to `false` against a remote daemon.
+
+**Permission denied talking to the daemon.** Either add your user to the
+`docker` group, or set `use_sudo: true`.
+
+**Anything else.** Run with `-l debug`:
+
+```sh
+kitchen converge default-ubuntu-2404 -l debug
+```
+
+The debug log contains the generated Dockerfile and the exact `docker build`
+and `docker run` command lines, which is usually enough to see what went wrong.
+
 ## Contributing
 
-Bug reports and pull requests are welcome on [GitHub][repo], and issues on
-[GitHub Issues][issues]. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for development setup, how to run the tests,
-and the release process.
+Bug reports and pull requests are welcome on [GitHub][repo]; please report
+issues on [GitHub Issues][issues].
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, how to run the
+unit and integration tests, and the release process.
 
 ## License
 
-```text
 Copyright 2013-2016, [Sean Porter](https://github.com/portertech)
 Copyright 2015-2016, [Noah Kantrowitz](https://github.com/coderanger)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0. You may obtain a copy of the
+License at <https://www.apache.org/licenses/LICENSE-2.0>. See
+[LICENSE](LICENSE) for the full text.
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
-[issues]:                 https://github.com/test-kitchen/kitchen-docker/issues
-[repo]:                   https://github.com/test-kitchen/kitchen-docker
-[docker_installation]:    https://docs.docker.com/installation/#installation
-[docker_index]:           https://index.docker.io/
-[test_kitchen_docs]:      https://kitchen.ci/docs/getting-started/introduction/
-[chef_omnibus_dl]:        https://downloads.chef.io/tools/infra-client
-[cpu_shares]:             https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-cpu.html
-[memory_limit]:           https://docs.fedoraproject.org/en-US/Fedora/17/html/Resource_Management_Guide/sec-memory.html
+[issues]:              https://github.com/test-kitchen/kitchen-docker/issues
+[repo]:                https://github.com/test-kitchen/kitchen-docker
+[dokken]:              https://github.com/test-kitchen/kitchen-dokken
+[docker_installation]: https://docs.docker.com/engine/install/
+[test_kitchen_docs]:   https://kitchen.ci/docs/getting-started/introduction/
+[cinc_workstation]:    https://cinc.sh/start/workstation/
+[chef_workstation]:    https://www.chef.io/downloads/tools/workstation
