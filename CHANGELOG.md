@@ -6,6 +6,13 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.3.4](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.3...v3.3.4) (2026-08-23)
+
+
+### Bug Fixes
+
+* read the container IP from NetworkSettings.Networks ([#479](https://github.com/test-kitchen/kitchen-docker/issues/479)) ([98b3337](https://github.com/test-kitchen/kitchen-docker/commit/98b3337d9c03e7cdde6d6d28d9e311b87f37c64f))
+
 ## [3.3.3](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.2...v3.3.3) (2026-08-23)
 
 
