@@ -16,5 +16,5 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files`.split($/)
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "test-kitchen", ">= 1.0.0", "< 5.0"
+  spec.add_dependency "test-kitchen", ">= 3.0", "< 5.0"
 end
