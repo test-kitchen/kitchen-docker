@@ -42,13 +42,23 @@ module Kitchen
       # container was removed behind Test Kitchen's back and silently creating a
       # new one would hide that.
       #
+      # A container that exists but has stopped is also an error, and a separate
+      # one: it is still there to be cleaned up, so the message points at
+      # `kitchen destroy` rather than claiming the container is gone.
+      #
       # @param state [Hash] mutable instance state; gains +username+
       # @return [void]
-      # @raise [Kitchen::ActionFailed] if state names a container that is gone
+      # @raise [Kitchen::ActionFailed] if state names a container that is gone,
+      #   or one that exists but is not running
       def create(state)
         if container_exists?(state)
+          unless container_running?(state)
+            raise ActionFailed, "Container ID #{state[:container_id]} was found in the kitchen state data, " \
+                                "but the container is not running. Run `kitchen destroy` to remove it."
+          end
+
           info("Container ID #{state[:container_id]} already exists.")
-        elsif !container_exists?(state) && state[:container_id]
+        elsif state[:container_id]
           raise ActionFailed, "Container ID #{state[:container_id]} was found in the kitchen state data, " \
                               "but the container does not exist."
         end

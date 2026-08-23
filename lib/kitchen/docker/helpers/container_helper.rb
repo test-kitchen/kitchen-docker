@@ -93,10 +93,45 @@ module Kitchen
           config[:build_context] ? Pathname.new(file.path).relative_path_from(Pathname.pwd).to_s : file.path
         end
 
+        # Whether the container named in state is present, running or not.
+        #
+        # Asked with `docker inspect` rather than `docker top`, which answers a
+        # different question: `top` lists processes, so it fails on a container
+        # that exists but has stopped. Reading that as "does not exist" made
+        # {Kitchen::Docker::Container#destroy} skip removal and leave the
+        # container behind, while Test Kitchen deleted the state file and
+        # reported success.
+        #
         # @param state [Hash] instance state naming the container
-        # @return [Boolean] whether the container is present and running
+        # @return [Boolean] whether the container exists in any state
         def container_exists?(state)
-          state[:container_id] && !!docker_command("top #{state[:container_id]}") rescue false
+          return false unless state[:container_id]
+
+          !!docker_command("inspect --type=container #{state[:container_id]}",
+            suppress_output: !logger.debug?)
+        rescue
+          false
+        end
+
+        # Whether the container named in state is running.
+        #
+        # Separate from {#container_exists?} because the two callers want
+        # different questions answered: destroy removes a container in any
+        # state, while create has to tell a container it can use from one that
+        # has stopped.
+        #
+        # @param state [Hash] instance state naming the container
+        # @return [Boolean] whether the container exists and is running
+        def container_running?(state)
+          return false unless state[:container_id]
+
+          output = docker_command(
+            "inspect --type=container --format '{{.State.Running}}' #{state[:container_id]}",
+            suppress_output: !logger.debug?
+          )
+          output.strip == "true"
+        rescue
+          false
         end
 
         # Runs a command inside the container.

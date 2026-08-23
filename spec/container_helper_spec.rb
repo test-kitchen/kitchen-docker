@@ -217,6 +217,59 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
     end
   end
 
+  describe "#container_exists? and #container_running?" do
+    # `docker inspect` answers for a container in any state; `docker top` only
+    # for a running one. The two predicates have to disagree on a stopped
+    # container, or destroy cannot clean it up.
+    def helper_answering(inspect_ok:, running: "false")
+      h = helper
+      allow(h).to receive(:docker_command) do |cmd, _opts = {}|
+        raise Kitchen::ShellOut::ShellCommandFailed, "No such container" unless inspect_ok
+
+        cmd.include?("{{.State.Running}}") ? "#{running}\n" : "[{...}]"
+      end
+      h
+    end
+
+    let(:state) { { container_id: "abc123abc123" } }
+
+    it "reports a running container as existing and running" do
+      h = helper_answering(inspect_ok: true, running: "true")
+      expect(h.container_exists?(state)).to be true
+      expect(h.container_running?(state)).to be true
+    end
+
+    it "reports a stopped container as existing but not running" do
+      h = helper_answering(inspect_ok: true, running: "false")
+      expect(h.container_exists?(state)).to be true
+      expect(h.container_running?(state)).to be false
+    end
+
+    it "reports a container docker does not know as neither" do
+      h = helper_answering(inspect_ok: false)
+      expect(h.container_exists?(state)).to be false
+      expect(h.container_running?(state)).to be false
+    end
+
+    it "reports no container when state names none" do
+      h = helper
+      expect(h).not_to receive(:docker_command)
+      expect(h.container_exists?({})).to be false
+      expect(h.container_running?({})).to be false
+    end
+
+    it "asks docker about a container, not about its processes" do
+      # `docker top` was the original implementation and is the bug: it fails
+      # on a stopped container, which read as the container not existing.
+      h = helper
+      seen = []
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| seen << cmd; "[{...}]" }
+      h.container_exists?(state)
+      expect(seen.join).to include("inspect --type=container")
+      expect(seen.join).not_to include("top ")
+    end
+  end
+
   describe "#remove_container" do
     it "stops the container before removing it" do
       # `docker rm` refuses to remove a running container, so the order matters.
