@@ -438,7 +438,7 @@ generated key pair.
 
 ## [0.8.1](https://github.com/test-kitchen/kitchen-docker/compare/v0.8.0...v0.8.1) (2013-10-26)
 
-* https://github.com/portertech/kitchen-docker/graphs/contributors ([70a2722](https://github.com/test-kitchen/kitchen-docker/commit/70a2722))
+* <https://github.com/portertech/kitchen-docker/graphs/contributors> ([70a2722](https://github.com/test-kitchen/kitchen-docker/commit/70a2722))
 * force /sbin/initctl symlink, minor version bump ([8ccd795](https://github.com/test-kitchen/kitchen-docker/commit/8ccd795))
 
 ## [0.8.0](https://github.com/test-kitchen/kitchen-docker/compare/v0.8.0.beta...v0.8.0) (2013-10-26)
