@@ -6,6 +6,13 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.3.1](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.0...v3.3.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* resolve gemspec load path and refactor proxy config method ([#440](https://github.com/test-kitchen/kitchen-docker/issues/440)) ([28a9b79](https://github.com/test-kitchen/kitchen-docker/commit/28a9b79f1722b3eb0e534623c6a00eb8881a93f6))
+
 ## [3.3.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.2.4...v3.3.0) (2026-08-22)
 
 ### Features
