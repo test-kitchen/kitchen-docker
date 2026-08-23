@@ -220,8 +220,6 @@ module Kitchen
           docker_command("rm #{container_id}")
         end
 
-        # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-
         # Dockerfile ENV lines carrying the configured proxy settings.
         #
         # Each is emitted in both lower and upper case, because different tools
@@ -234,13 +232,17 @@ module Kitchen
           end.join
         end
 
+        # ENV lines for one proxy setting, in both spellings.
+        #
+        # @param proxy_type [Symbol] +:http_proxy+, +:https_proxy+, or
+        #   +:no_proxy+
+        # @return [String] two ENV lines, or empty when that proxy is unset
         def proxy_env_vars(proxy_type)
           return "" unless config[proxy_type]
 
           value = config[proxy_type]
           "ENV #{proxy_type}=#{value}\nENV #{proxy_type.upcase}=#{value}\n"
         end
-        # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
       end
       # rubocop:enable Metrics/ModuleLength
     end
