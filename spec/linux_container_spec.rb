@@ -54,13 +54,26 @@ describe Kitchen::Docker::Container::Linux do
     # rescue clause cannot fire. Test Kitchen is then handed port 0 and fails
     # far away from here, complaining that SSH was refused.
     it "reads the published port from an IPv6-only daemon" do
-      pending "BUG: IPv6 output parses to port 0 rather than the published port"
       expect(port(DockerOutput::PORT_IPV6_ONLY)).to eq DockerOutput::PUBLISHED_PORT
     end
 
     it "refuses to report a port it could not parse" do
-      pending "BUG: unparseable output silently yields port 0 instead of raising"
       expect { port("") }.to raise_error(Kitchen::ActionFailed)
+    end
+
+    it "reads the published port when docker names the host" do
+      expect(port("localhost:52239\n")).to eq DockerOutput::PUBLISHED_PORT
+    end
+
+    it "refuses to report a port from output with no port in it" do
+      expect { port("no public port '22/tcp' published\n") }
+        .to raise_error(Kitchen::ActionFailed, /Could not parse Docker port output/)
+    end
+
+    it "names the output it could not parse" do
+      # The previous message said only that parsing failed, which left nobody
+      # any way to tell what docker had actually printed.
+      expect { port("surprising\n") }.to raise_error(Kitchen::ActionFailed, /surprising/)
     end
 
     it "never returns a port that cannot be connected to" do
