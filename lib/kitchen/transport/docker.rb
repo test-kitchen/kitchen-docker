@@ -15,6 +15,7 @@ require "kitchen"
 
 require_relative "../docker/container/linux"
 require_relative "../docker/container/windows"
+require_relative "../docker/docker_version"
 
 require_relative "../docker/helpers/inspec_helper"
 
@@ -31,8 +32,11 @@ module Kitchen
       # Raised when a docker command against the container fails.
       class DockerFailed < TransportFailed; end
 
-      # kitchen_transport_api_version 1
-      plugin_version Kitchen::VERSION
+      # Reported by `kitchen diagnose`. plugin_version was Kitchen::VERSION,
+      # which is Test Kitchen's version rather than this gem's, so a diagnose
+      # reported the transport as 4.1.1 while kitchen-docker was at 3.3.4.
+      kitchen_transport_api_version 1
+      plugin_version Kitchen::Docker::DOCKER_VERSION
 
       default_config :binary,        "docker"
       default_config :env_variables, nil

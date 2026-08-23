@@ -15,6 +15,26 @@
 require "spec_helper"
 require "kitchen/transport/docker"
 
+describe Kitchen::Transport::Docker do
+  # `kitchen diagnose` is what bug reports are asked to include, so what it
+  # says about the plugin has to be true.
+  describe "plugin metadata" do
+    it "reports this gem's version, not Test Kitchen's" do
+      expect(described_class.diagnose[:version]).to eq Kitchen::Docker::DOCKER_VERSION
+    end
+
+    it "does not report Test Kitchen's version" do
+      # It did: `plugin_version Kitchen::VERSION` made a diagnose say the
+      # transport was at Test Kitchen's version rather than this gem's.
+      expect(described_class.diagnose[:version]).not_to eq Kitchen::VERSION
+    end
+
+    it "declares the transport API version it is written against" do
+      expect(described_class.diagnose[:api_version]).to eq 1
+    end
+  end
+end
+
 describe Kitchen::Transport::Docker::Connection do
   let(:options) do
     {

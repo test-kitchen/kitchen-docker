@@ -17,6 +17,24 @@
 require "spec_helper"
 
 describe Kitchen::Driver::Docker do
+  # `kitchen diagnose` is what bug reports are asked to include, so what it
+  # says about the plugin has to be true. The transport reported
+  # Kitchen::VERSION, which is Test Kitchen's version, and the driver reported
+  # nothing at all.
+  describe "plugin metadata" do
+    it "reports this gem's version, not Test Kitchen's" do
+      expect(described_class.diagnose[:version]).to eq Kitchen::Docker::DOCKER_VERSION
+    end
+
+    it "does not report Test Kitchen's version" do
+      expect(described_class.diagnose[:version]).not_to eq Kitchen::VERSION
+    end
+
+    it "declares the driver API version it is written against" do
+      expect(described_class.diagnose[:api_version]).to eq 2
+    end
+  end
+
   describe "#config_to_options" do
     let(:config) {}
     subject { described_class.new.send(:config_to_options, config) }
