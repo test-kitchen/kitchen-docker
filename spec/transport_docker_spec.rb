@@ -28,6 +28,13 @@ describe Kitchen::Transport::Docker::Connection do
 
   subject(:connection) { described_class.new(options) }
 
+  # The class is declared inside `class Docker < Kitchen::Transport::Base`, so
+  # its superclass is reached through Ruby's ancestor constant lookup rather
+  # than being spelled out. Pin it, so the inheritance cannot drift.
+  it "inherits from the Test Kitchen base connection" do
+    expect(described_class.superclass).to be Kitchen::Transport::Base::Connection
+  end
+
   describe "#login_command" do
     subject(:login_command) { connection.login_command }
 

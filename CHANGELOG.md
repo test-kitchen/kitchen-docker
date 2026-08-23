@@ -344,7 +344,7 @@ generated key pair.
 * Add ENV['DOCKER_HOST'] as default socket and add docs ([#71](https://github.com/test-kitchen/kitchen-docker/pull/71)) ([7e42958](https://github.com/test-kitchen/kitchen-docker/commit/7e42958))
 * default run_command string concatenation ([354c537](https://github.com/test-kitchen/kitchen-docker/commit/354c537))
 * test instance_name, publish_all, and links. ([4a87141](https://github.com/test-kitchen/kitchen-docker/commit/4a87141))
-* redirect stderr & stdout, write out sudoers.d/#{username} ([03b2a30](https://github.com/test-kitchen/kitchen-docker/commit/03b2a30))
+* redirect stderr & stdout, write out `sudoers.d/#{username}` ([03b2a30](https://github.com/test-kitchen/kitchen-docker/commit/03b2a30))
 * minor version bump ([bdc10b4](https://github.com/test-kitchen/kitchen-docker/commit/bdc10b4))
 
 ## [1.5.0](https://github.com/test-kitchen/kitchen-docker/compare/v1.4.0...v1.5.0) (2014-07-09)

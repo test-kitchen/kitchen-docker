@@ -93,7 +93,10 @@ module Kitchen
       end
 
       # A connection to one container.
-      class Connection < Kitchen::Transport::Docker::Connection
+      #
+      # The superclass is named in full rather than relying on Ruby resolving
+      # the bare `Connection` constant through this class's ancestors.
+      class Connection < Kitchen::Transport::Base::Connection
         # Include the InSpec patches to be able to execute tests on Windows containers
         include Kitchen::Docker::Helpers::InspecHelper
 
@@ -134,7 +137,13 @@ module Kitchen
           @container
         end
 
-        # (see Base::Connection#login_command)
+        # The command `kitchen login` execs to open a shell in the container.
+        #
+        # Documented here rather than inherited via `(see ...)`, because the
+        # superclass lives in the test-kitchen gem and YARD cannot resolve a
+        # reference into it from this project's docs.
+        #
+        # @return [Kitchen::LoginCommand] an interactive `docker exec` session
         def login_command
           argv = build_login_command
           LoginCommand.new(argv.first, argv.drop(1))
