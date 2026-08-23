@@ -64,10 +64,38 @@ module Kitchen
           docker << " --tlscacert=#{shell_escape(config[:tls_cacert])}" if config[:tls_cacert]
           docker << " --tlscert=#{shell_escape(config[:tls_cert])}" if config[:tls_cert]
           docker << " --tlskey=#{shell_escape(config[:tls_key])}" if config[:tls_key]
+          options = docker_sudo_opts(options)
           logger.debug("docker_command: #{docker} #{cmd} shell_opts: #{docker_shell_opts(options)}")
           run_command("#{docker} #{cmd}", docker_shell_opts(options))
         end
         # rubocop:enable Metrics/AbcSize
+
+        # Adds the sudo options {#run_command} reads, when +use_sudo+ is set.
+        #
+        # Sudo is a property of the call rather than of the configuration as far
+        # as the shell-out layer is concerned: it reads +:use_sudo+ from the
+        # options hash it is handed and knows nothing about +config+. So a
+        # docker command only runs through sudo if these are passed to it.
+        #
+        # Without this, +use_sudo+ reached exactly one command -- the
+        # `docker` probe in +verify_dependencies+ -- and every build, run,
+        # exec, cp, and rm still ran as the invoking user. On a host where the
+        # daemon socket needs root, that made the documented answer to
+        # "permission denied while trying to connect to the Docker daemon
+        # socket" do nothing at all.
+        #
+        # A copy is returned rather than the hash being edited in place, so a
+        # caller that reuses its options hash does not accumulate sudo.
+        #
+        # @param options [Hash] shell-out options
+        # @return [Hash] those options, with sudo added when configured
+        def docker_sudo_opts(options = {})
+          return options unless config[:use_sudo]
+
+          options = options.merge(use_sudo: true)
+          options[:sudo_command] = config[:sudo_command] if config[:sudo_command]
+          options
+        end
 
         # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 

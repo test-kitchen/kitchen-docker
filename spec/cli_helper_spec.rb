@@ -298,6 +298,55 @@ describe Kitchen::Docker::Helpers::CliHelper do
     end
   end
 
+  describe "#docker_command" do
+    # `binary` is set to `echo` and `sudo_command` to `echo SUDO`, so the
+    # assembled command line is observable as output without needing real
+    # sudo -- or a real docker -- on the machine running the specs.
+    def echoed(config = {})
+      helper({ binary: "echo", socket: nil, sudo_command: "echo SUDO" }.merge(config))
+        .docker_command("ps -a")
+    end
+
+    it "runs the command as the invoking user by default" do
+      expect(echoed).to eq "ps -a\n"
+    end
+
+    # Cases from the README's "Permission denied talking to the daemon"
+    # advice. `use_sudo` reached only the `verify_dependencies` probe, so
+    # every command that actually touches the daemon still ran unprivileged
+    # and the documented fix did nothing.
+    it "runs the command through sudo when use_sudo is set" do
+      expect(echoed(use_sudo: true)).to eq "SUDO echo ps -a\n"
+    end
+
+    it "leaves the sudo command at its default when none is configured" do
+      expect(helper(binary: "echo", socket: nil, use_sudo: true).docker_sudo_opts({}))
+        .to eq(use_sudo: true)
+    end
+  end
+
+  describe "#docker_sudo_opts" do
+    it "adds nothing when use_sudo is unset" do
+      expect(helper.docker_sudo_opts(suppress_output: true)).to eq(suppress_output: true)
+    end
+
+    it "adds the sudo options the shell-out layer reads" do
+      expect(helper(use_sudo: true, sudo_command: "doas").docker_sudo_opts({}))
+        .to eq(use_sudo: true, sudo_command: "doas")
+    end
+
+    it "keeps the options it was given" do
+      expect(helper(use_sudo: true).docker_sudo_opts(suppress_output: true))
+        .to eq(suppress_output: true, use_sudo: true)
+    end
+
+    it "does not mutate the options it was given" do
+      options = {}
+      helper(use_sudo: true).docker_sudo_opts(options)
+      expect(options).to eq({})
+    end
+  end
+
   describe "#docker_shell_opts" do
     it "translates suppress_output into silencing the live stream" do
       expect(helper.docker_shell_opts(suppress_output: true)).to eq(live_stream: nil)

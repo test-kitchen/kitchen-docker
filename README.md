@@ -284,6 +284,7 @@ Each of these accepts a single value or a list.
 | `binary` | `docker` | Docker CLI to invoke — e.g. `docker.io`, or an absolute path. |
 | `socket` | `$DOCKER_HOST`, else `unix:///var/run/docker.sock` (`npipe:////./pipe/docker_engine` on Windows) | Daemon to talk to. A `tcp://` value also supplies the host used for SSH to the container. |
 | `use_sudo` | `false` | Run every `docker` command through `sudo`. |
+| `sudo_command` | `sudo -E` | The command `use_sudo` prefixes, for hosts that use something else (`doas`, say). |
 | `tls` | `false` | Use TLS when connecting. |
 | `tls_verify` | `false` | Verify the daemon's certificate. |
 | `tls_cacert` | *(none)* | Path to the CA certificate. |
@@ -314,11 +315,13 @@ These options go under `transport:`, not `driver:`.
 | `privileged` | `false` | Run commands with `--privileged`. |
 | `interactive` | `false` | Pass `-i`. |
 | `tty` | `false` | Pass `-t`. |
+| `use_sudo` | `false` | Run every `docker` command through `sudo`. |
+| `sudo_command` | `sudo -E` | The command `use_sudo` prefixes. |
 | `tls`, `tls_verify`, `tls_cacert`, `tls_cert`, `tls_key` | as for the driver | TLS settings for the daemon connection. |
 
 The driver and transport each read their own copy of `binary`, `socket`,
-`username`, and the TLS settings. If you point one at a non-default daemon,
-point the other at it too.
+`username`, `use_sudo`, and the TLS settings. If you point one at a non-default
+daemon, or need `sudo` to reach it, configure the other the same way.
 
 ## Logging into a container
 
@@ -534,7 +537,8 @@ bootstrap. Set it to a supported family, or supply your own
 to `false` against a remote daemon.
 
 **Permission denied talking to the daemon.** Either add your user to the
-`docker` group, or set `use_sudo: true`.
+`docker` group, or set `use_sudo: true` under **both** `driver:` and
+`transport:` -- the transport runs its own `docker exec` and `docker cp`.
 
 **Anything else.** Run with `-l debug`:
 

@@ -38,12 +38,14 @@ module Kitchen
       default_config :env_variables, nil
       default_config :interactive,   false
       default_config :privileged,    false
+      default_config :sudo_command,  nil
       default_config :tls,           false
       default_config :tls_cacert,    nil
       default_config :tls_cert,      nil
       default_config :tls_key,       nil
       default_config :tls_verify,    false
       default_config :tty,           false
+      default_config :use_sudo,      false
       default_config :working_dir,   nil
 
       default_config :socket do |transport|
