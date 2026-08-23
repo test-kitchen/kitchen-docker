@@ -34,16 +34,25 @@ module Kitchen
 
         # Pulls the container id out of `docker run` output.
         #
-        # Docker prints ids in short (12) or full (64) hex form; anything else
-        # means the output was not an id at all.
+        # Docker prints ids in short (12) or full (64) hex form, on their own
+        # line. The id is looked for line by line rather than by taking the whole
+        # output, because {CliHelper#run_command} returns stdout and stderr
+        # together and docker writes warnings to stderr on runs that otherwise
+        # succeed -- "WARNING: Published ports are discarded when using host
+        # network mode" whenever run_options sets --net=host, and "WARNING: No
+        # swap limit support" on hosts whose kernel lacks swap accounting.
+        # Treating the whole output as the id failed those runs *after* the
+        # container had been created, leaving it running and untracked.
         #
-        # @param output [String] the command output
+        # @param output [String] the command output, stdout and stderr together
         # @return [String] the container id
-        # @raise [Kitchen::ActionFailed] if no id could be parsed
+        # @raise [Kitchen::ActionFailed] if no id could be found
         def parse_container_id(output)
-          container_id = output.chomp
+          container_id = output.lines.map(&:chomp).find do |line|
+            [12, 64].include?(line.size) && line.match?(/\A[0-9a-f]+\z/)
+          end
 
-          unless [12, 64].include?(container_id.size)
+          if container_id.nil?
             raise ActionFailed, "Could not parse Docker run output for container ID"
           end
 

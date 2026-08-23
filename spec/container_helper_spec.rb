@@ -30,18 +30,34 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
         .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
     end
 
+    it "fails loudly on empty output" do
+      expect { helper.parse_container_id("") }
+        .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
+    end
+
+    it "does not mistake a hex-looking word inside a message for an id" do
+      # The id has to be the whole line. A warning that happens to contain a
+      # twelve-character hex word must not be read as a container id, or the
+      # driver would track a container that does not exist.
+      expect { helper.parse_container_id("WARNING: layer abcdef123456 was skipped\n") }
+        .to raise_error(Kitchen::ActionFailed, /Could not parse Docker run output/)
+    end
+
+    it "takes the id docker printed, not a later line" do
+      expect(helper.parse_container_id(DockerOutput::RUN_WITH_PULL_ON_STDERR))
+        .to eq DockerOutput::RUN_CONTAINER_ID
+    end
+
     # run_command returns stdout + stderr, and the parser requires the whole
     # combined string to be exactly the id. Anything docker writes to stderr on
     # a successful `run` therefore fails container creation, with an error that
     # blames parsing rather than naming the warning.
     it "finds the id when docker pulled the image and logged progress to stderr" do
-      pending "BUG: parse_container_id requires the entire output to be the id, so any stderr output fails the run"
       expect(helper.parse_container_id(DockerOutput::RUN_WITH_PULL_ON_STDERR))
         .to eq DockerOutput::RUN_CONTAINER_ID
     end
 
     it "finds the id when the kernel lacks swap accounting" do
-      pending "BUG: the 'No swap limit support' warning docker emits on many Linux hosts is concatenated onto the id"
       expect(helper.parse_container_id(DockerOutput::RUN_WITH_SWAP_WARNING))
         .to eq DockerOutput::RUN_CONTAINER_ID
     end
