@@ -6,6 +6,13 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.4.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.5...v3.4.0) (2026-08-23)
+
+
+### Features
+
+* implement the driver's package, doctor, and status hooks ([#491](https://github.com/test-kitchen/kitchen-docker/issues/491)) ([1366895](https://github.com/test-kitchen/kitchen-docker/commit/13668957b5b802f91c30aa7e34fc1b9f761e3b8d))
+
 ## [3.3.5](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.4...v3.3.5) (2026-08-23)
 
 
