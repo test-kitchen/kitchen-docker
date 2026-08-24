@@ -23,6 +23,7 @@ require "kitchen/driver/base"
 
 require_relative "../docker/container/linux"
 require_relative "../docker/container/windows"
+require_relative "../docker/docker_version"
 require_relative "../docker/helpers/cli_helper"
 require_relative "../docker/helpers/container_helper"
 
@@ -36,6 +37,13 @@ module Kitchen
       include Kitchen::Docker::Helpers::CliHelper
       include Kitchen::Docker::Helpers::ContainerHelper
       include ShellOut
+
+      # Reported by `kitchen diagnose`, which is what a bug report is asked to
+      # include. The version is this gem's own: the transport used to report
+      # Kitchen::VERSION, which is Test Kitchen's, so a diagnose said the
+      # plugin was at whatever version Test Kitchen happened to be.
+      kitchen_driver_api_version 2
+      plugin_version Kitchen::Docker::DOCKER_VERSION
 
       default_config :binary,        "docker"
       default_config :build_options, nil
