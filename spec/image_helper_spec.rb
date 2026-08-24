@@ -16,6 +16,30 @@ require "spec_helper"
 
 describe Kitchen::Docker::Helpers::ImageHelper do
   describe "#parse_image_id" do
+    # From #225. `docker build -q` prints the id on a line of its own and
+    # nothing else -- no "writing image", no "naming to", no "successfully
+    # built" -- so every pattern the parser had missed it, and a build with
+    # `build_options: -q` failed with "Could not parse Docker build output for
+    # image ID" rather than producing an instance.
+    context "with a quiet build" do
+      it "reads the id docker printed on its own" do
+        expect(helper.parse_image_id(DockerOutput::BUILD_QUIET))
+          .to eq DockerOutput::BUILD_QUIET_IMAGE_ID
+      end
+
+      it "reads it when docker also wrote a warning to stderr" do
+        expect(helper.parse_image_id("WARNING: something happened\n#{DockerOutput::BUILD_QUIET}"))
+          .to eq DockerOutput::BUILD_QUIET_IMAGE_ID
+      end
+
+      it "does not mistake a digest that is part of a longer line for the id" do
+        # Ordinary build output is full of "... sha256:... done" lines. Only a
+        # line that is nothing but a digest is the quiet form.
+        expect { helper.parse_image_id("#6 exporting manifest sha256:#{"a" * 64} done\n") }
+          .to raise_error(Kitchen::ActionFailed)
+      end
+    end
+
     # Docker has changed how it reports the built image's id several times, and
     # each change has broken this parser. Every format the driver claims to
     # support gets a case here, against output copied from a real build.
