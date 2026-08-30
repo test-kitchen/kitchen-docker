@@ -84,7 +84,10 @@ module Kitchen
           debug("Executing temp script #{remote_path}/#{filename} on container")
           remote_path = replace_env_variables(@config, remote_path)
 
-          container_exec(@config, "/bin/bash #{remote_path}/#{filename}")
+          # Escaped because the exec command line is assembled as one string:
+          # a temp_dir with a space in it was split before docker saw it, and
+          # bash was handed the first half of the directory as the script.
+          container_exec(@config, "/bin/bash #{Shellwords.escape("#{remote_path}/#{filename}")}")
         rescue => e
           raise "Failed to execute command on Linux container. #{e}"
         ensure

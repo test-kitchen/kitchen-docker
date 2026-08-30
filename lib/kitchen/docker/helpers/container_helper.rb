@@ -155,6 +155,17 @@ module Kitchen
 
         # Creates a directory inside the container, on Linux or Windows.
         #
+        # The path is escaped for the shell, because it comes from the
+        # transport's +temp_dir+ and a `docker exec` command line is assembled
+        # as one string. A directory with a space in it was torn in two before
+        # docker ever saw it, and `mkdir -p` obligingly created both halves --
+        # neither of them the directory that was asked for. Every upload that
+        # followed then went to a path that did not exist.
+        #
+        # The PowerShell branch already quotes the path itself, and its
+        # argument is reassembled by PowerShell rather than split by a shell,
+        # so it is left as it is.
+        #
         # @param state [Hash] instance state naming the container
         # @param path [String] the directory to create; environment variable
         #   references are expanded first
@@ -162,7 +173,7 @@ module Kitchen
         # @raise [RuntimeError] if the directory cannot be created
         def create_dir_on_container(state, path)
           path = replace_env_variables(state, path)
-          cmd = "mkdir -p #{path}"
+          cmd = "mkdir -p #{Shellwords.escape(path)}"
 
           if state[:platform].include?("windows")
             psh = "-Command if(-not (Test-Path '#{path}')) { New-Item -Path '#{path}' -Force }"
