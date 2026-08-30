@@ -205,7 +205,7 @@ platforms:
 | `dockerfile` | *(none)* | Path to your own Dockerfile, used instead of the generated one. Rendered as [ERB](#using-a-custom-dockerfile). |
 | `build_context` | `true` locally, `false` for a remote daemon | Send the working directory to the daemon as build context. Required for `ADD` and `COPY`; slow against a remote daemon. |
 | `build_options` | *(none)* | Extra flags for `docker build`, as a string or a map. |
-| `build_tempdir` | working directory | Where the generated Dockerfile is written, relative to `build_context`. |
+| `build_tempdir` | working directory | Directory the generated Dockerfile is written to. A relative path is resolved against the working directory, and the path must be inside the build context, since `docker build -f` is given it relative to the working directory. |
 | `use_cache` | `true` | Use Docker's build cache. `false` adds `--no-cache`. |
 | `remove_images` | `false` | Remove the built image on `kitchen destroy`. |
 | `package_name` | the instance name, tagged `latest` | Image `kitchen package` commits the container to. |
@@ -237,7 +237,9 @@ platforms:
 | `tty` | `false` | Pass `-t`, allocating a pseudo-TTY. |
 | `env_variables` | *(none)* | Environment variables set in the container, as a map. |
 | `wait_for_transport` | `true` | Wait for the transport to answer before converging. Set `false` for containers that do not stay up. |
-| `detach` | `false` | Run provisioner commands with `docker exec -d`, returning immediately instead of waiting for them. The container itself is always started detached, regardless of this setting, and `kitchen login` ignores it so the shell stays usable. |
+
+The container itself is always started detached — see [`detach`](#transport-configuration)
+under the transport for how provisioner commands are run.
 
 ### Networking
 
@@ -314,6 +316,7 @@ These options go under `transport:`, not `driver:`.
 | `working_dir` | *(none)* | Working directory inside the container (`-w`). |
 | `temp_dir` | `/tmp`, or `$env:TEMP` on Windows | Directory used to stage uploaded files. |
 | `env_variables` | *(none)* | Environment variables for each command. |
+| `detach` | `false` | Run provisioner commands with `docker exec -d`, returning immediately instead of waiting for them to finish. `kitchen login` ignores it, so the shell stays usable. |
 | `privileged` | `false` | Run commands with `--privileged`. |
 | `interactive` | `false` | Pass `-i`. |
 | `tty` | `false` | Pass `-t`. |
