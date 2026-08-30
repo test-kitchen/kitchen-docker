@@ -33,6 +33,96 @@ describe Kitchen::Transport::Docker do
       expect(described_class.diagnose[:api_version]).to eq 1
     end
   end
+
+  def transport(config = {}, platform: "ubuntu-24.04")
+    described_class.new(config).tap do |t|
+      allow(t).to receive(:instance).and_return(
+        instance_double("Kitchen::Instance",
+          name: "default", platform: Kitchen::Platform.new(name: platform))
+      )
+    end
+  end
+
+  describe "default configuration" do
+    describe ":temp_dir" do
+      it "stages uploads under /tmp on Linux" do
+        expect(transport[:temp_dir]).to eq "/tmp"
+      end
+
+      # Resolved inside the container rather than here, because the
+      # workstation's TEMP is unrelated to the container's.
+      it "stages uploads under the container's own TEMP on Windows" do
+        expect(transport({}, platform: "windows-2022")[:temp_dir]).to eq "$env:TEMP"
+      end
+    end
+
+    describe ":username" do
+      it "runs commands as the account the driver created" do
+        expect(transport[:username]).to eq "kitchen"
+      end
+
+      # There is no such account in a Windows image, and `-u` with a name that
+      # does not exist there fails every exec.
+      it "is unset on Windows" do
+        expect(transport({}, platform: "windows-2022")[:username]).to be_nil
+      end
+    end
+
+    describe ":socket" do
+      around do |example|
+        saved = ENV["DOCKER_HOST"]
+        example.run
+        saved.nil? ? ENV.delete("DOCKER_HOST") : ENV["DOCKER_HOST"] = saved
+      end
+
+      it "defaults to the Unix socket" do
+        ENV.delete("DOCKER_HOST")
+        allow(Gem).to receive(:win_platform?).and_return(false)
+        expect(transport[:socket]).to eq "unix:///var/run/docker.sock"
+      end
+
+      it "prefers DOCKER_HOST" do
+        ENV["DOCKER_HOST"] = "tcp://192.168.1.1:2375"
+        expect(transport[:socket]).to eq "tcp://192.168.1.1:2375"
+      end
+    end
+  end
+
+  describe "#connection" do
+    around do |example|
+      saved = ENV["DOCKER_HOST"]
+      example.run
+      saved.nil? ? ENV.delete("DOCKER_HOST") : ENV["DOCKER_HOST"] = saved
+    end
+
+    it "hands the connection the state as well as the configuration" do
+      ENV.delete("DOCKER_HOST")
+      conn = transport({ binary: "docker" }).connection(container_id: "abc123")
+      expect(conn.send(:options)).to include(binary: "docker", container_id: "abc123")
+    end
+
+    # The container classes decide between the Windows and Linux
+    # implementations from this, and it is not in the transport's own config.
+    it "records the platform under test" do
+      ENV.delete("DOCKER_HOST")
+      expect(transport({}, platform: "windows-2022").connection({}).send(:options)[:platform])
+        .to eq "windows-2022"
+    end
+
+    # The docker-api gem, which the InSpec verifier uses, reads the daemon
+    # address from the environment rather than from Test Kitchen's config.
+    it "exports the configured socket for the InSpec verifier" do
+      ENV.delete("DOCKER_HOST")
+      transport({ socket: "tcp://docker.example.com:2376" }).connection({})
+      expect(ENV["DOCKER_HOST"]).to eq "tcp://docker.example.com:2376"
+    end
+
+    it "leaves a DOCKER_HOST the user already exported alone" do
+      ENV["DOCKER_HOST"] = "tcp://mine.example.com:2375"
+      transport({ socket: "tcp://docker.example.com:2376" }).connection({})
+      expect(ENV["DOCKER_HOST"]).to eq "tcp://mine.example.com:2375"
+    end
+  end
 end
 
 describe Kitchen::Transport::Docker::Connection do
@@ -53,6 +143,54 @@ describe Kitchen::Transport::Docker::Connection do
   # than being spelled out. Pin it, so the inheritance cannot drift.
   it "inherits from the Test Kitchen base connection" do
     expect(described_class.superclass).to be Kitchen::Transport::Base::Connection
+  end
+
+  describe "#execute" do
+    it "runs the command inside the container" do
+      expect(connection.container).to receive(:execute).with("echo hi")
+      connection.execute("echo hi")
+    end
+
+    # Kitchen calls execute with nil for a provisioner that has nothing to run,
+    # such as a suite with an empty run_list.
+    it "does nothing when there is no command" do
+      expect(connection.container).not_to receive(:execute)
+      connection.execute(nil)
+    end
+
+    # A bare RuntimeError from the container layer is not something Kitchen
+    # recognises, so it surfaces as a stack trace rather than as a failed
+    # action naming the instance.
+    it "reports a failure as a transport failure" do
+      allow(connection.container).to receive(:execute).and_raise("boom")
+      expect { connection.execute("echo hi") }
+        .to raise_error(Kitchen::Transport::Docker::DockerFailed, /Docker failed to execute command/)
+    end
+  end
+
+  describe "#upload" do
+    it "hands the files to the container" do
+      expect(connection.container).to receive(:upload).with(["/local/f.rb"], "/tmp")
+      connection.upload(["/local/f.rb"], "/tmp")
+    end
+  end
+
+  describe "#container" do
+    it "builds a Linux container for a Linux platform" do
+      expect(connection.container).to be_a Kitchen::Docker::Container::Linux
+    end
+
+    it "reuses the same container across calls" do
+      expect(connection.container).to be connection.container
+    end
+
+    context "on a Windows container" do
+      let(:options) { { binary: "docker", container_id: "abc123", platform: "windows-2022" } }
+
+      it "builds a Windows container" do
+        expect(connection.container).to be_a Kitchen::Docker::Container::Windows
+      end
+    end
   end
 
   describe "#login_command" do
