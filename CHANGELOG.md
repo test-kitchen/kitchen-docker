@@ -6,6 +6,15 @@ Future CHANGELOG notes will be in GitHub release notes
 
 * Docs: document the last four options and split contributor docs ([#463](https://github.com/test-kitchen/kitchen-docker/pull/463)) ([4818bce](https://github.com/test-kitchen/kitchen-docker/commit/4818bce))
 
+## [3.4.1](https://github.com/test-kitchen/kitchen-docker/compare/v3.4.0...v3.4.1) (2026-08-30)
+
+
+### Bug Fixes
+
+* quote container paths interpolated into docker exec command lines ([#496](https://github.com/test-kitchen/kitchen-docker/issues/496)) ([ae3a754](https://github.com/test-kitchen/kitchen-docker/commit/ae3a754046cdb7c6d9fdb8622a6cef818643ad56))
+* read the image id from a quiet build ([#489](https://github.com/test-kitchen/kitchen-docker/issues/489)) ([ddc58b5](https://github.com/test-kitchen/kitchen-docker/commit/ddc58b50a16b7236ed047071228f5641092060a1))
+* report this gem's own version to kitchen diagnose ([#490](https://github.com/test-kitchen/kitchen-docker/issues/490)) ([e28171d](https://github.com/test-kitchen/kitchen-docker/commit/e28171d268ab0a4950c0d553fcee12688663e626))
+
 ## [3.4.0](https://github.com/test-kitchen/kitchen-docker/compare/v3.3.5...v3.4.0) (2026-08-23)
 
 
