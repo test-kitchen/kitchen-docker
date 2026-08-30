@@ -83,6 +83,8 @@ module Kitchen
       # than from Test Kitchen's configuration.
       #
       # @param state [Hash] instance state naming the container
+      # @param block [Proc, nil] forwarded to the connection's constructor, which
+      #   yields the new connection to it; the connection is not closed afterwards
       # @yieldparam connection [Connection] if a block is given
       # @return [Connection]
       def connection(state, &block)

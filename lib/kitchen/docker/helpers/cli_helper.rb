@@ -107,7 +107,7 @@ module Kitchen
         # @param cmd [String] the command to run
         # @param options [Hash] shell-out options
         # @return [String] combined stdout and stderr
-        # @raise [Kitchen::ShellCommandFailed] if the command exits non-zero
+        # @raise [Kitchen::ShellOut::ShellCommandFailed] if the command exits non-zero
         def run_command(cmd, options = {})
           if options.fetch(:use_sudo, false)
             cmd = "#{options.fetch(:sudo_command, "sudo -E")} #{cmd}"
