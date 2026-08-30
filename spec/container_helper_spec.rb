@@ -333,6 +333,89 @@ describe Kitchen::Docker::Helpers::ContainerHelper do
     end
   end
 
+  describe "#create_dir_on_container" do
+    def dir_maker(state)
+      helper.tap do |h|
+        @commands = []
+        allow(h).to receive(:replace_env_variables) { |_s, path| path }
+        allow(h).to receive(:docker_command) { |cmd, _opts = {}| @commands << cmd; "" }
+      end
+    end
+
+    it "creates the directory inside the container" do
+      dir_maker(nil).create_dir_on_container({ container_id: "abc", platform: "ubuntu-24.04" }, "/tmp")
+      expect(argv(@commands.first)).to include_consecutive("mkdir", "-p", "/tmp")
+    end
+
+    it "expands an environment variable reference before creating it" do
+      h = helper
+      allow(h).to receive(:container_env_variables).and_return("TEMP" => "/var/tmp")
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @cmd = cmd; "" }
+      h.create_dir_on_container({ container_id: "abc", platform: "ubuntu-24.04" }, "$TEMP/kitchen")
+      expect(argv(@cmd)).to include_consecutive("mkdir", "-p", "/var/tmp/kitchen")
+    end
+
+    # A temp_dir with a space in it reached `mkdir -p` unquoted, so the shell
+    # tore it in two and mkdir made two directories -- neither of them the one
+    # asked for. Every later upload then landed somewhere that did not exist.
+    it "keeps a path containing a space as one argument" do
+      dir_maker(nil).create_dir_on_container({ container_id: "abc", platform: "ubuntu-24.04" },
+        "/var/tmp/kitchen docker")
+      expect(argv(@commands.first)).to include_consecutive("mkdir", "-p", "/var/tmp/kitchen docker")
+    end
+
+    it "uses PowerShell on a Windows container" do
+      dir_maker(nil).create_dir_on_container({ container_id: "abc", platform: "windows-2022" }, 'C:\\Temp')
+      expect(@commands.first).to include("powershell").and include("New-Item")
+    end
+
+    it "says which directory it could not create" do
+      h = helper
+      allow(h).to receive(:replace_env_variables) { |_s, path| path }
+      allow(h).to receive(:docker_command).and_raise("boom")
+      expect { h.create_dir_on_container({ container_id: "abc", platform: "ubuntu-24.04" }, "/tmp/kitchen") }
+        .to raise_error(RuntimeError, %r{Failed to create directory /tmp/kitchen})
+    end
+  end
+
+  describe "#container_exec" do
+    it "runs the command through docker exec" do
+      h = helper
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @cmd = cmd; "output" }
+      expect(h.container_exec({ container_id: "abc" }, "echo hi")).to eq "output"
+      expect(argv(@cmd)).to include_consecutive("exec", "abc", "echo", "hi")
+    end
+
+    it "names the container operation when the command fails" do
+      h = helper
+      allow(h).to receive(:docker_command).and_raise("boom")
+      expect { h.container_exec({ container_id: "abc" }, "echo hi") }
+        .to raise_error(RuntimeError, /Failed to execute command on Docker container/)
+    end
+  end
+
+  describe "#run_container" do
+    it "returns the id docker printed for the container it started" do
+      h = helper(instance_name: "kitchen-test")
+      allow(h).to receive(:docker_command).and_return(DockerOutput::RUN_CLEAN)
+      expect(h.run_container({ image_id: "sha256:abc" }, 22)).to eq DockerOutput::RUN_CONTAINER_ID
+    end
+
+    it "publishes the port it was given" do
+      h = helper
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @cmd = cmd; DockerOutput::RUN_CLEAN }
+      h.run_container({ image_id: "sha256:abc" }, 22)
+      expect(argv(@cmd)).to include_consecutive("-p", "22")
+    end
+
+    it "publishes no port when there is none, as for a Windows container" do
+      h = helper
+      allow(h).to receive(:docker_command) { |cmd, _opts = {}| @cmd = cmd; DockerOutput::RUN_CLEAN }
+      h.run_container(image_id: "sha256:abc")
+      expect(argv(@cmd)).not_to include("-p")
+    end
+  end
+
   describe "#copy_file_to_container" do
     let(:state) { { container_id: "abc", platform: "ubuntu-24.04" } }
 

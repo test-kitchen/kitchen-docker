@@ -211,6 +211,33 @@ describe Kitchen::Docker::Container::Linux do
       c.execute("echo hi")
       expect(uploaded).to eq "echo hi"
     end
+
+    # The staged script is run by path, and that path is built from temp_dir,
+    # which the user sets.
+    def ran_in(temp_dir)
+      c = container(temp_dir: temp_dir)
+      allow(c).to receive(:create_dir_on_container)
+      allow(c).to receive(:replace_env_variables) { |_cfg, path| path }
+      allow(c).to receive(:upload)
+      ran = nil
+      allow(c).to receive(:container_exec) { |_cfg, cmd| ran = cmd }
+      c.execute("echo hi")
+      ran
+    end
+
+    it "runs the staged script with bash" do
+      ran = ran_in("/tmp")
+      expect(argv(ran).first).to eq "/bin/bash"
+      expect(argv(ran).last).to match(%r{\A/tmp/docker-[0-9a-f-]+\.sh\z})
+    end
+
+    # Interpolated unquoted, a temp_dir with a space in it reached `docker
+    # exec` as two arguments, and bash was handed the first half of the
+    # directory as the script to run.
+    it "keeps a temp_dir containing a space as one argument" do
+      expect(argv(ran_in("/var/tmp/kitchen docker")).last)
+        .to match(%r{\A/var/tmp/kitchen docker/docker-[0-9a-f-]+\.sh\z})
+    end
   end
 
   describe "#generate_keys" do

@@ -69,7 +69,11 @@ module Kitchen
           # Replace any environment variables used in the path and execute script file
           debug("Executing temp script #{remote_path}\\#{filename} on container")
           remote_path = replace_env_variables(@config, remote_path)
-          cmd = build_powershell_command("-File #{remote_path}\\#{filename}")
+          # Quoted because PowerShell's -File takes exactly one argument. An
+          # unquoted path with a space in it -- which $env:TEMP has whenever the
+          # user's name does -- left PowerShell looking for a script named
+          # after the first word of the directory.
+          cmd = build_powershell_command(%{-File "#{remote_path}\\#{filename}"})
 
           container_exec(@config, cmd)
         rescue => e
