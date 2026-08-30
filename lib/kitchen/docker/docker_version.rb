@@ -18,6 +18,6 @@ module Kitchen
   # Everything belonging to the kitchen-docker plugin.
   module Docker
     # The version of the kitchen-docker gem.
-    DOCKER_VERSION = "3.4.0".freeze
+    DOCKER_VERSION = "3.4.1".freeze
   end
 end
