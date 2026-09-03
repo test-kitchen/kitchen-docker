@@ -112,4 +112,53 @@ describe Kitchen::Docker::Container do
       end
     end
   end
+  # Where Test Kitchen is told to connect. All three cases produce something
+  # that looks like a host, so getting it wrong does not fail here -- it fails
+  # later, as a connection timeout against an address nothing is listening on.
+  describe "#hostname" do
+    it "is localhost for a local daemon, where the port is published" do
+      expect(described_class.new(socket: "unix:///var/run/docker.sock").hostname(state))
+        .to eq "localhost"
+    end
+
+    # The published port is on the machine running the daemon, not on this one.
+    it "is the daemon's host when the socket is remote" do
+      expect(described_class.new(socket: "tcp://docker.example.com:2376").hostname(state))
+        .to eq "docker.example.com"
+    end
+
+    it "is the container's own address on the internal network" do
+      c = described_class.new(socket: "unix:///var/run/docker.sock", use_internal_docker_network: true)
+      allow(c).to receive(:container_ip_address).with(state).and_return("172.17.0.2")
+      expect(c.hostname(state)).to eq "172.17.0.2"
+    end
+
+    # A remote daemon has no route back to a container address, so the socket
+    # host has to win over the internal network.
+    it "prefers the daemon's host over the internal network" do
+      c = described_class.new(socket: "tcp://docker.example.com:2376", use_internal_docker_network: true)
+      expect(c).not_to receive(:container_ip_address)
+      expect(c.hostname(state)).to eq "docker.example.com"
+    end
+  end
+
+  describe "#upload" do
+    it "copies a single file" do
+      expect(container).to receive(:copy_file_to_container).with(config, "/local/f.rb", "/tmp")
+      container.upload("/local/f.rb", "/tmp")
+    end
+
+    it "copies every file it is given" do
+      copied = []
+      allow(container).to receive(:copy_file_to_container) { |_cfg, file, _remote| copied << file }
+      container.upload(["/local/a.rb", "/local/b.rb"], "/tmp")
+      expect(copied).to eq ["/local/a.rb", "/local/b.rb"]
+    end
+
+    it "returns the files it copied" do
+      allow(container).to receive(:copy_file_to_container)
+      expect(container.upload(["/local/a.rb"], "/tmp")).to eq ["/local/a.rb"]
+    end
+  end
+
 end

@@ -233,47 +233,252 @@ describe Kitchen::Driver::Docker do
     end
   end
 
-  describe "socket default config logic" do
-    def resolve_socket
-      socket = "unix:///var/run/docker.sock"
-      socket = "npipe:////./pipe/docker_engine" if Gem.win_platform?
-      ENV["DOCKER_HOST"] || socket
+  # The lazy `default_config` blocks are where most of "it just works with a
+  # platform name and nothing else" lives. They were previously exercised by a
+  # spec that re-implemented the socket block and asserted on its own copy,
+  # which would have passed with the driver's block deleted. These read the
+  # values back off a driver, which is what Test Kitchen does.
+  describe "default configuration" do
+    def configured(config = {}, platform: "ubuntu-24.04")
+      described_class.new(config).tap do |d|
+        allow(d).to receive(:instance).and_return(
+          instance_double("Kitchen::Instance",
+            name: "default-#{platform.delete(".")}",
+            platform: Kitchen::Platform.new(name: platform))
+        )
+      end
     end
 
-    context "on a non-Windows host without DOCKER_HOST set" do
-      before do
+    describe ":socket" do
+      around do |example|
+        saved = ENV["DOCKER_HOST"]
+        example.run
+        saved.nil? ? ENV.delete("DOCKER_HOST") : ENV["DOCKER_HOST"] = saved
+      end
+
+      it "defaults to the Unix socket" do
+        ENV.delete("DOCKER_HOST")
         allow(Gem).to receive(:win_platform?).and_return(false)
-        allow(ENV).to receive(:[]).and_call_original
-        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return(nil)
+        expect(configured[:socket]).to eq "unix:///var/run/docker.sock"
       end
 
-      it "uses the Unix socket" do
-        expect(resolve_socket).to eq("unix:///var/run/docker.sock")
-      end
-    end
-
-    context "on a Windows host without DOCKER_HOST set" do
-      before do
+      it "defaults to the named pipe on a Windows host" do
+        ENV.delete("DOCKER_HOST")
         allow(Gem).to receive(:win_platform?).and_return(true)
-        allow(ENV).to receive(:[]).and_call_original
-        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return(nil)
+        expect(configured[:socket]).to eq "npipe:////./pipe/docker_engine"
       end
 
-      it "uses the Windows named pipe" do
-        expect(resolve_socket).to eq("npipe:////./pipe/docker_engine")
+      # Read lazily rather than at require time, so that a DOCKER_HOST exported
+      # after the plugin was loaded -- which is what a shell wrapper or a
+      # Rakefile does -- is still honoured.
+      it "prefers DOCKER_HOST" do
+        ENV["DOCKER_HOST"] = "tcp://192.168.1.1:2375"
+        expect(configured[:socket]).to eq "tcp://192.168.1.1:2375"
       end
     end
 
-    context "when DOCKER_HOST env var is set" do
-      before do
-        allow(Gem).to receive(:win_platform?).and_return(false)
-        allow(ENV).to receive(:[]).and_call_original
-        allow(ENV).to receive(:[]).with("DOCKER_HOST").and_return("tcp://192.168.1.1:2375")
+    describe ":image and :platform" do
+      it "derives both from the platform name" do
+        d = configured({}, platform: "ubuntu-24.04")
+        expect(d[:image]).to eq "ubuntu:24.04"
+        expect(d[:platform]).to eq "ubuntu"
       end
 
-      it "uses DOCKER_HOST over the default socket" do
-        expect(resolve_socket).to eq("tcp://192.168.1.1:2375")
+      it "leaves a name with no release as a bare image" do
+        expect(configured({}, platform: "fedora")[:image]).to eq "fedora"
       end
+
+      # CentOS images are tagged `centos7`, not `7`, so the release needs the
+      # distribution name in front of it.
+      it "special-cases centos, whose tags carry the distribution name" do
+        expect(configured({}, platform: "centos-7")[:image]).to eq "centos:centos7"
+      end
+
+      it "drops the point release from a centos tag" do
+        expect(configured({}, platform: "centos-6.5")[:image]).to eq "centos:centos6"
+      end
+
+      # Documented rather than endorsed: the family is the first segment, so a
+      # platform named for a variant needs `platform` set explicitly. Both of
+      # these are examples the README tells you to configure by hand.
+      it "reads only the first segment as the family" do
+        expect(configured({}, platform: "centos-stream-9")[:platform]).to eq "centos"
+        expect(configured({}, platform: "gentoo-paludis")[:platform]).to eq "gentoo"
+      end
+
+      it "yields to a configured image" do
+        expect(configured({ image: "dokken/centos-stream-9" })[:image]).to eq "dokken/centos-stream-9"
+      end
+    end
+
+    describe ":username" do
+      it "is the account the generated Dockerfile creates" do
+        expect(configured[:username]).to eq "kitchen"
+      end
+
+      # A Windows image has no account to create, and passing `-u` with a name
+      # that does not exist there fails every exec.
+      it "is unset on Windows, where none is created" do
+        expect(configured({}, platform: "windows-2022")[:username]).to be_nil
+      end
+    end
+
+    describe ":run_command" do
+      it "runs sshd in the foreground on Linux" do
+        expect(configured[:run_command]).to start_with "/usr/sbin/sshd -D"
+      end
+
+      # Windows containers are driven through `docker exec`, so PID 1 only has
+      # to stay alive.
+      it "keeps a Windows container alive with a long-running ping" do
+        expect(configured({}, platform: "windows-2022")[:run_command]).to eq "ping -t localhost"
+      end
+
+      it "runs PowerShell on an interactive Windows container" do
+        expect(configured({ interactive: true }, platform: "windows-2022")[:run_command])
+          .to eq "powershell.exe"
+      end
+    end
+
+    describe ":build_context" do
+      it "sends the working directory to a local daemon" do
+        expect(configured({ socket: "unix:///var/run/docker.sock" })[:build_context]).to be true
+      end
+
+      # Sending the whole working directory over the network is slow enough to
+      # be worth defaulting off.
+      it "does not send it to a remote daemon" do
+        expect(configured({ socket: "tcp://docker.example.com:2376" })[:build_context]).to be false
+      end
+    end
+
+    describe ":instance_name" do
+      it "starts with the instance it belongs to" do
+        expect(configured[:instance_name]).to start_with "defaultubuntu2404-"
+      end
+
+      it "is a name Docker accepts" do
+        expect(configured[:instance_name]).to match(/\A[a-z0-9][a-z0-9_.-]*\z/)
+      end
+
+      # Two instances of the same suite must not collide, which is what lets
+      # `kitchen test -c` run them at once.
+      it "differs between drivers" do
+        expect(configured[:instance_name]).not_to eq configured[:instance_name]
+      end
+    end
+
+    describe ":package_name" do
+      it "names the image after the instance" do
+        expect(configured[:package_name]).to eq "default-ubuntu-2404:latest"
+      end
+
+      it "is a valid Docker repository name even when the instance name is not" do
+        d = described_class.new
+        allow(d).to receive(:instance).and_return(
+          instance_double("Kitchen::Instance", name: "Default-Ubuntu_24.04")
+        )
+        expect(d[:package_name]).to eq "default-ubuntu_24.04:latest"
+      end
+    end
+  end
+
+  describe "#container" do
+    it "builds a Linux container for a Linux platform" do
+      expect(driver_for_platform("ubuntu-24.04").send(:container))
+        .to be_a Kitchen::Docker::Container::Linux
+    end
+
+    # The two classes generate completely different Dockerfiles and reach the
+    # container in completely different ways, so picking the wrong one produces
+    # an image that cannot be built rather than a subtly wrong one.
+    it "builds a Windows container for a Windows platform" do
+      expect(driver_for_platform("windows-2022").send(:container))
+        .to be_a Kitchen::Docker::Container::Windows
+    end
+
+    it "reuses the same container across calls" do
+      d = driver_for_platform("ubuntu-24.04")
+      expect(d.send(:container)).to be d.send(:container)
+    end
+
+    def driver_for_platform(name)
+      described_class.new.tap do |d|
+        allow(d).to receive(:instance).and_return(
+          instance_double("Kitchen::Instance", name: "default", platform: Kitchen::Platform.new(name: name))
+        )
+      end
+    end
+  end
+
+  describe "#destroy" do
+    it "hands the container off to be removed" do
+      d = driver
+      c = instance_double(Kitchen::Docker::Container::Linux)
+      allow(d).to receive(:container).and_return(c)
+      state = { container_id: "abc123abc123" }
+      expect(c).to receive(:destroy).with(state)
+      d.destroy(state)
+    end
+  end
+
+  describe "#create" do
+    it "creates the container and then waits for the transport" do
+      d = driver
+      c = instance_double(Kitchen::Docker::Container::Linux)
+      allow(d).to receive(:container).and_return(c)
+      state = {}
+
+      expect(c).to receive(:create).with(state).ordered
+      expect(d).to receive(:wait_for_transport).with(state).ordered
+
+      d.create(state)
+    end
+  end
+
+  describe "#wait_for_transport" do
+    def driver_waiting(wait)
+      d = driver({ wait_for_transport: wait })
+      @connection = double("connection")
+      transport = double("transport")
+      allow(transport).to receive(:connection) { |_state, &blk| blk.call(@connection) }
+      allow(d.instance).to receive(:transport).and_return(transport)
+      d
+    end
+
+    it "waits for the transport to answer before converging" do
+      d = driver_waiting(true)
+      expect(@connection).to receive(:wait_until_ready)
+      d.wait_for_transport({})
+    end
+
+    # For a container that is not meant to stay up, waiting is a guaranteed
+    # timeout rather than a safety net.
+    it "does not wait when told not to" do
+      d = driver_waiting(false)
+      expect(@connection).not_to receive(:wait_until_ready)
+      d.wait_for_transport({})
+    end
+  end
+
+  describe "#verify_dependencies" do
+    it "says how to install Docker when the CLI is not there" do
+      d = driver
+      allow(d).to receive(:run_command).and_raise(Kitchen::ShellOut::ShellCommandFailed, "not found")
+      expect { d.verify_dependencies }
+        .to raise_error(Kitchen::UserError, /must first install the Docker CLI/)
+    end
+
+    it "says nothing when the CLI runs" do
+      d = driver
+      allow(d).to receive(:run_command).and_return("")
+      expect { d.verify_dependencies }.not_to raise_error
+    end
+
+    it "probes through sudo when configured to" do
+      d = driver({ use_sudo: true })
+      expect(d).to receive(:run_command).with(anything, hash_including(use_sudo: true))
+      d.verify_dependencies
     end
   end
 end

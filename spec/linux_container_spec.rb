@@ -35,6 +35,58 @@ describe Kitchen::Docker::Container::Linux do
     }.merge(config))
   end
 
+  # The state this populates is the whole contract with the rest of Test
+  # Kitchen: the transport and the verifier read these keys, and a missing one
+  # surfaces as a nil far from here.
+  describe "#create" do
+    def creating(config = {})
+      c = container(config)
+      allow(c).to receive(:container_exists?).and_return(false)
+      allow(c).to receive(:build_image).and_return("sha256:abc")
+      allow(c).to receive(:run_container).and_return("abc123abc123")
+      allow(c).to receive(:hostname).and_return("localhost")
+      allow(c).to receive(:docker_command).and_return("0.0.0.0:32768\n")
+      c
+    end
+
+    it "records everything the transport needs to connect" do
+      state = {}
+      creating.create(state)
+      expect(state).to include(
+        image_id: "sha256:abc",
+        container_id: "abc123abc123",
+        hostname: "localhost",
+        username: "kitchen",
+        port: 32768
+      )
+    end
+
+    it "records the key it generated, so SSH can use it" do
+      state = {}
+      creating.create(state)
+      expect(state[:ssh_key]).to eq File.join(@tmpdir, "docker_id_rsa")
+    end
+
+    # 22 is the port inside the container; Docker publishes it on an arbitrary
+    # host port, which is the one to connect to.
+    it "publishes the SSH port" do
+      c = creating
+      expect(c).to receive(:run_container).with(anything, 22).and_return("abc123abc123")
+      c.create({})
+    end
+
+    # Re-running create against an instance that is already up must not build a
+    # second image or start a second container.
+    it "reuses an image and container the state already names" do
+      c = creating
+      allow(c).to receive(:container_exists?).and_return(true)
+      allow(c).to receive(:container_running?).and_return(true)
+      expect(c).not_to receive(:build_image)
+      expect(c).not_to receive(:run_container)
+      c.create(image_id: "sha256:old", container_id: "old123old123")
+    end
+  end
+
   describe "#parse_container_ssh_port" do
     def port(output)
       container.send(:parse_container_ssh_port, output)
