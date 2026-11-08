@@ -171,7 +171,8 @@ module Kitchen
         # Builds the Dockerfile for a Linux container.
         #
         # A configured +dockerfile+ is used as-is after ERB rendering. Otherwise
-        # one is generated: the base image, proxy settings, the platform's own
+        # one is generated: the base image (switched to root, since it may end
+        # with a non-root USER), proxy settings, the platform's own
         # package setup, any +provision_command+ entries, and the generated public
         # key appended to the login user's authorized_keys.
         #
@@ -194,7 +195,7 @@ module Kitchen
           ssh_key = "RUN echo #{Shellwords.escape(public_key)} >> #{homedir}/.ssh/authorized_keys"
 
           # Empty string to ensure the file ends with a newline.
-          output = [from, dockerfile_proxy_config, platform, base, custom, ssh_key, ""].join("\n")
+          output = [from, "USER root", dockerfile_proxy_config, platform, base, custom, ssh_key, ""].join("\n")
           debug("--- Start Dockerfile ---")
           debug(output.strip)
           debug("--- End Dockerfile ---")

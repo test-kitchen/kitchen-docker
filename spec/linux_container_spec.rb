@@ -159,6 +159,11 @@ describe Kitchen::Docker::Container::Linux do
       expect(dockerfile.lines.first.strip).to eq "FROM ubuntu:24.04"
     end
 
+    it "switches to root before the setup steps run" do
+      # The base image may end with a non-root USER, and the RUN lines need root.
+      expect(dockerfile.lines[1]).to eq "USER root\n"
+    end
+
     it "authorises the generated public key" do
       # Without this line the container builds and starts, and then every
       # connection is refused -- the single most confusing way for this driver
